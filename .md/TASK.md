@@ -235,6 +235,25 @@ concluída (T5.3 aguarda T5.2).
 depende de T3.2 e T3.4. T6.3 depende de T3.1. **Paralelizáveis entre si**:
 T6.1, T6.2 e T6.3 (conteúdos independentes).
 
+### Refatoração Lote-1
+
+> **Origem:** achados Simples/débito de baixa severidade do `/validar` sobre o
+> Lote 1 — Fundação de Design System (2026-09-07), registrados pelo Validador
+> (chapéus QA e DevSecOps) sem exigir reprovação nem redesenho. Ver
+> `.md/QA-REPORT.md` (Lote 1) e `.md/SECURITY-REVIEW.md` (Lote 1) para o
+> detalhe completo de cada achado.
+
+| ID | Tarefa | Dono | Critério de aceite | Origem | Estimativa | Status |
+|---|---|---|---|---|---|---|
+| RL1.1 | Regenerar `assets/img/favicon/favicon.ico` com as 3 resoluções (16/32/48px) realmente embutidas no arquivo (hoje contém só 16×16) | Frontend | `favicon.ico` inspecionado (cabeçalho ICO) contém as 3 imagens embutidas (16/32/48px), sem alterar o glifo/arte do ícone | QA-REPORT.md, achado #1 (T1.4) | 0,1 dia | Pendente |
+| RL1.2 | Adicionar `<meta name="robots" content="noindex, nofollow">` em `assets/css/base.smoke.html`, alinhando com `tokens.smoke.html`/`fonts.smoke.html` | Frontend | Tag presente e idêntica à dos outros 2 arquivos de smoke-test do Lote 1 | SECURITY-REVIEW.md, achado #1 | 0,1 dia | Pendente |
+
+**Dependências do lote Refatoração Lote-1:** nenhuma dependência de outro lote
+para começar (RL1.1/RL1.2 são ajustes pontuais sobre artefatos já existentes do
+Lote 1); RL1.1 e RL1.2 são independentes entre si (paralelizáveis). **Prazo
+sugerido:** antes do deploy de produção (Lote 5) — não bloqueia o avanço dos
+Lotes 2-4, que não dependem destes dois arquivos.
+
 **Nota sobre o autocheck de granularidade (canário de ~300k tokens),
 reexecutado nesta revisão:** todas as 25 tarefas envolvem no máximo 1
 página HTML (ou uma fatia de seções dela) + os componentes compartilhados
@@ -364,6 +383,7 @@ flowchart TD
 | 4 | T4.1, T4.2, T4.3, T4.4 (T4.4 sem dependência de página) | Nenhuma dependência interna ao lote |
 | 5 | T5.2 e T5.4 (após T5.1) | T5.3 depende de T5.2 |
 | 6 | T6.1, T6.2, T6.3 | Nenhuma dependência interna ao lote |
+| Refatoração Lote-1 | RL1.1, RL1.2 | Nenhuma dependência interna ao lote; sem dependência de outro lote — prazo sugerido antes do Lote 5 (deploy de produção) |
 
 O ponto de maior paralelismo real passa a ser o início do Lote 3 (4
 instâncias simultâneas: T3.1, T3.4, T3.5, T3.6), com a Home continuando de
