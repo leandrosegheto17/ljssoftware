@@ -1,0 +1,967 @@
+/**
+ * components.css — Componentes compartilhados (LJSSoftware)
+ *
+ * Fonte: .md/TASK.md Seção 1.1 (estrutura de arquivos) + Lote 2. Este
+ * arquivo agrega os componentes reutilizados nas 4 páginas (header, rodapé,
+ * cards "glass", badges, botões, formas decorativas — conforme comentário de
+ * cabeçalho do TASK.md).
+ *
+ * >>> ESTA SEÇÃO (T2.1 — Header/Nav) É DE PROPRIEDADE DO EXECUTOR (chapéu
+ * Frontend) responsável por T2.1. Outras tarefas do Lote 2 (T2.2, T2.3,
+ * T2.4) adicionam suas próprias seções neste mesmo arquivo, de forma
+ * aditiva — não editar o bloco abaixo fora do escopo de T2.1. <<<
+ *
+ * Reutiliza tokens já existentes em `tokens.css` (T1.1/T1.2) — nenhum token
+ * novo é declarado aqui. `tokens.css` e `base.css` devem ser carregados
+ * antes deste arquivo em qualquer página consumidora.
+ *
+ * -----------------------------------------------------------------------
+ * VERIFICAÇÃO DE CONTRASTE WCAG AA — combinações introduzidas por este
+ * componente (fórmula de luminância relativa do WCAG 2.x, mesma usada em
+ * `tokens.css`/`tokens.contrast-check.js`). Alvo: >=4.5:1 texto normal,
+ * >=3:1 texto grande/UI.
+ *
+ *   --color-header-text (#0B2545)     sobre --color-header-bg (#FFFFFF) -> 15.39:1 (já verificado em T1.1/tokens.contrast-check.js — reaproveitado aqui para o texto "LJS Software")
+ *   --color-header-nav-text (#264A6E) sobre --color-header-bg (#FFFFFF) ->  9.18:1 (já verificado em T1.1/tokens.contrast-check.js — reaproveitado aqui para os links de nav)
+ *   #FFFFFF (texto do botão "Contato") sobre --color-bg (#0B2545)       -> 15.39:1 (calculado nesta tarefa — mesmo par de luminâncias de --color-header-text/--color-header-bg, com fundo/texto invertidos; fórmula de contraste é simétrica, resultado idêntico)
+ *
+ * Todas as combinações passam com folga acima do mínimo AA (4.5:1) exigido
+ * pelo UX-SPEC.md Seção 3.1/5. Nenhum ajuste de tom foi necessário.
+ * -----------------------------------------------------------------------
+ */
+
+/* ====================================================================== */
+/* Header / Nav (T2.1)                                                    */
+/* ====================================================================== */
+
+/**
+ * Bloco de referência — HTML esperado (copiar literalmente nas 4 páginas,
+ * TASK.md Seção 1.2, RT-02):
+ *
+ *   <a class="skip-link" href="#main">Pular para o conteúdo</a>
+ *
+ *   <header class="site-header">
+ *     <div class="container site-header__inner">
+ *       <a class="site-header__brand" href="index.html">
+ *         <img src="assets/img/logo/logo-ljssoftware-icone.png"
+ *              alt="LJS Software" class="site-header__icon" width="46" height="56">
+ *         <span class="site-header__brand-text">LJS Software</span>
+ *       </a>
+ *       <button type="button" class="site-header__toggle" aria-expanded="false"
+ *               aria-controls="site-header-nav" aria-label="Abrir menu">
+ *         <span class="site-header__toggle-icon" aria-hidden="true"></span>
+ *       </button>
+ *       <nav class="site-header__nav" id="site-header-nav" aria-label="Navegação principal">
+ *         <ul class="site-header__nav-list">
+ *           <li><a class="site-header__nav-link" href="apps.html">Apps</a></li>
+ *           <li><a class="site-header__nav-link" href="sobre.html">Sobre</a></li>
+ *         </ul>
+ *         <a class="site-header__cta" href="index.html#contato">Contato</a>
+ *       </nav>
+ *     </div>
+ *   </header>
+ *
+ *   <!-- Antes de </body>, em toda página que usa o header acima: -->
+ *   <script src="assets/js/nav.js" defer></script>
+ *
+ * `aria-current="page"` — aplicar somente no link de nav correspondente à
+ * página ativa, por página (nunca as duas ao mesmo tempo):
+ *   - index.html : nenhum item de nav recebe aria-current (Apps/Sobre não
+ *                  representam a Home; o link de marca já leva à Home)
+ *   - apps.html  : <a class="site-header__nav-link" href="apps.html" aria-current="page">Apps</a>
+ *   - sobre.html : <a class="site-header__nav-link" href="sobre.html" aria-current="page">Sobre</a>
+ *   - 404.html   : nenhum item de nav recebe aria-current (mesmo caso da Home)
+ *
+ * Decisão de detalhe tomada em silêncio (permitida pelos guardrails —
+ * desvio pequeno): o botão "Contato" aponta para `index.html#contato`
+ * (âncora da seção de contato da Home, T3.3), já que o UX-SPEC.md (Seção 7)
+ * decide explicitamente que não existe página `contato.html` dedicada e o
+ * canal de contato mora apenas no rodapé/seção de contato da Home. Nas
+ * páginas que não são a Home, o link consequentemente navega para
+ * `index.html#contato` antes de rolar até a âncora.
+ *
+ * >>> ATUALIZAÇÃO (T2.2 — Menu mobile, executada por outra instância do
+ * Executor/chapéu Frontend, em paralelo/na sequência de T2.1): o bloco de
+ * referência acima foi estendido de forma aditiva com o `<button
+ * class="site-header__toggle">` (hamburguer) e o atributo `id="site-header-nav"`
+ * em `<nav>` (alvo de `aria-controls`), mais o `<script src="assets/js/nav.js">`
+ * a incluir antes de `</body>` em toda página. Nenhuma classe/atributo do
+ * bloco original de T2.1 foi removido ou renomeado — apenas adição. O CSS e o
+ * JS do menu mobile ficam em seções/arquivos próprios (ver "Menu mobile
+ * (T2.2)" logo abaixo, e `assets/js/nav.js`), sem tocar nas regras de T2.1
+ * declaradas mais abaixo neste arquivo. Abaixo de 768px (breakpoint de
+ * colapso, UX-SPEC.md Seção 6) o hamburguer fica visível e a `<nav>` vira um
+ * painel overlay; em 768px+ o CSS de T2.1 (media query ausente = regra base)
+ * já exibe a nav horizontal completa e o hamburguer permanece oculto — sem
+ * JS extra para esse caso, é reset por `matchMedia` em `nav.js` apenas para
+ * garantir que o overlay não fique "preso" aberto se a janela crescer com o
+ * menu aberto. <<<
+ */
+
+.site-header {
+  background: var(--color-header-bg);
+  width: 100%;
+}
+
+.site-header__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 1rem;
+}
+
+.site-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+}
+
+.site-header__icon {
+  height: 56px;
+  width: auto;
+  display: block;
+}
+
+.site-header__brand-text {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 25px;
+  color: var(--color-header-text);
+  line-height: 1;
+}
+
+.site-header__nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.site-header__nav-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.site-header__nav-link {
+  font-family: var(--font-body);
+  font-weight: 500;
+  color: var(--color-header-nav-text);
+  text-decoration: none;
+}
+
+.site-header__nav-link:hover {
+  text-decoration: underline;
+}
+
+/* Indicador visual da página ativa, além do `aria-current="page"` semântico
+   (não depende só de cor — sublinhado permanente, para não violar "não
+   transmitir informação só por cor"). */
+.site-header__nav-link[aria-current="page"] {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.25em;
+  font-weight: 600;
+}
+
+.site-header__cta {
+  display: inline-block;
+  background: var(--color-bg);
+  color: #FFFFFF;
+  font-family: var(--font-body);
+  font-weight: 600;
+  text-decoration: none;
+  padding: 0.6em 1.25em;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.site-header__cta:hover {
+  opacity: 0.9;
+}
+
+/* Foco de teclado sobre o header branco: `:focus-visible` global (base.css)
+   usa `--color-accent` (teal claro), que sobre fundo branco tem contraste
+   insuficiente para servir de indicador único — sobrescrito aqui com um tom
+   navy escuro (mesmo valor de `--color-header-text`), contraste 15.39:1
+   sobre `--color-header-bg` (branco), verificado acima. Reaplicado/
+   consolidado formalmente em T4.2 (auditoria cross-page). */
+.site-header a:focus-visible,
+.site-header button:focus-visible {
+  outline-color: var(--color-header-text);
+}
+
+/* ====================================================================== */
+/* Menu mobile (T2.2)                                                     */
+/* ====================================================================== */
+
+/**
+ * Depende do bloco de referência HTML de T2.1 acima (já estendido com o
+ * `<button class="site-header__toggle">` e `id="site-header-nav"` na nav —
+ * ver nota de atualização no comentário de T2.1). Comportamento em
+ * `assets/js/nav.js` (JS puro, sem framework — GUARDRAILS.md G-01).
+ *
+ * Breakpoint de colapso: 767.98px / 768px (UX-SPEC.md Seção 6 — "Mobile
+ * (base) 360-767px: nav vira hamburguer (menu overlay ao abrir)"; "Tablet
+ * 768-1023px: nav horizontal completa reaparece"). Acima de 768px nenhuma
+ * regra deste bloco altera a nav horizontal já estilizada por T2.1.
+ *
+ * Decisão de UX tomada (critério de aceite permite julgamento — "overlay
+ * pode abrir sobre fundo escuro do resto da página"): o overlay cobre a
+ * tela inteira (`position: fixed; inset: 0`) com fundo `--color-bg` (navy,
+ * mesmo tom do resto do site fora do header), entrando por slide horizontal
+ * da direita. O `<header>` recebe `position: sticky; top: 0; z-index` mais
+ * alto que o overlay, então o header branco (com o hamburguer, agora em
+ * estado "fechar") permanece visível por cima do overlay — o overlay cobre
+ * visualmente "o resto da página" abaixo/atrás do header, não o próprio
+ * header. Isso evita ter que calcular a altura exata do header em CSS (que
+ * varia com quebra de linha da marca) só para posicionar o overlay abaixo
+ * dele.
+ *
+ * Correção de QA-REPORT.md (T2.2, Achado Simples #2): `.site-header` era
+ * só `position: relative` (sem `sticky`/`fixed`), então a afirmação acima
+ * ("o header permanece visível por cima do overlay") só era verdadeira com
+ * a página no topo do scroll. Se o usuário já tivesse rolado a página antes
+ * de tocar no hamburguer, o próprio header (e o botão de fechar) ficava
+ * fora da viewport quando o overlay abria por cima, sem controle visível de
+ * fechamento por toque/clique. Corrigido para `position: sticky; top: 0`,
+ * que fixa o header no topo da viewport a partir do momento em que o
+ * scroll o alcança — mantém o header (e o botão de fechar) sempre visível
+ * quando o overlay abre, em qualquer posição de scroll, nas 4 páginas reais
+ * (`index.html`, `apps.html`, `sobre.html`, `404.html`), sem exigir cálculo
+ * de altura do overlay em relação ao header.
+ *
+ * -----------------------------------------------------------------------
+ * VERIFICAÇÃO DE CONTRASTE WCAG AA — nenhum par novo introduzido por este
+ * componente; todas as combinações abaixo REUTILIZAM tokens já verificados
+ * em `tokens.css`/T2.1 (comentário no topo deste arquivo), aplicados a um
+ * fundo diferente (overlay) mas com a mesma fórmula simétrica de contraste:
+ *
+ *   Ícone hamburguer (linhas): --color-header-text (#0B2545) sobre
+ *     --color-header-bg (#FFFFFF) -> 15.39:1 (par idêntico ao já verificado
+ *     para o texto "LJS Software" em T2.1 — reaproveitado aqui).
+ *   Links de nav dentro do overlay: --color-text-inverse (#EAF6F4) sobre
+ *     --color-bg (#0B2545) -> 13.91:1 (já verificado em tokens.css).
+ *   Botão "Contato" dentro do overlay (reestilizado — ver por quê abaixo):
+ *     --color-bg (#0B2545, texto) sobre --color-accent (#7FE3D2, fundo) ->
+ *     10.13:1 (par idêntico ao de --color-accent sobre --color-bg já
+ *     verificado em tokens.css, com fundo/texto invertidos — simétrico).
+ *   Indicador de foco (outline) dentro do overlay: --color-accent
+ *     (#7FE3D2) sobre --color-bg (#0B2545) -> 10.13:1 (já verificado).
+ *
+ * Por que o "Contato" é reestilizado dentro do overlay: o CTA original de
+ * T2.1 usa `background: var(--color-bg)` com texto branco — sobre o fundo
+ * do header (branco) isso funciona (pílula navy), mas dentro do overlay o
+ * FUNDO DO PRÓPRIO OVERLAY também é `--color-bg` (navy), o que tornaria a
+ * pílula invisível (navy sobre navy). Sobrescrito para `--color-accent` de
+ * fundo + `--color-bg` de texto (mesmo par de tokens já usado/verificado em
+ * outros componentes do site sobre fundo escuro), mantendo o link mais
+ * proeminente que os demais itens da nav também dentro do overlay.
+ *
+ * Pelo mesmo motivo, o outline de foco global de `.site-header` (sobrescrito
+ * para `--color-header-text`, pensado para o fundo branco do header) É
+ * REVERTIDO para `--color-accent` dentro do overlay — `--color-header-text`
+ * (navy) sobre o fundo navy do overlay teria contraste insuficiente como
+ * indicador de foco.
+ * -----------------------------------------------------------------------
+ */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 101;
+}
+
+.site-header__toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.site-header__toggle-icon {
+  position: relative;
+  display: block;
+  width: 24px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-header-text);
+}
+
+.site-header__toggle-icon::before,
+.site-header__toggle-icon::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 24px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-header-text);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.site-header__toggle-icon::before {
+  top: -7px;
+}
+
+.site-header__toggle-icon::after {
+  top: 7px;
+}
+
+/* Ícone vira "X" quando o menu está aberto — puramente decorativo, o estado
+   real é comunicado via `aria-expanded`/`aria-label` (JS), não por este
+   desenho. */
+.site-header__toggle[aria-expanded="true"] .site-header__toggle-icon {
+  background: transparent;
+}
+
+.site-header__toggle[aria-expanded="true"] .site-header__toggle-icon::before {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.site-header__toggle[aria-expanded="true"] .site-header__toggle-icon::after {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+@media (max-width: 767.98px) {
+  .site-header__toggle {
+    display: inline-flex;
+  }
+
+  .site-header__nav {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 2rem;
+    background: var(--color-bg);
+    padding: 6rem 1.5rem 2rem;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+  }
+
+  /* Estado aberto — controlado via JS (`nav.js`), nunca só por hover/CSS. */
+  .site-header__nav[data-open="true"] {
+    transform: translateX(0);
+  }
+
+  .site-header__nav-list {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+  }
+
+  .site-header__nav-link {
+    color: var(--color-text-inverse);
+    font-size: 1.25rem;
+  }
+
+  /* Reestilizado sobre o fundo navy do overlay — ver nota de contraste
+     acima ("Por que o Contato é reestilizado"). */
+  .site-header__cta {
+    background: var(--color-accent);
+    color: var(--color-bg);
+    margin-top: 0.5rem;
+  }
+
+  /* Ver nota de contraste acima ("outline de foco... É REVERTIDO"). */
+  .site-header__nav a:focus-visible {
+    outline-color: var(--color-accent);
+  }
+
+  /* Trava o scroll do fundo enquanto o overlay está aberto (classe alternada
+     por `nav.js`) — evita scroll duplo/desorientador atrás do overlay. */
+  body.has-open-mobile-nav {
+    overflow: hidden;
+  }
+}
+
+/* `prefers-reduced-motion: reduce` (UX-SPEC.md Seção 5 / GUARDRAILS.md) —
+   troca a animação de slide e a transformação do ícone por troca instantânea
+   de estado, sem transição. */
+@media (prefers-reduced-motion: reduce) {
+  .site-header__nav,
+  .site-header__toggle-icon::before,
+  .site-header__toggle-icon::after {
+    transition: none;
+  }
+}
+
+/* ====================================================================== */
+/* Footer / Contato (T2.3)                                                 */
+/* ====================================================================== */
+
+/**
+ * >>> RECONSTRUÇÃO — nota do Executor (chapéu Frontend, instância T2.1):
+ * esta seção foi criada originalmente pela instância paralela responsável
+ * por T2.3 (ver TASK.md, nota de Status de T2.3). Ao implementar T2.1, este
+ * arquivo foi sobrescrito por engano via `Write` (em vez de edição
+ * cirúrgica), apagando o CSS de T2.3 — o HTML de referência sobreviveu
+ * intacto em `assets/css/footer.smoke.html` (não tocado). A seção abaixo é
+ * uma RECONSTRUÇÃO feita a partir de `footer.smoke.html` (classes/markup
+ * usados) e da nota de Status de T2.3 no TASK.md (comportamento
+ * hover/foco/responsivo descrito ali), não o código-fonte original exato
+ * escrito pela outra instância. **Sinalizado explicitamente no relatório
+ * final desta tarefa (T2.1) — o dono de T2.3/o Validador deve conferir esta
+ * seção contra a intenção original antes de considerar T2.3 pronta.** <<<
+ */
+
+.site-footer {
+  background: var(--color-bg);
+  width: 100%;
+  padding-block: 2rem;
+}
+
+.site-footer__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.site-footer__icon {
+  display: block;
+}
+
+.site-footer__brand-text {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--color-text-inverse);
+}
+
+.footer-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .footer-contact {
+    flex-direction: row;
+    align-items: center;
+    gap: 1.5rem;
+  }
+}
+
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-inverse-secondary);
+  text-decoration: none;
+}
+
+.footer-link:hover,
+.footer-link:focus-visible {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.footer-link__icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  flex-shrink: 0;
+}
+
+.footer-link__icon--external {
+  width: 14px;
+  height: 14px;
+}
+
+.footer-link__external-text {
+  font-size: 0.85rem;
+  color: var(--color-text-inverse-secondary);
+}
+
+/* ====================================================================== */
+/* Hero (T3.1)                                                            */
+/* ====================================================================== */
+
+/**
+ * Bloco de referência — HTML esperado em `index.html` (dentro de `<main
+ * id="main">`, logo após o `</header>`):
+ *
+ *   <section class="hero">
+ *     <div class="decorative-shape hero__shape hero__shape--1" aria-hidden="true"></div>
+ *     <div class="decorative-shape hero__shape hero__shape--2" aria-hidden="true"></div>
+ *     <div class="container hero__inner">
+ *       <h1 class="hero__title">...</h1>
+ *       <p class="hero__subtitle">...</p>
+ *       <div class="hero__ctas">
+ *         <a class="hero__cta hero__cta--primary" href="apps.html">Ver apps</a>
+ *         <a class="hero__cta hero__cta--secondary" href="#contato">Fale conosco</a>
+ *       </div>
+ *     </div>
+ *   </section>
+ *
+ * Reutiliza `.decorative-shape` (T1.1, `tokens.css`) para as formas
+ * geométricas, `.container` (T1.3, `base.css`) para o alinhamento do
+ * conteúdo, e os tokens `--color-bg-gradient-1/2` (T1.1) para o mesh
+ * gradient — nenhuma variável de cor nova é declarada nesta seção.
+ *
+ * Mesh gradient: `tokens.css` (T1.1) só usa `--color-bg-gradient-1/2` juntos
+ * dentro de `.decorative-shape` (um `linear-gradient` de 135°, pensado para
+ * uma forma pequena, não para cobrir uma seção inteira) — não existe uma
+ * classe de "fundo mesh gradient de seção" pronta para reaproveitar aqui, só
+ * os tokens de cor em si. `.hero` monta o mesh (múltiplos `radial-gradient`
+ * sobre `--color-bg` sólido) diretamente com esses tokens.
+ *
+ * -----------------------------------------------------------------------
+ * VERIFICAÇÃO DE CONTRASTE WCAG AA — o mesh gradient poderia, em tese,
+ * clarear o fundo o suficiente sob o texto para derrubar o contraste já
+ * verificado de `--color-text-inverse`/`--color-text-inverse-secondary`
+ * sobre `--color-bg` sólido (`tokens.css`). Por isso cada camada do mesh usa
+ * `color-mix(in srgb, var(--color-bg-gradient-1/2) X%, transparent)` (nunca
+ * a cor sólida do token) antes de desvanecer para transparente, e cada blob
+ * é centralizado fora da área de texto (cantos da seção, não o centro).
+ *
+ * Pior caso calculado manualmente (mesma fórmula de luminância relativa do
+ * WCAG 2.x usada em `tokens.css`), assumindo o texto sobreposto ao ponto de
+ * MAIOR intensidade de cada blob (pior cenário, mais desfavorável do que o
+ * real, já que os blobs ficam nos cantos, longe do texto centralizado):
+ *
+ *   --color-text-inverse (#EAF6F4) sobre blob de --color-bg-gradient-2 a 45%
+ *     opacidade sobre --color-bg (resultante ~ #146671)             -> 5.98:1 (AA texto normal: OK)
+ *   --color-text-inverse (#EAF6F4) sobre blob de --color-bg-gradient-1 a 55%
+ *     opacidade sobre --color-bg (resultante ~ #0F3A55)             -> 8.83:1 (AA texto normal: OK)
+ *   --color-text-inverse-secondary (#B9D6D0), mais escuro que
+ *     --color-text-inverse, tem contraste ainda maior de folga sobre os
+ *     mesmos fundos (a diferença de luminância entre os dois tons de texto é
+ *     pequena; o par mais crítico é o `--color-text-inverse` acima).
+ *
+ * Ambos os piores casos passam com folga acima do mínimo AA (4.5:1). Os
+ * `.decorative-shape` (opacity 0.35, herdada de `tokens.css`) ficam ainda
+ * mais claros/translúcidos que os blobs do mesh — nenhum risco adicional de
+ * contraste. Reverificar formalmente em T4.2 (auditoria cross-page), como já
+ * previsto no comentário de `tokens.css`.
+ * -----------------------------------------------------------------------
+ */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(
+      ellipse 60% 55% at 12% 20%,
+      color-mix(in srgb, var(--color-bg-gradient-1) 55%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 55% 50% at 88% 12%,
+      color-mix(in srgb, var(--color-bg-gradient-2) 45%, transparent),
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 70% 60% at 50% 100%,
+      color-mix(in srgb, var(--color-bg-gradient-1) 40%, transparent),
+      transparent 70%
+    );
+  padding-block: 5rem 6rem;
+}
+
+.hero__shape--1 {
+  width: 220px;
+  height: 220px;
+  position: absolute;
+  top: -60px;
+  left: -60px;
+}
+
+.hero__shape--2 {
+  width: 170px;
+  height: 170px;
+  position: absolute;
+  bottom: -50px;
+  right: 6%;
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .hero__shape--2 {
+    display: block;
+  }
+}
+
+.hero__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 46rem;
+  margin-inline: auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.hero__title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2rem, 1.35rem + 3vw, 3.25rem);
+  color: var(--color-text-inverse);
+}
+
+.hero__subtitle {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
+  color: var(--color-text-inverse-secondary);
+  max-width: 60ch;
+  margin-inline: auto;
+}
+
+.hero__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.hero__cta {
+  display: inline-block;
+  padding: 0.85em 1.75em;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Botão CTA primário (UX-SPEC.md Seção 3.2): fundo --color-accent, texto
+   --color-bg (navy) — contraste 10.13:1, já verificado em `tokens.css`
+   (par --color-accent sobre --color-bg, invertido/simétrico). */
+.hero__cta--primary {
+  background: var(--color-accent);
+  color: var(--color-bg);
+}
+
+.hero__cta--primary:hover {
+  opacity: 0.9;
+}
+
+/* CTA secundário: sem estilo definido no UX-SPEC.md (só a existência do
+   segundo CTA é especificada, conteúdo pendente na Lacuna L-06) — decisão de
+   detalhe tomada em silêncio (permitida pelos guardrails): botão "outline",
+   menos proeminente que o primário, com --color-text-inverse (13.91:1 sobre
+   --color-bg, já verificado em `tokens.css`) para o texto. */
+.hero__cta--secondary {
+  background: transparent;
+  color: var(--color-text-inverse);
+  border: 1px solid var(--color-text-inverse-secondary);
+}
+
+.hero__cta--secondary:hover,
+.hero__cta--secondary:focus-visible {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* ====================================================================== */
+/* Vitrine de Apps / App Card (T3.4)                                       */
+/* ====================================================================== */
+
+/**
+ * Escopo desta seção: só o necessário para `apps.html` (T3.4) renderizar o
+ * grid de cards com o padrão visual "glass" já definido em `tokens.css`
+ * (T1.1) — nenhum token novo é declarado aqui. T3.2 (seção "Nossos apps" da
+ * Home, tarefa separada/paralela) DEVE reaproveitar exatamente estas mesmas
+ * classes (`.app-card`, `.app-card__name`, `.app-card__description`,
+ * `.badge`) para a prévia da vitrine na Home, garantindo consistência
+ * visual entre as duas telas (critério de aceite de T3.4: "visual glass
+ * consistente com T3.2") sem duplicar CSS.
+ *
+ * Bloco de referência — HTML esperado (SDD.md Seção 5, modelo de conteúdo
+ * de App):
+ *
+ *   <article class="app-card glass-card">
+ *     <h3 class="app-card__name">Nome do app</h3>
+ *     <p class="app-card__description">Descrição curta do app.</p>
+ *     <!-- Badge isolado (RF-02): trocar por
+ *          <a class="badge badge--link" href="URL_REAL">Ver app</a>
+ *          quando o app for publicado (T6.2), sem redesenhar o card -->
+ *     <span class="badge">Em breve</span>
+ *   </article>
+ *
+ * -----------------------------------------------------------------------
+ * VERIFICAÇÃO DE CONTRASTE WCAG AA — combinações introduzidas por este
+ * componente:
+ *
+ *   --color-text-inverse (#EAF6F4) sobre --glass-bg (translúcido sobre
+ *     --color-bg #0B2545) -> equivalente ao par já verificado em tokens.css
+ *     (--color-text-inverse sobre --color-bg, 13.91:1) — o glass é uma
+ *     sobreposição quase transparente (8% de opacidade branca) sobre o
+ *     mesmo fundo navy, sem impacto perceptível no contraste.
+ *   --color-text-inverse-secondary sobre --glass-bg -> mesmo raciocínio,
+ *     par já verificado em tokens.css (9.96:1 sobre --color-bg).
+ *   --color-bg (texto do badge, #0B2545) sobre --color-accent (fundo do
+ *     badge, #7FE3D2) -> 10.13:1 (par idêntico ao já verificado em
+ *     tokens.css/componentes anteriores, mesma fórmula simétrica).
+ *
+ * Todas as combinações passam com folga acima do mínimo AA (4.5:1). Nenhum
+ * ajuste de tom foi necessário.
+ * -----------------------------------------------------------------------
+ */
+
+.app-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1.75rem;
+  height: 100%;
+}
+
+.app-card__name {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--color-text-inverse);
+}
+
+.app-card__description {
+  font-family: var(--font-body);
+  color: var(--color-text-inverse-secondary);
+  flex-grow: 1;
+}
+
+/**
+ * Badge "Em breve" / futuro link real (RF-02) — mantido como componente
+ * isolado (não parte do texto/descrição) exatamente para permitir a troca
+ * de <span> por <a class="badge badge--link"> em T6.2 sem tocar no restante
+ * do card. `.badge--link` é um modificador reservado (ainda sem uso na fase
+ * 1) só para adicionar affordance de link (sublinhado/hover) quando o
+ * elemento virar clicável.
+ */
+.badge {
+  display: inline-block;
+  padding: 0.35em 0.9em;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.badge--link {
+  text-decoration: none;
+}
+
+.badge--link:hover,
+.badge--link:focus-visible {
+  text-decoration: underline;
+}
+
+/* ====================================================================== */
+/* Home — Seções Apps/Sobre (T3.2)                                         */
+/* ====================================================================== */
+
+/**
+ * Escopo desta seção: só o necessário para as duas seções de `index.html`
+ * adicionadas por T3.2 (prévia da vitrine "Nossos apps" + card "Sobre").
+ * Os CARDS em si reaproveitam classes já existentes sem redeclaração:
+ *   - `.app-card`/`.app-card__name`/`.app-card__description`/`.badge`
+ *     (seção "Vitrine de Apps / App Card (T3.4)", acima).
+ *   - `.glass-card` (tokens.css, T1.1, com fallback `@supports` embutido).
+ *   - `.grid`/`.grid--3col` (base.css, T1.3, 1/2/3 colunas).
+ * Esta seção só estiliza o heading/espaçamento/link específicos das duas
+ * seções da Home, que não existiam em nenhum componente anterior.
+ *
+ * Bloco de referência — HTML esperado em `index.html` (dentro de `<main
+ * id="main">`, logo após `.hero` e antes da seção de contato de T3.3):
+ *
+ *   <section class="home-apps">
+ *     <div class="container">
+ *       <div class="home-apps__header">
+ *         <h2 class="home-apps__title">Nossos apps</h2>
+ *         <a class="home-apps__see-all" href="apps.html">Ver todos os apps</a>
+ *       </div>
+ *       <div class="grid grid--3col">
+ *         <article class="app-card glass-card">...</article>
+ *         ...
+ *       </div>
+ *     </div>
+ *   </section>
+ *
+ *   <section class="home-about">
+ *     <div class="container">
+ *       <div class="glass-card home-about__card">
+ *         <h2 class="home-about__title">Sobre a LJS Software</h2>
+ *         <p class="home-about__text">...</p>
+ *         <a class="home-about__link" href="sobre.html">Saiba mais</a>
+ *       </div>
+ *     </div>
+ *   </section>
+ *
+ * -----------------------------------------------------------------------
+ * VERIFICAÇÃO DE CONTRASTE WCAG AA — combinações introduzidas por esta
+ * seção (heading/link sobre `--color-bg` sólido, mesmo fundo do `.hero`,
+ * já que estas duas seções não têm mesh gradient próprio):
+ *
+ *   --color-text-inverse (heading `.home-apps__title`/`.home-about__title`)
+ *     sobre --color-bg -> par já verificado em tokens.css, 13.91:1 (AA: OK).
+ *   --color-accent (`.home-apps__see-all`/`.home-about__link`) sobre
+ *     --color-bg -> par já verificado em tokens.css, 10.13:1 (AA: OK).
+ *
+ * Nenhuma combinação nova de cor foi introduzida; ambos os pares já foram
+ * verificados em componentes anteriores.
+ * -----------------------------------------------------------------------
+ */
+
+.home-apps,
+.home-about {
+  padding-block: 4rem;
+  background-color: var(--color-bg);
+}
+
+.home-apps__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.home-apps__title,
+.home-about__title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+  color: var(--color-text-inverse);
+}
+
+.home-apps__see-all {
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.home-apps__see-all:hover,
+.home-apps__see-all:focus-visible {
+  text-decoration: underline;
+}
+
+.home-about__card {
+  max-width: 60rem;
+  margin-inline: auto;
+  padding: 2.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.home-about__text {
+  font-family: var(--font-body);
+  color: var(--color-text-inverse-secondary);
+  max-width: 60ch;
+}
+
+.home-about__link {
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.home-about__link:hover,
+.home-about__link:focus-visible {
+  text-decoration: underline;
+}
+
+/* ====================================================================== */
+/* Home — Seção de Contato (T3.3)                                          */
+/* ====================================================================== */
+
+/**
+ * Escopo desta seção: só o necessário para a seção `#contato` de
+ * `index.html` (T3.3, âncora do CTA "Contato" do header/T2.1 e do CTA
+ * secundário do hero/T3.1). Os 2 botões REAPROVEITAM `.hero__cta`/
+ * `.hero__cta--primary`/`.hero__cta--secondary` (seção "Hero (T3.1)", acima)
+ * sem redeclaração — mesmo par de cores já verificado para contraste AA
+ * sobre `--color-bg` e mesmo indicador de foco (`:focus-visible` global,
+ * base.css). Esta seção só estiliza o heading/texto/espaçamento/layout dos
+ * botões, específicos de `#contato`, que não existiam em nenhum componente
+ * anterior.
+ *
+ * Bloco de referência — HTML esperado em `index.html` (dentro de `<main
+ * id="main">`, após `.home-about`, antes de `</main>`):
+ *
+ *   <section id="contato" class="home-contact">
+ *     <div class="container home-contact__inner">
+ *       <h2 class="home-contact__title">...</h2>
+ *       <p class="home-contact__text">...</p>
+ *       <div class="home-contact__ctas">
+ *         <a class="hero__cta hero__cta--primary" href="mailto:..." data-analytics-event="contato-email">...</a>
+ *         <a class="hero__cta hero__cta--secondary" href="https://..." target="_blank" rel="noopener" data-analytics-event="contato-linkedin">...</a>
+ *       </div>
+ *     </div>
+ *   </section>
+ *
+ * -----------------------------------------------------------------------
+ * VERIFICAÇÃO DE CONTRASTE WCAG AA — nenhum par novo introduzido por esta
+ * seção; heading/texto reutilizam os mesmos tokens/pares já verificados em
+ * "Home — Seções Apps/Sobre (T3.2)" (--color-text-inverse e
+ * --color-text-inverse-secondary sobre --color-bg sólido) e os botões
+ * reutilizam os pares já verificados em "Hero (T3.1)" (--color-accent sobre
+ * --color-bg para o primário; --color-text-inverse sobre --color-bg para o
+ * secundário).
+ * -----------------------------------------------------------------------
+ */
+
+.home-contact {
+  padding-block: 4rem;
+  background-color: var(--color-bg);
+}
+
+.home-contact__inner {
+  max-width: 40rem;
+  margin-inline: auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.home-contact__title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+  color: var(--color-text-inverse);
+}
+
+.home-contact__text {
+  font-family: var(--font-body);
+  color: var(--color-text-inverse-secondary);
+  max-width: 50ch;
+}
+
+.home-contact__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smoke test — Footer/Contato (components.css, T2.3)</title>
+<meta name="robots" content="noindex, nofollow">
+<!--
+  Smoke-test manual de T2.3 (não faz parte do fluxo de páginas reais do
+  site — não referenciar a partir de index/apps/sobre/404). Este arquivo é
+  o "bloco de referência" citado no critério de aceite: o <footer> abaixo
+  é exatamente o markup a ser copiado, byte-idêntico, nas 4 páginas
+  (TASK.md Seção 1.2 / GUARDRAILS.md G-02), com o placeholder de e-mail e
+  LinkedIn (Lacuna L-01) substituído em T6.1.
+
+  Como validar:
+  1. Abrir este arquivo direto no navegador.
+  2. Confirmar que o rodapé mostra o ícone reduzido da logo + "LJS
+     Software", e os dois links de contato (e-mail, LinkedIn), cada um com
+     ícone + texto visível (nenhum link é só ícone).
+  3. Passar o mouse sobre cada link: cor muda para --color-accent e o
+     texto ganha sublinhado.
+  4. Navegar só com Tab: cada link recebe um contorno de foco visível na
+     cor --color-accent (herdado da regra global :focus-visible de
+     base.css).
+  5. Confirmar que o link de LinkedIn abre em nova aba
+     (target="_blank" rel="noopener") e tem indicação visível "(abre em
+     nova aba)" além do ícone decorativo.
+  6. Reduzir a largura da janela abaixo de 768px: o bloco de contato
+     empilha verticalmente (classe .stack / .footer-contact).
+  7. (T2.4) Abrir o Console do DevTools e clicar em cada link de contato:
+     nenhum erro é lançado (beacon real do Cloudflare Web Analytics ainda
+     não está presente, T5.4 pendente) e o link continua navegando
+     normalmente (mailto:/nova aba do LinkedIn); ver assets/js/analytics.js.
+-->
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="components.css">
+<style>
+  /* Estilos apenas de apoio ao smoke-test (não fazem parte de components.css) */
+  body {
+    background: var(--color-bg);
+  }
+  main {
+    padding: 2rem;
+    color: var(--color-text-inverse);
+    font-family: var(--font-body, system-ui, sans-serif);
+  }
+</style>
+</head>
+<body>
+  <main>
+    <h1>Smoke test — Footer/Contato (T2.3)</h1>
+    <p>O elemento <code>&lt;footer&gt;</code> abaixo é o bloco de
+    referência real, sem estilos adicionais além dos de
+    <code>components.css</code>.</p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container stack stack--row-tablet-up">
+      <div class="site-footer__brand">
+        <img
+          src="../img/logo/logo-ljssoftware-icone.png"
+          alt=""
+          class="site-footer__icon"
+          width="32"
+          height="32"
+        >
+        <span class="site-footer__brand-text">LJS Software</span>
+      </div>
+
+      <nav class="footer-contact" aria-label="Contato">
+        <a class="footer-link" href="mailto:contato@ljssoftware.com.br" data-analytics-event="contato-email">
+          <svg class="footer-link__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 5h18v14H3z" />
+            <path d="M3 6l9 7 9-7" />
+          </svg>
+          <span class="footer-link__label">contato@ljssoftware.com.br</span>
+        </a>
+
+        <a
+          class="footer-link"
+          href="https://www.linkedin.com/company/ljssoftware"
+          target="_blank"
+          rel="noopener"
+          data-analytics-event="contato-linkedin"
+        >
+          <svg class="footer-link__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <line x1="7" y1="10" x2="7" y2="17" />
+            <circle cx="7" cy="7" r="0.6" />
+            <path d="M11 17v-4.5c0-1.5 1-2.5 2.3-2.5S16 11 16 12.5V17" />
+            <line x1="11" y1="10" x2="11" y2="17" />
+          </svg>
+          <span class="footer-link__label">LinkedIn</span>
+          <svg
+            class="footer-link__icon footer-link__icon--external"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path d="M14 4h6v6" />
+            <path d="M20 4L10 14" />
+            <path d="M18 14v6H4V6h6" />
+          </svg>
+          <span class="footer-link__external-text">(abre em nova aba)</span>
+        </a>
+      </nav>
+    </div>
+  </footer>
+
+  <!--
+    T2.4: instrumentação de analytics carregada aqui só para permitir
+    inspecionar manualmente (DevTools > Console) que o clique nos links
+    acima não lança erro mesmo sem o beacon real do Cloudflare Web
+    Analytics carregado (T5.4 ainda não executada) — ver aviso via
+    console.warn documentado em analytics.js.
+  -->
+  <script src="../js/analytics.js" defer></script>
+</body>
+</html>

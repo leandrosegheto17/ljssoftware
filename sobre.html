@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sobre — LJS Software</title>
+<meta name="description" content="Conheça a LJS Software: desenvolvimento de aplicativos e software sob medida, com foco em qualidade e proximidade com o cliente.">
+<!--
+  Título/description são placeholder específico desta página (T3.5),
+  refinados/ajustados em T4.1 (SEO final) sem mudar a estrutura aqui criada.
+-->
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+</head>
+<body>
+
+  <!--
+    Header/Nav (T2.1) — bloco de referência copiado literalmente de
+    assets/css/header.smoke.html (Variante 3 — sobre.html, aria-current
+    em "Sobre"), conforme RT-02 (byte-idêntico entre as 4 páginas, exceto
+    o item de nav com aria-current="page" correspondente a cada página).
+  -->
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="site-header__brand" href="index.html">
+        <img src="assets/img/logo/logo-ljssoftware-icone.png" alt="LJS Software" class="site-header__icon" width="46" height="56">
+        <span class="site-header__brand-text">LJS Software</span>
+      </a>
+      <button type="button" class="site-header__toggle" aria-expanded="false" aria-controls="site-header-nav" aria-label="Abrir menu">
+        <span class="site-header__toggle-icon" aria-hidden="true"></span>
+      </button>
+      <nav class="site-header__nav" id="site-header-nav" aria-label="Navegação principal">
+        <ul class="site-header__nav-list">
+          <li><a class="site-header__nav-link" href="apps.html">Apps</a></li>
+          <li><a class="site-header__nav-link" href="sobre.html" aria-current="page">Sobre</a></li>
+        </ul>
+        <a class="site-header__cta" href="index.html#contato">Contato</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="container" style="padding-block: 3rem;">
+      <div class="glass-card" style="max-width: 70ch; margin-inline: auto; padding: 2rem;">
+        <h1 style="font-family: var(--font-heading); color: var(--color-text-inverse); margin-bottom: 1rem;">
+          Sobre a LJS Software
+        </h1>
+        <!--
+          Texto institucional — piso mínimo (Lacuna L-03, TASK.md Seção 6):
+          copy final não foi detalhado pelo stakeholder além do piso aceito
+          em INT-02 do PRD-TECNICO.md; texto abaixo é uma redação curta e
+          razoável, sujeita a revisão de copy final (não bloqueia a tarefa,
+          conforme a própria lacuna documenta).
+        -->
+        <p style="color: var(--color-text-inverse-secondary); margin-bottom: 1rem;">
+          A LJS Software é uma empresa de desenvolvimento de aplicativos e
+          software sob medida. Trabalhamos para transformar ideias em
+          produtos digitais simples de usar, bem construídos e pensados para
+          o dia a dia de quem os utiliza.
+        </p>
+        <p style="color: var(--color-text-inverse-secondary);">
+          Atuamos em todas as etapas de um projeto — do planejamento à
+          entrega — com atenção a detalhes técnicos e de experiência,
+          buscando proximidade com cada cliente. Este texto é um piso
+          institucional mínimo, sujeito a revisão de copy final junto ao
+          stakeholder.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <!--
+    Footer/Contato (T2.3) — bloco de referência copiado literalmente de
+    assets/css/footer.smoke.html, byte-idêntico entre as 4 páginas
+    (RT-02), com os placeholders de contato (Lacuna L-01, substituídos
+    em T6.1) e data-analytics-event (T2.4).
+  -->
+  <footer class="site-footer">
+    <div class="container stack stack--row-tablet-up">
+      <div class="site-footer__brand">
+        <img
+          src="assets/img/logo/logo-ljssoftware-icone.png"
+          alt=""
+          class="site-footer__icon"
+          width="32"
+          height="32"
+        >
+        <span class="site-footer__brand-text">LJS Software</span>
+      </div>
+
+      <nav class="footer-contact" aria-label="Contato">
+        <a class="footer-link" href="mailto:contato@ljssoftware.com.br" data-analytics-event="contato-email">
+          <svg class="footer-link__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 5h18v14H3z" />
+            <path d="M3 6l9 7 9-7" />
+          </svg>
+          <span class="footer-link__label">contato@ljssoftware.com.br</span>
+        </a>
+
+        <a
+          class="footer-link"
+          href="https://www.linkedin.com/company/ljssoftware"
+          target="_blank"
+          rel="noopener"
+          data-analytics-event="contato-linkedin"
+        >
+          <svg class="footer-link__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <line x1="7" y1="10" x2="7" y2="17" />
+            <circle cx="7" cy="7" r="0.6" />
+            <path d="M11 17v-4.5c0-1.5 1-2.5 2.3-2.5S16 11 16 12.5V17" />
+            <line x1="11" y1="10" x2="11" y2="17" />
+          </svg>
+          <span class="footer-link__label">LinkedIn</span>
+          <svg
+            class="footer-link__icon footer-link__icon--external"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path d="M14 4h6v6" />
+            <path d="M20 4L10 14" />
+            <path d="M18 14v6H4V6h6" />
+          </svg>
+          <span class="footer-link__external-text">(abre em nova aba)</span>
+        </a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="assets/js/nav.js" defer></script>
+  <script src="assets/js/analytics.js" defer></script>
+</body>
+</html>

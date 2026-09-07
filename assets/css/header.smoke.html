@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Smoke test — Header/Nav + Menu mobile (components.css, T2.1/T2.2)</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="components.css">
+<style>
+  /* Estilos apenas de apoio ao smoke-test (não fazem parte de components.css) */
+  .smoke-note {
+    color: var(--color-text-inverse-secondary);
+    max-width: 60ch;
+    margin-block: 1rem;
+  }
+  .smoke-title {
+    color: var(--color-text-inverse);
+    font-family: var(--font-heading);
+  }
+  .smoke-section {
+    padding-block: 1.5rem;
+    border-bottom: 2px dashed var(--color-accent);
+  }
+  .smoke-variant-label {
+    display: inline-block;
+    color: var(--color-bg);
+    background: var(--color-accent);
+    font-family: monospace;
+    font-size: 0.8rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+  }
+</style>
+</head>
+<body>
+
+  <!--
+    Bloco de referência — Header/Nav (T2.1). Copiar literalmente (skip link +
+    header) nas 4 páginas do Lote 3 (TASK.md Seção 1.2, RT-02: "byte-idênticos
+    entre as 4 páginas"). Este arquivo demonstra 3 variantes do mesmo bloco
+    (Home/404 sem aria-current, Apps com aria-current em "Apps", Sobre com
+    aria-current em "Sobre") em seções isoladas abaixo, para inspeção visual
+    e de acessibilidade — a página real usa só UMA variante por vez.
+  -->
+
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+
+  <p class="smoke-variant-label" style="margin: 0.5rem 1rem;">Variante 1 — index.html / 404.html (nenhum item de nav com aria-current)</p>
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="site-header__brand" href="index.html">
+        <img src="../img/logo/logo-ljssoftware-icone.png" alt="LJS Software" class="site-header__icon" width="46" height="56">
+        <span class="site-header__brand-text">LJS Software</span>
+      </a>
+      <button type="button" class="site-header__toggle" aria-expanded="false" aria-controls="site-header-nav-1" aria-label="Abrir menu">
+        <span class="site-header__toggle-icon" aria-hidden="true"></span>
+      </button>
+      <nav class="site-header__nav" id="site-header-nav-1" aria-label="Navegação principal">
+        <ul class="site-header__nav-list">
+          <li><a class="site-header__nav-link" href="apps.html">Apps</a></li>
+          <li><a class="site-header__nav-link" href="sobre.html">Sobre</a></li>
+        </ul>
+        <a class="site-header__cta" href="index.html#contato">Contato</a>
+      </nav>
+    </div>
+  </header>
+
+  <p class="smoke-variant-label" style="margin: 0.5rem 1rem;">Variante 2 — apps.html (aria-current="page" em "Apps")</p>
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="site-header__brand" href="index.html">
+        <img src="../img/logo/logo-ljssoftware-icone.png" alt="LJS Software" class="site-header__icon" width="46" height="56">
+        <span class="site-header__brand-text">LJS Software</span>
+      </a>
+      <button type="button" class="site-header__toggle" aria-expanded="false" aria-controls="site-header-nav-2" aria-label="Abrir menu">
+        <span class="site-header__toggle-icon" aria-hidden="true"></span>
+      </button>
+      <nav class="site-header__nav" id="site-header-nav-2" aria-label="Navegação principal">
+        <ul class="site-header__nav-list">
+          <li><a class="site-header__nav-link" href="apps.html" aria-current="page">Apps</a></li>
+          <li><a class="site-header__nav-link" href="sobre.html">Sobre</a></li>
+        </ul>
+        <a class="site-header__cta" href="index.html#contato">Contato</a>
+      </nav>
+    </div>
+  </header>
+
+  <p class="smoke-variant-label" style="margin: 0.5rem 1rem;">Variante 3 — sobre.html (aria-current="page" em "Sobre")</p>
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="site-header__brand" href="index.html">
+        <img src="../img/logo/logo-ljssoftware-icone.png" alt="LJS Software" class="site-header__icon" width="46" height="56">
+        <span class="site-header__brand-text">LJS Software</span>
+      </a>
+      <button type="button" class="site-header__toggle" aria-expanded="false" aria-controls="site-header-nav-3" aria-label="Abrir menu">
+        <span class="site-header__toggle-icon" aria-hidden="true"></span>
+      </button>
+      <nav class="site-header__nav" id="site-header-nav-3" aria-label="Navegação principal">
+        <ul class="site-header__nav-list">
+          <li><a class="site-header__nav-link" href="apps.html">Apps</a></li>
+          <li><a class="site-header__nav-link" href="sobre.html" aria-current="page">Sobre</a></li>
+        </ul>
+        <a class="site-header__cta" href="index.html#contato">Contato</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="smoke-section container">
+      <h1 class="smoke-title">Smoke-test — Header/Nav (T2.1) + Menu mobile (T2.2)</h1>
+      <p class="smoke-note">
+        Instruções de validação manual (teclado, header/nav): pressione
+        <strong>Tab</strong> a partir do topo da página — o primeiro
+        elemento focado deve ser o skip link "Pular para o conteúdo" (oculto
+        até então, visível ao focar). Continue pressionando
+        <strong>Tab</strong> para percorrer ícone/marca → hamburguer → Apps
+        → Sobre → Contato de cada uma das 3 variantes acima, confirmando
+        indicador de foco visível em todos.
+      </p>
+      <p class="smoke-note">
+        Redimensione a janela (DevTools → 360px / 768px / 1024px) para
+        confirmar o comportamento responsivo: abaixo de 768px, a nav some da
+        linha do header e o botão hamburguer aparece; em 768px+ a nav
+        horizontal completa reaparece e o hamburguer some — nenhuma largura
+        produz rolagem horizontal.
+      </p>
+      <p class="smoke-note">
+        Instruções de validação manual (menu mobile, T2.2) — redimensione
+        para menos de 768px antes de testar: (1) clique no hamburguer — o
+        overlay navy abre cobrindo o restante da página (o header branco
+        permanece visível por cima), o ícone vira "X" e o `aria-label` muda
+        para "Fechar menu"; o foco move automaticamente para o primeiro link
+        ("Apps") dentro do overlay. (2) Pressione <strong>Tab</strong> pelos
+        itens do overlay (Apps → Sobre → Contato), confirmando foco visível
+        (indicador `--color-accent` sobre o fundo navy). (3) Pressione
+        <strong>Escape</strong> — o overlay fecha e o foco retorna ao botão
+        hamburguer. (4) Repita a abertura navegando só por teclado: com foco
+        no hamburguer, pressione <strong>Enter</strong> e depois
+        <strong>Space</strong> em outra rodada — ambos devem abrir/fechar o
+        menu (comportamento nativo de `&lt;button&gt;`, sem handler
+        dedicado). (5) Abra o menu, redimensione a janela para 768px+ sem
+        fechá-lo manualmente — o overlay deve fechar sozinho (reset de
+        `matchMedia` em `nav.js`) e o hamburguer some, dando lugar à nav
+        horizontal. (6) Em sistema operacional/navegador com
+        "reduzir movimento" ativado (`prefers-reduced-motion: reduce`),
+        repita o passo (1) — o overlay deve aparecer/desaparecer
+        instantaneamente, sem a transição de slide.
+      </p>
+      <p class="smoke-note">
+        Nota sobre este smoke-test especificamente (não se aplica às páginas
+        reais, que têm só um header cada): como as 3 variantes do header
+        estão empilhadas na mesma página só para inspeção visual, abrir o
+        overlay de uma variante pode deixar as barras brancas dos headers
+        das variantes seguintes visíveis por cima do overlay escuro,
+        dependendo do scroll — artefato do próprio smoke-test (múltiplos
+        headers na mesma página), não do componente.
+      </p>
+      <p class="smoke-note">
+        Contraste verificado (WCAG AA, ver comentários no topo e nas seções
+        "Header / Nav (T2.1)" / "Menu mobile (T2.2)" de
+        <code>components.css</code>): texto "LJS Software", nav e ícone do
+        hamburguer sobre o fundo branco do header; texto branco do botão
+        "Contato" sobre o fundo navy do header; links e indicador de foco
+        dentro do overlay (fundo navy) e botão "Contato" reestilizado
+        (fundo `--color-accent`) dentro do overlay — todas as combinações
+        acima de 9:1, folga ampla sobre o mínimo 4.5:1 exigido (nenhum par
+        novo foi introduzido, todos reaproveitam tokens já verificados em
+        `tokens.css`/T2.1).
+      </p>
+    </section>
+  </main>
+
+  <script src="../js/nav.js" defer></script>
+</body>
+</html>
