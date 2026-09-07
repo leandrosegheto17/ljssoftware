@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Smoke test — fontes self-hosted (Unbounded/Outfit)</title>
+<meta name="robots" content="noindex, nofollow">
+<!--
+  Smoke-test manual de T1.2 (não faz parte do fluxo de páginas reais do
+  site — não referenciar a partir de index/apps/sobre/404).
+
+  Como validar visualmente:
+  1. Abrir este arquivo direto no navegador.
+  2. DevTools > aba "Network", filtrar por "Font", recarregar a página:
+     confirmar que as 4 requisições de fonte apontam para
+     `assets/fonts/*.woff2` (origem local/relativa) e que NENHUMA
+     requisição é feita para os domínios de CDN de fontes do Google
+     (buscar por "google" no filtro da aba Network — deve retornar vazio).
+  3. Com o cache do navegador desabilitado (DevTools > Network > "Disable
+     cache") e throttling ("Slow 3G"), recarregar e observar: o texto
+     aparece IMEDIATAMENTE com a fonte de sistema (fallback) e troca para
+     Unbounded/Outfit assim que os arquivos .woff2 terminam de carregar
+     (comportamento de `font-display: swap`, sem tela em branco/FOIT).
+  4. Conferir visualmente que os 4 pesos abaixo (Unbounded 500/700,
+     Outfit 400/600) são visualmente distintos entre si.
+
+  Verificação automática (sem requisição externa) — ver
+  `fonts.smoke.check.js`, executável via `node` (Node.js), que lê este
+  HTML e o `tokens.css` e falha se encontrar qualquer `<link>`, `@import`
+  ou url() apontando para domínio externo de fontes.
+-->
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  body {
+    margin: 0;
+    padding: 2rem;
+    background: #0B2545;
+    color: #EAF6F4;
+  }
+  h1 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.5rem;
+  }
+  .sample {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 8px;
+  }
+  .sample .label {
+    font-family: system-ui, sans-serif;
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-bottom: 0.25rem;
+  }
+  .unbounded-500 { font-family: var(--font-heading); font-weight: 500; font-size: 1.5rem; }
+  .unbounded-700 { font-family: var(--font-heading); font-weight: 700; font-size: 1.5rem; }
+  .outfit-400 { font-family: var(--font-body); font-weight: 400; font-size: 1.1rem; }
+  .outfit-600 { font-family: var(--font-body); font-weight: 600; font-size: 1.1rem; }
+</style>
+</head>
+<body>
+  <h1>Smoke test — fontes self-hosted (T1.2)</h1>
+
+  <div class="sample">
+    <div class="label">Unbounded, peso 500 (títulos h1-h3)</div>
+    <p class="unbounded-500">LJS Software — títulos geométricos</p>
+  </div>
+
+  <div class="sample">
+    <div class="label">Unbounded, peso 700 (texto "LJS Software" do header)</div>
+    <p class="unbounded-700">LJS Software</p>
+  </div>
+
+  <div class="sample">
+    <div class="label">Outfit, peso 400 (corpo de texto)</div>
+    <p class="outfit-400">Ação, coração, atenção — acentuação em português (á, ã, ç, é, í, ó, õ, ú, â, ê, ô, à).</p>
+  </div>
+
+  <div class="sample">
+    <div class="label">Outfit, peso 600 (corpo de texto, ênfase)</div>
+    <p class="outfit-600">Ação, coração, atenção — acentuação em português (á, ã, ç, é, í, ó, õ, ú, â, ê, ô, à).</p>
+  </div>
+</body>
+</html>

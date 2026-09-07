@@ -1,0 +1,158 @@
+/**
+ * tokens.css — Design tokens "Geométrico/Glass" (LJSSoftware)
+ *
+ * Fonte: .md/UX-SPEC.md Seção 3.1 (revisado, ADR-005) + .md/TASK.md Seção 1.2.
+ * Escopo desta tarefa (T1.1): paleta de cor, base de card "glass" (com
+ * fallback de backdrop-filter) e base de forma geométrica decorativa.
+ * NÃO inclui `.wordmark` (removida do design — ver ADR-005 / T1.5 / T2.1).
+ *
+ * -----------------------------------------------------------------------
+ * VERIFICAÇÃO DE CONTRASTE WCAG AA (calculada manualmente, fórmula de
+ * luminância relativa do WCAG 2.x — sRGB -> linear -> L -> razão
+ * (L1+0.05)/(L2+0.05)). Alvo: >=4.5:1 texto normal, >=3:1 texto grande/UI.
+ * Todas as combinações abaixo passam com folga; nenhum ajuste de tom foi
+ * necessário em relação aos valores hex do UX-SPEC.md.
+ *
+ *   --color-text-inverse (#EAF6F4)           sobre --color-bg (#0B2545)  -> 13.91:1  (AA texto normal: OK)
+ *   --color-text-inverse-secondary (#B9D6D0) sobre --color-bg (#0B2545)  ->  9.96:1  (AA texto normal: OK)
+ *   --color-accent (#7FE3D2)                 sobre --color-bg (#0B2545)  -> 10.13:1  (AA texto normal e UI: OK)
+ *   --color-header-text (#0B2545)            sobre --color-header-bg (#FFFFFF) -> 15.39:1 (AA texto normal: OK)
+ *   --color-header-nav-text (#264A6E)        sobre --color-header-bg (#FFFFFF) ->  9.18:1 (AA texto normal: OK)
+ *
+ * Reverificar no `accessibility-implementation-check` (T4.2) o pior caso de
+ * sobreposição de texto sobre cards "glass" (fundo translúcido sobre o
+ * gradiente de fundo) — fora do escopo desta tarefa, que cobre apenas as
+ * cores sólidas acima.
+ * -----------------------------------------------------------------------
+ */
+
+:root {
+  /* Paleta base — fundo e gradiente decorativo (UX-SPEC.md Seção 3.1) */
+  --color-bg: #0B2545;
+  --color-bg-gradient-1: #146B8C;
+  --color-bg-gradient-2: #1FB6A6;
+
+  /* Texto sobre fundo escuro */
+  --color-text-inverse: #EAF6F4;
+  --color-text-inverse-secondary: #B9D6D0;
+
+  /* Acento (badges, links, foco de teclado sobre fundo escuro) */
+  --color-accent: #7FE3D2;
+
+  /* Header (fundo branco sólido — exceção ao resto da página) */
+  --color-header-bg: #FFFFFF;
+  --color-header-text: #0B2545;
+  --color-header-nav-text: #264A6E;
+
+  /* Cards "glass" */
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-blur: 14px;
+  --glass-radius: 20px;
+
+  /* Formas geométricas decorativas de fundo */
+  --shape-radius: 28px;
+  --shape-rotation: 22deg; /* ponto médio da faixa 10°-35° definida no UX-SPEC.md */
+}
+
+/**
+ * Card "glass" — base visual reutilizada por App Card, card da seção Sobre
+ * e qualquer outro bloco de conteúdo sobre o fundo escuro (UX-SPEC.md,
+ * Seção 3.2). Uso de exemplo:
+ *
+ *   <div class="glass-card">conteúdo...</div>
+ */
+.glass-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+/* Fallback obrigatório (UX-SPEC.md Seção 7 / TASK.md Seção 1.2): navegadores
+   sem suporte a backdrop-filter recebem fundo semi-opaco sólido, sem blur,
+   para manter o card legível. */
+@supports not (backdrop-filter: blur(1px)) {
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/**
+ * Forma geométrica decorativa de fundo — bloco puramente visual
+ * (aria-hidden="true" obrigatório no HTML consumidor), ecoando as peças
+ * entrelaçadas do ícone da logo (UX-SPEC.md Seção 3.1).
+ *
+ *   <div class="decorative-shape" aria-hidden="true"></div>
+ */
+.decorative-shape {
+  border-radius: var(--shape-radius);
+  transform: rotate(var(--shape-rotation));
+  background: linear-gradient(
+    135deg,
+    var(--color-bg-gradient-1),
+    var(--color-bg-gradient-2)
+  );
+  opacity: 0.35;
+  z-index: 0;
+}
+
+/**
+ * Tipografia — T1.2 (self-hosting Unbounded/Outfit)
+ *
+ * Fonte: .md/UX-SPEC.md Seção 3.1 (revisado, ADR-005) + .md/GUARDRAILS.md
+ * regra G-11 (fontes self-hosted, nunca via CDN externo do Google Fonts).
+ * Arquivos .woff2 baixados uma única vez e versionados em `assets/fonts/`;
+ * nenhuma requisição aos domínios de CDN de fontes do Google acontece em
+ * runtime (verificado por `assets/fonts/fonts.smoke.check.js`).
+ * `font-display: swap` obrigatório (TASK.md Seção 1.2) — o texto
+ * aparece imediatamente com a fonte de sistema (fallback) e troca para a
+ * fonte web assim que ela carrega, sem bloquear a renderização.
+ *
+ * Pesos incluídos (conforme UX-SPEC.md Seção 3.1): Unbounded 500/700
+ * (títulos/display, incl. texto "LJS Software" do header) e Outfit 400/600
+ * (corpo de texto). Subset "latin" (Google Fonts) cobre os caracteres
+ * acentuados do português (á, ã, ç, é, í, ó, õ, ú, â, ê, ô, à — todos em
+ * U+0000-00FF), sem necessidade do subset "latin-ext".
+ */
+@font-face {
+  font-family: 'Unbounded';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../fonts/unbounded-v12-latin-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Unbounded';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../fonts/unbounded-v12-latin-700.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/outfit-v15-latin-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../fonts/outfit-v15-latin-600.woff2') format('woff2');
+}
+
+:root {
+  /* Pilhas de fonte com fallback de sistema (fallback visível antes de
+     `font-display: swap` trocar para a fonte web carregada). */
+  --font-heading: 'Unbounded', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Outfit', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}

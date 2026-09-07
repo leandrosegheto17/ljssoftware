@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Smoke test — tokens.css (Geométrico/Glass)</title>
+<meta name="robots" content="noindex, nofollow">
+<!--
+  Smoke-test manual de T1.1 (não faz parte do fluxo de páginas reais do
+  site — não referenciar a partir de index/apps/sobre/404).
+
+  Como validar:
+  1. Abrir este arquivo direto no navegador.
+  2. Confirmar que o card "glass" abaixo do texto "Card com blur" mostra o
+     fundo (texto/forma) atrás dele borrado através do vidro translúcido.
+  3. No DevTools do Chrome/Edge: Rendering tab > "Disable backdrop-filter"
+     (ou emular navegador sem suporte) e confirmar que o card passa a ter
+     fundo sólido semi-opaco legível, sem blur, sem ficar ilegível.
+  4. Conferir visualmente que os textos de cada bloco de contraste abaixo
+     são legíveis — os valores numéricos de contraste calculados estão
+     documentados no comentário no topo de tokens.css.
+-->
+<link rel="stylesheet" href="tokens.css">
+<style>
+  body {
+    margin: 0;
+    padding: 2rem;
+    background: var(--color-bg);
+    font-family: system-ui, sans-serif;
+    color: var(--color-text-inverse);
+  }
+  .stage {
+    position: relative;
+    min-height: 220px;
+    padding: 2rem;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    background: radial-gradient(
+      circle at 30% 30%,
+      var(--color-bg-gradient-1),
+      var(--color-bg) 70%
+    );
+  }
+  .decorative-shape {
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    top: -40px;
+    left: -40px;
+  }
+  .glass-card {
+    position: relative;
+    z-index: 1;
+    padding: 1.5rem;
+    max-width: 320px;
+  }
+  section {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+  }
+  h1 { font-size: 1.25rem; }
+  h2 { font-size: 1rem; margin-top: 0; }
+  .header-demo {
+    background: var(--color-header-bg);
+    color: var(--color-header-text);
+    padding: 1rem;
+  }
+  .header-demo nav a {
+    color: var(--color-header-nav-text);
+    margin-right: 1rem;
+  }
+</style>
+</head>
+<body>
+  <h1>Smoke test — tokens.css</h1>
+
+  <div class="stage">
+    <div class="decorative-shape" aria-hidden="true"></div>
+    <div class="glass-card">
+      <h2>Card com blur</h2>
+      <p>Este card usa <code>.glass-card</code>. O fundo atrás dele (forma
+      decorativa + gradiente) deve aparecer borrado através do vidro.</p>
+    </div>
+  </div>
+
+  <section>
+    <h2 style="color: var(--color-text-inverse)">Texto --color-text-inverse sobre --color-bg</h2>
+    <p style="color: var(--color-text-inverse-secondary)">Texto --color-text-inverse-secondary sobre --color-bg</p>
+    <p style="color: var(--color-accent)">Texto/link --color-accent sobre --color-bg</p>
+  </section>
+
+  <div class="header-demo">
+    <h2>Header: --color-header-text sobre --color-header-bg</h2>
+    <nav>
+      <a href="#">Apps (--color-header-nav-text)</a>
+      <a href="#">Sobre (--color-header-nav-text)</a>
+    </nav>
+  </div>
+</body>
+</html>

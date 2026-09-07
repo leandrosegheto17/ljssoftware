@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smoke test — base.css (reset + grid responsivo)</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="base.css">
+<style>
+  /* Estilos apenas de apoio ao smoke-test (não fazem parte de base.css) */
+  .smoke-section {
+    padding-block: 2rem;
+    border-bottom: 2px dashed var(--color-accent);
+  }
+  .smoke-title {
+    color: var(--color-text-inverse);
+    font-family: var(--font-heading);
+    margin-bottom: 1rem;
+  }
+  .smoke-note {
+    color: var(--color-text-inverse-secondary);
+    margin-bottom: 1rem;
+    max-width: 60ch;
+  }
+  .smoke-box {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px dashed var(--color-accent);
+    color: var(--color-text-inverse);
+    padding: 1rem;
+    min-height: 80px;
+  }
+  .viewport-label {
+    position: fixed;
+    top: 0;
+    right: 0;
+    background: var(--color-accent);
+    color: var(--color-bg);
+    padding: 0.25rem 0.75rem;
+    font-family: monospace;
+    font-size: 0.85rem;
+    z-index: 999;
+  }
+  .viewport-label::after {
+    content: "largura atual: " attr(data-width);
+  }
+</style>
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+
+  <div class="viewport-label" data-width="redimensione a janela / DevTools"></div>
+
+  <main id="main">
+
+    <section class="smoke-section container">
+      <h1 class="smoke-title">Smoke-test — base.css</h1>
+      <p class="smoke-note">
+        Instruções de validação manual (T1.3): abra este arquivo no navegador,
+        abra o DevTools (F12) → modo responsivo → teste as larguras
+        <strong>360px</strong>, <strong>768px</strong> e <strong>1024px</strong>.
+        Em nenhuma delas deve aparecer barra de rolagem horizontal, e o grid
+        abaixo deve mostrar 1 / 2 / 3 colunas respectivamente.
+      </p>
+    </section>
+
+    <section class="smoke-section container">
+      <h2 class="smoke-title">.container</h2>
+      <p class="smoke-note">
+        Este bloco de texto está dentro de <code>.container</code>: deve ter
+        respiro lateral (padding) e ficar centralizado com largura máxima de
+        1200px em telas grandes, sem nunca causar rolagem horizontal em 360px.
+      </p>
+      <div class="smoke-box">Conteúdo de exemplo dentro de .container</div>
+    </section>
+
+    <section class="smoke-section container">
+      <h2 class="smoke-title">.grid.grid--3col (grid de apps)</h2>
+      <p class="smoke-note">
+        Esperado: 1 coluna em 360px, 2 colunas em 768px, 3 colunas em
+        1024px+ — conforme UX-SPEC.md Seção 6.
+      </p>
+      <div class="grid grid--3col">
+        <div class="smoke-box">Card de exemplo 1</div>
+        <div class="smoke-box">Card de exemplo 2</div>
+        <div class="smoke-box">Card de exemplo 3</div>
+      </div>
+    </section>
+
+    <section class="smoke-section container">
+      <h2 class="smoke-title">.grid.grid--2col</h2>
+      <p class="smoke-note">
+        Esperado: 1 coluna em 360px, 2 colunas em 768px+ (sem mudança extra em
+        1024px).
+      </p>
+      <div class="grid grid--2col">
+        <div class="smoke-box">Bloco de exemplo A</div>
+        <div class="smoke-box">Bloco de exemplo B</div>
+      </div>
+    </section>
+
+    <section class="smoke-section container">
+      <h2 class="smoke-title">.stack (rodapé empilhado em mobile)</h2>
+      <p class="smoke-note">
+        Esperado: itens empilhados verticalmente em qualquer largura, a menos
+        que <code>.stack--row-tablet-up</code> esteja presente (então vira
+        linha horizontal a partir de 768px).
+      </p>
+      <div class="stack stack--row-tablet-up">
+        <div class="smoke-box">Item de rodapé 1 (ex.: copyright)</div>
+        <div class="smoke-box">Item de rodapé 2 (ex.: links de contato)</div>
+      </div>
+    </section>
+
+    <section class="smoke-section container">
+      <h2 class="smoke-title">Texto longo (checagem de overflow)</h2>
+      <p class="smoke-note">
+        Palavra artificialmente longa para checar que não força rolagem
+        horizontal mesmo em 360px:
+      </p>
+      <div class="smoke-box" style="overflow-wrap: anywhere;">
+        estelongonomeurlfoicoladoaquideindustriaparatestaroverflowdahorizontalscrollemtelaspequenascomomobilede360px
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="smoke-section container">
+    <p class="smoke-note">Fim do smoke-test. Nenhuma rolagem horizontal esperada em nenhum breakpoint.</p>
+  </footer>
+
+</body>
+</html>
