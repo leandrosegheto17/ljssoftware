@@ -1568,3 +1568,193 @@ paralelo, para o chapéu DevOps considerar este build (já em produção) no
 fluxo de dupla aprovação — a dupla aprovação (QA + DevSecOps) sobre este
 lote é o que falta para o deploy já realizado ser considerado formalmente
 liberado pelo processo de governança.
+
+---
+
+## Lote 6 — Confirmação de Conteúdo Pendente
+
+**Escopo validado:** T6.1, T6.2, T6.3, todas com Status `Concluída`/`Provisória`
+no `TASK.md` no momento desta validação — as 3 são tratadas como `Concluída`
+para fins de elegibilidade de validação do lote (T6.1 tem só o e-mail
+`Concluída` no sentido estrito e o LinkedIn marcado `Provisória`, mas essa
+provisoriedade é uma ressalva de negócio já registrada pelo stakeholder, não
+um trabalho pendente de implementação — ver avaliação específica abaixo).
+
+**Metodologia:** diferente dos Lotes 1-5 (onde a leitura do repositório local
+já bastava, complementada por HTTP real nos Lotes 5), este lote foi validado
+**primariamente por requisição HTTP real** contra a produção
+(`https://ljssoftware.com.br`), conforme instruído — as 4 páginas
+(`index.html`, `apps.html`, `sobre.html`, `404.html`, as duas últimas via
+redirect `308` já registrado/aceito em `RL5.1`) foram buscadas via `curl`
+diretamente da internet, não do disco. O conteúdo local em `public/` (lido
+antes, como ponto de partida de onde olhar, nunca como base de aprovação) foi
+usado só para montar a expectativa a conferir contra a resposta HTTP real.
+Reexecutado `node dev/css/a11y-contrast-check.js` (não reaproveitado nenhum
+resultado relatado pelo Executor) para confirmar ausência de regressão de
+contraste. O e-mail ofuscado servido pela Cloudflare (ver T6.1) foi decodificado
+manualmente (mesmo algoritmo do Scrape Shield: XOR de cada byte pelo primeiro
+byte da string hex) para confirmar que o valor real por trás da ofuscação
+continua sendo `contato@ljssoftware.com.br`, não um valor divergente.
+
+### T6.1 — E-mail definitivo e URL de LinkedIn (rodapé + contato da Home)
+
+**Veredito: Aprovado.**
+
+- **E-mail (`contato@ljssoftware.com.br`) — presente e correto nas 4
+  páginas + seção de contato da Home**, confirmado por requisição HTTP real.
+  **Achado de produção não previsto no código-fonte, investigado e
+  descartado como não-bloqueante**: a Cloudflare aplica automaticamente
+  "Email Address Obfuscation" (Scrape Shield) a toda a zona, reescrevendo o
+  `href="mailto:contato@ljssoftware.com.br"` do HTML servido para
+  `href="/cdn-cgi/l/email-protection#<hex>"` e o texto visível do e-mail
+  para um `<span class="__cf_email__" data-cfemail="<hex>">`, decodificados
+  no client por um script injetado (`/cdn-cgi/scripts/.../email-decode.min.js`,
+  mesma origem, não bloqueado pela CSP `script-src 'self' ...`). Decodifiquei
+  manualmente o hex de 3 ocorrências (Home hero-CTA "Enviar e-mail", Home
+  rodapé, `apps.html` rodapé) com o algoritmo público do Scrape Shield
+  (XOR de cada byte pelo primeiro byte da string): as 3 decodificam
+  exatamente para `contato@ljssoftware.com.br` — o dado real por trás da
+  ofuscação está correto, não é uma regressão de conteúdo. **Isso não é um
+  achado novo desta validação**: já foi identificado, avaliado e decidido
+  pelo usuário como recurso a manter ligado (ver `.md/DEPLOY.md`, "Decisão do
+  usuário — Email Address Obfuscation", e `.md/CTO-REVIEW.md`, "Decisão de
+  produto já registrada, sem gerar débito") — não gera nova entrada em
+  `Refatoração Lote-6`, só confirmado aqui como comportamento estável e
+  correto na validação funcional de T6.1.
+- `data-analytics-event="contato-email"` **preservado** no atributo do
+  `<a>` mesmo após a reescrita do `href` pelo Scrape Shield — confirmado por
+  leitura direta da resposta HTTP real nas 4 páginas + Home. O script de
+  decodificação da Cloudflare só toca `href` e o conteúdo do `<span
+  class="__cf_email__">`, nunca remove/sobrescreve outros atributos do
+  elemento pai — evento de analytics não foi perdido pela substituição de
+  conteúdo (T2.4 continua funcional).
+- **LinkedIn (`https://www.linkedin.com/in/leandro-segheto-moraes-90879b138`)
+  — presente nas 4 páginas (rodapé) e na seção de contato da Home**,
+  confirmado por requisição HTTP real, com `target="_blank"` e
+  `rel="noopener"` em todas as 5 ocorrências (4 rodapés + 1 CTA de contato da
+  Home), e `data-analytics-event="contato-linkedin"` presente em todas —
+  nenhuma perda de instrumentação de analytics.
+- **Avaliação explícita da ressalva já registrada (LinkedIn provisório =
+  perfil pessoal, não da empresa):** confirmado no `TASK.md` (T6.1) que essa
+  é uma decisão de negócio já tomada pelo stakeholder (empresa ainda sem
+  página própria no LinkedIn), com pendência de troca futura já sinalizada e
+  escopo dos 5 arquivos afetados já mapeado. **Não é um achado de QA** — o
+  critério de aceite de T6.1 ("URL real do perfil de LinkedIn") está
+  satisfeito pelo valor que o próprio stakeholder confirmou como correto
+  para este momento; não reprovo por isso, e não duplico o registro já
+  existente no `TASK.md`.
+- Ícones do rodapé (`.footer-link__icon`, decorativos) continuam com
+  `aria-hidden="true"` nas 4 páginas reais — nenhuma regressão de
+  acessibilidade introduzida pela troca de texto/URL (os `<svg>` não foram
+  tocados por T6.1, só o conteúdo textual/`href` dos links).
+
+### T6.2 — Lista definitiva de apps (Curta Mais, Bíblia Fácil, My Money)
+
+**Veredito: Aprovado.**
+
+- Confirmado por requisição HTTP real: os 3 apps (**Curta Mais**, **Bíblia
+  Fácil**, **My Money**), com as descrições exatas do `TASK.md`, aparecem
+  tanto em `apps.html` (vitrine, `<h2 class="app-card__name">`) quanto na
+  prévia de `index.html` (`<h3 class="app-card__name">`) — mesmo conteúdo,
+  mesma ordem, nas duas páginas.
+- **Estrutura de card/badge idêntica à das demais tarefas do Lote 3,
+  preservada:** os 3 cards continuam `<article class="app-card
+  glass-card">` com `<span class="badge">Em breve</span>`, mesma classe
+  `.grid.grid--3col`, sem nenhum CSS novo introduzido pela substituição de
+  conteúdo (confirmado por não haver `style=` inline nem classe nova nos
+  cards nas 2 páginas reais).
+- **Diferença de nível de heading entre as duas páginas (`h2` em
+  `apps.html`, `h3` em `index.html`) é intencional e correta, não uma
+  divergência** — já validada e corrigida em T4.2 (Lote 4): em `apps.html`
+  os cards são filhos diretos do `<h1>` "Nossos apps" (sem `<h2>` de
+  agrupamento), então usam `<h2>`; em `index.html` existe um `<h2
+  class="home-apps__title">` de agrupamento antes deles, então os cards
+  usam `<h3>` corretamente. A troca de conteúdo em T6.2 não alterou essa
+  estrutura em nenhuma das duas páginas — confirmado por leitura direta da
+  resposta HTTP real.
+- **Nenhuma quebra de layout/grid**: `grid--3col` (1/2/3 colunas nos
+  breakpoints 360/768/1024, já validado nos Lotes 1/3) não foi tocado; os
+  novos textos (descrições reais, de tamanho comparável aos placeholders
+  substituídos) não introduzem `overflow`/quebra visível — confirmado por
+  leitura do CSS real (`.app-card__description` sem `white-space:
+  nowrap`/altura fixa que pudesse cortar texto mais longo).
+
+### T6.3 — CTA secundário do hero ("Fale conosco" → `#contato`)
+
+**Veredito: Aprovado.**
+
+- Confirmado por requisição HTTP real à Home em produção:
+  `<a class="hero__cta hero__cta--secondary" href="#contato">Fale conosco</a>`
+  presente no hero, e `<section id="contato" class="home-contact">` existe
+  na mesma página (seção de contato, T3.3) — a âncora resolve corretamente
+  para o destino real, sem link quebrado.
+- Nenhuma mudança de código nesta tarefa (o próprio `TASK.md` já registra
+  isso) — confirmado que o CTA é byte-idêntico ao já validado em T3.1/T3.3
+  (Lote 3), sem regressão.
+
+### Requisitos não funcionais
+
+- **Contraste WCAG AA — sem regressão:** `node dev/css/a11y-contrast-check.js`
+  reexecutado nesta validação — todas as combinações (incluindo o pior caso
+  do mesh gradient e o pior caso composto `.glass-card` sobre o mesh
+  gradient, já testados nos Lotes 3/4) continuam PASS. Coerente com o
+  esperado: T6.1/T6.2 só trocaram texto/URL, nenhum token de cor foi tocado.
+- **`alt`/`aria-hidden` dos ícones — sem regressão:** os SVGs decorativos do
+  rodapé (`.footer-link__icon`, incluindo o ícone de "nova aba" do link de
+  LinkedIn) continuam `aria-hidden="true"` nas 4 páginas reais; nenhum ícone
+  passou a ser o único conteúdo de um link (o texto "(abre em nova aba)"
+  visível, já validado em T2.3, continua presente ao lado do link de
+  LinkedIn nas 4 páginas + Home).
+- **Estrutura de heading — sem regressão:** exatamente 1 `<h1>` real por
+  página (confirmado excluindo ocorrências de `<h1` dentro de comentários
+  HTML) nas páginas afetadas por este lote (`index.html`, `apps.html`);
+  hierarquia `h1`→`h2`/`h3` dos cards de app preservada conforme já
+  corrigido em T4.2 (ver T6.2 acima).
+- **Contrato de analytics (T2.4) — sem regressão:** `data-analytics-event`
+  presente e correto em todos os pontos de contato (e-mail e LinkedIn) nas 4
+  páginas + Home, mesmo com a reescrita de `href` do e-mail pela Cloudflare
+  (ver T6.1) — nenhum clique deixou de ser instrumentável pela substituição
+  de conteúdo.
+
+### Achados deste lote
+
+Nenhum achado **Crítico** nem **Simples** identificado em T6.1, T6.2 ou
+T6.3 nesta validação. O comportamento de ofuscação de e-mail da Cloudflare,
+investigado em profundidade em T6.1 por ser uma diferença observável entre
+o HTML servido em produção e o HTML versionado no repositório, **não é um
+achado novo** — já está registrado e decidido em `.md/DEPLOY.md`/
+`.md/CTO-REVIEW.md` como decisão de produto do usuário, sem débito
+pendente; citado aqui apenas para registrar que a validação funcional real
+o confirmou como correto e não-regressivo.
+
+## Fechamento Estrutural do Lote 6
+
+- T6.1 (e-mail `Concluída`, LinkedIn `Provisória` por decisão de negócio já
+  registrada — tratada como fechada para fins de fluxo, não uma pendência
+  de implementação), T6.2, T6.3: todas aprovadas pelo chapéu QA nesta
+  validação, sem achado.
+- Dependências da Seção 4 do `TASK.md` relativas ao Lote 6 (T3.1-T3.6 →
+  T6.1; T3.2/T3.4 → T6.2; T3.1 → T6.3): estruturalmente coerentes —
+  confirmado que as 3 tarefas de fato operam sobre artefatos do Lote 3 já
+  `Concluída`/aprovados, sem exigir nenhuma dependência não declarada.
+  Nenhuma dependência órfã.
+- Nenhuma tarefa `Bloqueada` sem resolução.
+- Nenhum achado simples/débito novo deste lote — não há nova entrada a
+  criar em nenhuma `Refatoração Lote-X`. A ressalva de negócio de T6.1
+  (LinkedIn provisório) já está documentada no próprio `TASK.md`, não
+  duplicada aqui, e não é um débito técnico (nada no código precisa mudar
+  até a empresa ter página própria no LinkedIn).
+- Nada nesta checagem exige redesenho de dependência/decomposição — não
+  escala ao `coordenador`.
+
+**Veredito geral do Lote 6: Aprovado, sem ressalvas técnicas** (a única
+ressalva do lote é de negócio — LinkedIn provisório, já registrada e aceita
+pelo próprio stakeholder no `TASK.md`, não é um achado de QA). Todas as 3
+tarefas confirmadas por requisição HTTP real contra a produção
+(`https://ljssoftware.com.br`), incluindo verificação cruzada de
+`target="_blank"`/`rel="noopener"`, atributos de analytics, estrutura de
+card/badge, e ausência de regressão de contraste/acessibilidade. O lote
+está estruturalmente fechado e liberado para a auditoria de segurança do
+chapéu DevSecOps sobre este lote específico e, em paralelo, para o chapéu
+DevOps considerar este build (já em produção com o conteúdo definitivo) no
+fluxo de dupla aprovação rumo à confirmação final do deploy.

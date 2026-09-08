@@ -1673,3 +1673,205 @@ build (já em produção) formalmente liberado pelo processo de governança —
 o débito de segurança de baixa severidade (RL5.2), com prazo definido, não
 impede o deploy seguir normalmente, conforme a regra geral de aprovação
 condicional para achados de severidade baixa/média.
+
+---
+
+## Lote 6 — Confirmação de Conteúdo Pendente
+
+**Escopo auditado:** T6.1, T6.2, T6.3 — já aprovadas funcionalmente pelo
+chapéu QA (`QA-REPORT.md`, seção "Lote 6 — Confirmação de Conteúdo
+Pendente", veredito "Aprovado, sem ressalvas técnicas"). Pré-condição de
+auditoria satisfeita.
+
+**Natureza do lote:** lote só de conteúdo (texto/URL), sem lógica nova —
+e-mail confirmado sem mudança de valor, URL de LinkedIn institucional
+trocada pelo perfil pessoal do stakeholder (decisão de negócio já tomada e
+registrada no `TASK.md`, não reaberta aqui), e os 3 nomes/descrições reais
+de app substituindo os placeholders da vitrine/prévia da Home. Nenhum
+arquivo `.css`/`.js` tocado neste lote (confirmado por `git diff`/histórico
+de commits — só `index.html`, `apps.html`, `sobre.html`, `404.html` e o
+bloco de referência `dev/css/footer.smoke.html` foram alterados).
+
+**Metodologia:** auditoria feita **primariamente por requisição HTTP real**
+contra a produção (`https://ljssoftware.com.br`), mesma exigência já
+aplicada pelo QA neste lote — não a nota de implementação do Executor nem o
+veredito do QA como base de aprovação. As 4 páginas reais foram buscadas
+via `curl` diretamente da internet (`index.html`, `apps.html`/`sobre.html`
+via redirect `308` já registrado em RL5.1, `404.html` via rota inexistente
+real, confirmando o redirect `/404` também documentado em RL5.1) e salvas
+para inspeção linha a linha. Varredura por padrão de dado pessoal (nome,
+e-mail alternativo, telefone, CPF) em todo o HTML servido; confirmação de
+`rel="noopener"` em toda ocorrência do link de LinkedIn; varredura por
+atributo de evento inline/`javascript:`/`<script>` novo introduzido pelos 3
+nomes/descrições de app; leitura de todos os comentários HTML das 4 páginas
+por vazamento de metadado além do já avaliado nos Lotes 1-5; reavaliação
+específica de LGPD para a troca de URL institucional → pessoal.
+
+### Arquivos auditados
+
+`index.html`, `apps.html`, `sobre.html`, `404.html` (as 4 páginas reais,
+buscadas via HTTP real em produção, não do disco).
+
+### 1. Vazamento de dado sensível
+
+**Achado: nenhum.**
+
+- Varredura por padrão de dado pessoal (nome completo, e-mail alternativo,
+  telefone, `+55`, CPF/RG, WhatsApp) nas 4 páginas reais: a única ocorrência
+  de identificador pessoal do stakeholder é o **slug da própria URL de
+  LinkedIn** (`linkedin.com/in/leandro-segheto-moraes-90879b138`), repetida
+  nas 5 posições esperadas (4 rodapés + 1 CTA da seção de contato da Home) —
+  exatamente o mesmo valor, sem variação. **Essa exposição é a decisão de
+  negócio já tomada e registrada pelo próprio stakeholder** (`TASK.md`,
+  T6.1: "por decisão do stakeholder, o placeholder... foi substituído pelo
+  perfil pessoal") — não reaberta aqui, conforme instrução. Nenhum outro
+  dado pessoal (e-mail alternativo ao institucional, telefone, endereço,
+  documento) foi encontrado em nenhuma das 4 páginas.
+- E-mail: `contato@ljssoftware.com.br`, institucional/corporativo, sem
+  mudança de valor em T6.1 — mesma conclusão já registrada nos Lotes 1-5.
+  Confirmado servido com a ofuscação automática da Cloudflare (Scrape
+  Shield) já avaliada e aceita pelo QA em T6.1 — não introduz um vetor novo
+  (o script de decodificação é first-party, `/cdn-cgi/...`, já coberto por
+  `script-src 'self'` na CSP de `_headers`, Lote 4).
+- Os 3 nomes/descrições de app (Curta Mais, Bíblia Fácil, My Money) são
+  texto de produto genérico ("sugestões de destino/roteiro/orçamento para
+  viagem", "leitura bíblica diária", "controle financeiro em família") —
+  nenhum dado pessoal de terceiro, nenhum dado interno de negócio (preço,
+  métrica de uso, nome de cliente) exposto.
+
+### 2. Links externos — `rel="noopener"` no novo link de LinkedIn pessoal
+
+**Achado: nenhum.**
+
+- Confirmado por leitura direta da resposta HTTP real: as 5 ocorrências do
+  link de LinkedIn (rodapé de `index.html`, `apps.html`, `sobre.html`,
+  `404.html`, mais o CTA "Ver no LinkedIn" da seção de contato da Home) têm
+  `target="_blank"` **e** `rel="noopener"` — nenhuma ocorrência sem a
+  proteção. A troca de URL institucional → pessoal em T6.1 preservou o
+  atributo em todos os 5 pontos (confirmado que não é um valor herdado do
+  cache/HTML antigo, mas parte do HTML servido atualmente com a nova URL).
+- Mesma conclusão já registrada nos Lotes 2/3 sobre `rel="noreferrer"`: sua
+  ausência continua não sendo um achado — o destino (perfil de LinkedIn,
+  ainda que pessoal) não é um terceiro arbitrário/malicioso, e a URL de
+  origem (`ljssoftware.com.br/...`) não carrega parâmetro sensível que o
+  vazamento de `Referer` exporia.
+
+### 3. Injeção de conteúdo / XSS estático
+
+**Achado: nenhum.**
+
+- Os 3 nomes/descrições de app são texto estático dentro de
+  `<h2 class="app-card__name">`/`<p class="app-card__description">`
+  (`apps.html`) e `<h3 class="app-card__name">`/`<p
+  class="app-card__description">` (`index.html`) — mesma estrutura de
+  markup já auditada e aprovada nos Lotes 3/4, só o conteúdo textual foi
+  trocado (confirmado por diff estrutural: mesmas classes, mesmo número de
+  elementos, nenhum atributo novo).
+- Varredura por `on\w+=`/`javascript:`/`<script` nas 4 páginas reais (mesma
+  metodologia do Lote 3, já com checagem manual de falso-positivo de
+  `content=`/`aria-controls=`): nenhuma ocorrência nova além dos 2
+  `<script src=... defer>` (`nav.js`/`analytics.js`) já auditados.
+- Nenhuma interpolação de string/template no lado cliente em nenhum arquivo
+  do projeto (confirmado nos Lotes 2/3, reafirmado aqui por não haver
+  nenhum JS novo neste lote) — não há vetor pelo qual o texto de um
+  nome/descrição de app pudesse ter sido tratado como HTML dinâmico; é
+  literal no arquivo `.html` versionado e servido como tal.
+
+### 4. Conformidade regulatória (LGPD) — reavaliação específica da troca de URL
+
+**Achado: nenhum; raciocínio confirmado.**
+
+- A troca do link institucional (`linkedin.com/company/ljssoftware`) pelo
+  perfil pessoal do próprio stakeholder é uma decisão do titular do dado
+  sobre o próprio dado — o stakeholder é ao mesmo tempo quem decide expor a
+  informação e a pessoa a quem ela pertence (não há coleta de dado de
+  terceiro nem de visitante envolvida). Do ponto de vista de LGPD, isso é
+  equivalente a qualquer pessoa optar por divulgar publicamente seu próprio
+  perfil profissional — não há tratamento de dado pessoal por parte do site
+  em relação ao **visitante**, que é o sujeito que o RF-04/G-04 e a
+  avaliação de LGPD dos Lotes 1-5 sempre trataram.
+- O único ponto que exigiria atenção adicional seria se a URL/slug expusesse
+  **mais** do que o próprio stakeholder já publicou como público no
+  LinkedIn (ex.: se o link levasse a um recurso privado/não indexável) — não
+  é o caso: é a URL canônica pública do próprio perfil, o mesmo tipo de link
+  que qualquer visitante poderia obter fazendo uma busca pelo nome do
+  stakeholder.
+- Conclusão: **não há mudança na avaliação de LGPD já registrada nos Lotes
+  1-5** — a troca de URL não introduz coleta, processamento ou exposição de
+  dado de terceiro; é decisão de negócio do próprio titular sobre o próprio
+  dado, já formalmente registrada no `TASK.md` (T6.1), não reaberta.
+
+### 5. Metadados/comentários HTML vazados
+
+**Achado: nenhum.**
+
+- Leitura de todos os comentários HTML das 4 páginas reais servidas em
+  produção: os comentários relacionados a T6.1 (`index.html` linha ~200,
+  `apps.html` linha ~115) dizem apenas "Placeholders de e-mail/LinkedIn
+  (Lacuna L-01) a substituir em T6.1" — **texto residual de proveniência de
+  engenharia, já presente antes da substituição** (referência à tarefa, não
+  ao valor específico nem à natureza pessoal/provisória do novo link).
+  **Confirmado que a nota de negócio mais sensível/detalhada — "LinkedIn
+  provisório = perfil pessoal, pendência de troca futura quando a empresa
+  tiver página própria" — existe só no `TASK.md` (repositório de
+  planejamento) e não foi replicada em nenhum comentário HTML publicado**:
+  varredura dedicada por "provis"/"pessoal"/"empresa ainda não tem
+  página"/"trocar" nas 4 páginas reais não encontrou nenhuma ocorrência.
+  Isso é o comportamento correto — o comentário público não precisa (nem
+  deveria) expor o racional de negócio por trás da URL provisória.
+- Nenhum comentário novo introduzido por T6.2 (troca dos 3 apps) além do já
+  existente desde T3.4 (nota sobre trocar o badge por link real em T6.2,
+  texto de proveniência já avaliado no Lote 3/4) — nenhum dado sensível.
+- Nenhum comentário novo de T6.3 (nenhuma alteração de código, conforme o
+  próprio `TASK.md`).
+
+### 6. Requisitos de segurança operacional para o chapéu DevOps
+
+- Nenhum item novo. O comportamento de ofuscação de e-mail da Cloudflare
+  (Scrape Shield) já está registrado como decisão de produto do usuário em
+  `DEPLOY.md`/`CTO-REVIEW.md` — nenhuma ação adicional necessária deste
+  lote.
+- Recomendação de rotina (não um achado, reforço do já registrado nos Lotes
+  1-5): ao substituir novamente a URL de LinkedIn no futuro (empresa passar
+  a ter página própria, pendência já sinalizada em T6.1), confirmar que os
+  5 pontos (4 rodapés + CTA da Home) são atualizados juntos no mesmo
+  commit, preservando `target="_blank" rel="noopener"` e o
+  `data-analytics-event` — mesma disciplina de RT-02/G-02 já aplicada neste
+  lote.
+
+---
+
+## Achados deste lote (resumo)
+
+| # | Item | Severidade | Status | Ação |
+|---|---|---|---|---|
+| — | Nenhum achado novo de severidade Baixa, Média, Alta ou Crítica neste lote | — | — | — |
+
+Nenhum achado **Alto/Crítico** neste lote. Nenhum achado de compliance
+obrigatório em aberto. Nenhum dado pessoal além do já decidido pelo próprio
+stakeholder (URL do seu perfil de LinkedIn) foi encontrado exposto.
+
+## Fechamento — Lote 6 (chapéu DevSecOps)
+
+- Nenhum achado de severidade alta/crítica.
+- Nenhum item de compliance obrigatório pendente (LGPD: troca de URL
+  institucional → pessoal avaliada especificamente neste lote, sem impacto
+  na conclusão já registrada — é decisão do próprio titular sobre o próprio
+  dado, não coleta de dado do visitante).
+- Nenhum item novo de débito de baixa/média severidade a registrar em
+  `Refatoração Lote-6` (lote não precisa ser criado neste momento — nenhum
+  achado deste lote atinge o limiar de registro).
+- Nenhum achado de relevância estratégica a sinalizar ao Gestor neste lote
+  — a decisão de expor o LinkedIn pessoal já é uma decisão de negócio
+  tomada e registrada pelo próprio stakeholder, não uma descoberta nova
+  deste Validador.
+
+**Veredito geral do Lote 6 (chapéu DevSecOps): Aprovado, sem ressalvas e
+sem débito registrado.** Nenhum achado bloqueia deploy. Combinado com o
+veredito funcional do chapéu QA ("Aprovado, sem ressalvas técnicas",
+`QA-REPORT.md`, seção "Lote 6"), o Lote 6 tem a dupla aprovação (QA +
+DevSecOps) necessária para o chapéu DevOps considerar este build (já em
+produção com o conteúdo definitivo) formalmente liberado pelo processo de
+governança. Os débitos de baixa severidade ainda pendentes de lotes
+anteriores (RL1.2, RL4.1, RL4.2, RL5.1, RL5.2) continuam sem prazo vencido
+e não bloqueiam este lote nem o deploy de produção final.
