@@ -528,3 +528,64 @@ publicar agora, antes do push acontecer.
 
 **Veredito:** publicação do Lote 6 (T6.4) confirmada em produção real, sem
 achado crítico. Pronto para o registro de fechamento do Gestor (Gate 4).
+
+## Confirmação de produção (2026-09-08) — Lote 6, T6.5
+
+Registro de publicação da tarefa nova T6.5 do Lote 6 — Confirmação de
+Conteúdo Pendente. Validação (chapéus QA e DevSecOps) concluída sem achado
+bloqueante, atualizando `QA-REPORT.md` e `SECURITY-REVIEW.md` (nova seção
+"T6.5"). Publicado no mesmo modelo de deploy contínuo já descrito acima
+("Modelo de deploy real") — o push em `main` já é o mecanismo de publicação
+em produção real, sem staging clássico separado. O usuário confirmou
+explicitamente, via pergunta direta, que queria publicar agora, antes do
+push acontecer.
+
+- **Data da confirmação:** 2026-09-08
+- **Commit publicado:** `17a8af5` ("T6.5 concluida: renomeia 5 apps na
+  vitrine e na Home"), branch `main`
+- **Lotes incluídos:** Lote 6 — Confirmação de Conteúdo Pendente, com
+  destaque para **T6.5** (conteúdo alterado desde o último registro de
+  publicação, commit `77444f9`): renomeia nome/descrição de 5 dos 6 apps já
+  publicados — **Curta Mais → Destino Ideal** ("Decida para onde ir e
+  organize tudo em um só lugar"), **Bíblia Fácil → Minha Jornada** ("Leitura
+  bíblica guiada e preparo de estudos, tudo em um app"), **My Money → Meu
+  Objetivo** ("Defina uma meta, um prazo, e saiba exatamente quanto
+  guardar"), **SportsLM → Radar Esportivo** ("Suas notícias esportivas,
+  sempre em dia") e **FutebolApp → Gestão da Pelada** ("Tudo sobre o seu
+  grupo de futebol, em um único app") — em `public/apps.html` e
+  `public/index.html`. **Evolução Segura** permanece inalterado. Nenhum CSS
+  ou JS tocado; edição cirúrgica de texto, mesma estrutura/markup dos 6
+  cards já validada em T6.4.
+- **URL de produção confirmada:** `https://ljssoftware.com.br/` (Home) e
+  `https://ljssoftware.com.br/apps.html` (via redirect 308 conhecido,
+  débito RL5.1, ainda não corrigido, seguido até `/apps`) — confirmado por
+  requisição HTTP real (`curl -sD -`), ambas retornando os 6 cards de apps
+  com os 5 nomes novos (`Destino Ideal`, `Minha Jornada`, `Meu Objetivo`,
+  `Radar Esportivo`, `Gestão da Pelada`) e `Evolução Segura` inalterado;
+  nenhum nome antigo (`Curta Mais`, `Bíblia Fácil`, `My Money`, `SportsLM`,
+  `FutebolApp`) remanescente em nenhuma das duas páginas.
+- **Modelo de deploy:** contínuo, via Cloudflare Pages, a cada push em
+  `main` (sem staging clássico separado — ver seção "Modelo de deploy
+  real" acima)
+- **Observabilidade e headers de segurança — sem regressão:** beacon do
+  Cloudflare Web Analytics (`static.cloudflareinsights.com/beacon.min.js`,
+  mesmo token `bc3ce694...`) presente em ambas as páginas em produção;
+  headers `content-security-policy`, `x-frame-options: DENY`,
+  `x-content-type-options: nosniff`, `referrer-policy:
+  strict-origin-when-cross-origin` e `permissions-policy` confirmados
+  idênticos aos já validados antes desta mudança, em ambas as respostas
+  HTTP reais. `strict-transport-security` segue ausente — não é regressão
+  desta tarefa, é o débito já conhecido RL5.2 (HSTS ainda não habilitado no
+  painel Cloudflare).
+- **Dupla aprovação confirmada:** `QA-REPORT.md` (seção "T6.5") +
+  `SECURITY-REVIEW.md` (seção "T6.5"), ambos sem achado bloqueante
+- **Débitos abertos, sem bloqueio de deploy (já registrados
+  anteriormente, sem relação com esta mudança):** RL5.1 (clean URL em
+  `/apps`/`/sobre`, redirecionando via 308), RL5.2 (HSTS ainda não
+  habilitado no painel Cloudflare) — ambos baixa/média severidade, com
+  prazo registrado, não impedem a confirmação deste registro
+- **Incidentes/rollback:** nenhum incidente reportado, nenhum rollback
+  necessário
+
+**Veredito:** publicação da T6.5 (Lote 6) confirmada em produção real, sem
+achado crítico. Pronto para o registro de fechamento do Gestor (Gate 4).
