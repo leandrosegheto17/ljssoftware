@@ -1125,3 +1125,193 @@ dupla aprovação (QA + DevSecOps) necessária para o chapéu DevOps considerar
 o build no fluxo de deploy — sujeito apenas ao fechamento estrutural do
 lote e aos demais débitos/pendências não relacionados à segurança já
 registrados em lotes anteriores (nenhum deles bloqueante).
+
+---
+
+## Refatoração Lote-4
+
+**Escopo auditado:** RL4.1 — única tarefa implementada do lote `Refatoração
+Lote-4`, `Concluída` no `TASK.md` e já aprovada funcionalmente pelo chapéu
+QA com ressalvas (`QA-REPORT.md`, seção "Refatoração Lote-4" — 1 achado
+Simples de referência de linha imprecisa, sem impacto no critério de
+aceite central, sem retorno ao `executor`; virou a tarefa RL4.2, ainda
+`Pendente` no `TASK.md`). Pré-condição de auditoria satisfeita. RL4.2 está
+fora do escopo desta auditoria — é ajuste ainda não implementado sobre o
+próprio comentário aqui avaliado.
+
+**Natureza do lote:** RL4.1 é puramente documental — um comentário novo
+(linhas `#`) no topo de `_headers`, sem nenhuma alteração de diretiva real
+da CSP ou de qualquer outro header de segurança. Superfície de ataque
+inalterada; a relevância de segurança do item está inteiramente em (a)
+garantir que o comentário não vaze segredo e (b) garantir que a
+documentação não induza, no futuro, uma remoção incorreta de
+`'unsafe-inline'` de `style-src` por sub-representar quais páginas
+dependem dela.
+
+**Metodologia:** leitura integral de `_headers` (todas as 29 linhas,
+comentário e diretivas), comparação linha a linha da diretiva
+`Content-Security-Policy` real contra a última versão já auditada e
+aprovada na seção "Lote 4" acima, varredura por padrão de segredo/
+credencial restrita ao texto do comentário novo, e reexecução independente
+do `grep` por `style=` em `apps.html`/`sobre.html` para validar as
+afirmações factuais do comentário sobre quais arquivos — e, mais
+importante para a motivação de segurança de RL4.1, que os 3 arquivos
+citados batem com a realidade do código (não faltou nenhum).
+
+### Arquivos auditados
+
+`_headers` (integral), `apps.html`, `sobre.html`, `404.html` (grep/leitura
+pontual de confirmação).
+
+### 1. Comentário novo — estritamente documentação, nenhuma diretiva real alterada
+
+**Achado: nenhum.**
+
+- `_headers` linhas 1-9: bloco de comentário novo (todas as linhas
+  iniciadas por `#`), citando os 3 arquivos que dependem de `style-src
+  'unsafe-inline'` (`apps.html`, `sobre.html`, `404.html`) e a
+  justificativa técnica (dois padrões de estilo inline — atributo `style=`
+  e bloco `<style>` — ambos exigidos pela especificação CSP a estarem sob
+  a mesma diretiva).
+- A diretiva `Content-Security-Policy` real (linha 24 do arquivo atual)
+  tem `style-src 'self' 'unsafe-inline'` — textualmente idêntica, nessa
+  parte específica, à mesma diretiva já auditada e aprovada na seção "Lote
+  4" acima (linha 701 daquele registro). Nenhuma palavra de `style-src` foi
+  alterada por RL4.1.
+- **Nota de escopo, não um achado desta tarefa:** a linha completa de CSP
+  no `_headers` atual difere da registrada na seção "Lote 4" no domínio de
+  `script-src`/`connect-src` (`static.cloudflarewebanalytics.io` →
+  `static.cloudflareinsights.com`/`cloudflareinsights.com`). Essa mudança
+  é de uma correção separada, já documentada no próprio arquivo (linhas
+  11-22, "CORRECAO (Validador, chapeu DevOps, preparação de T5.4)"),
+  atribuída a uma preparação de infraestrutura do chapéu DevOps fora do
+  escopo de RL4.1/deste lote de refatoração, e sem nenhuma relação com
+  `style-src`. Confirmado que, além dessa correção de domínio já registrada
+  e datada, nenhuma outra diretiva (`default-src`, `script-src`, `img-src`,
+  `font-src`, `connect-src`, `object-src`, `base-uri`, `form-action`,
+  `frame-ancestors`) nem nenhum dos demais headers
+  (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`,
+  `Permissions-Policy`) foi tocado — todos idênticos aos já auditados e
+  aprovados na seção "Lote 4".
+- Confirma o ponto 1 do escopo desta auditoria: a mudança de RL4.1 é
+  estritamente um comentário novo, sem efeito na política de segurança
+  real.
+
+### 2. Varredura por segredo/credencial no comentário novo
+
+**Achado: nenhum.**
+
+- Varredura por padrões de segredo (`api[_-]?key`, `secret`, `password`,
+  chave privada, `AKIA`, `Bearer `, `token`) nas 22 linhas de comentário do
+  arquivo (as 9 do bloco novo de RL4.1 + as 13 do bloco de correção de
+  domínio já auditado): nenhuma ocorrência. O texto é inteiramente
+  documentação técnica sobre CSP/dependência de páginas — nenhum valor de
+  credencial, chave ou token, real ou de exemplo, embutido.
+
+### 3. Precisão factual do comentário — motivação de segurança real de RL4.1
+
+**Achado: nenhum problema na citação dos 3 arquivos; achado Simples do QA
+confirmado sem dimensão de segurança adicional (ver item 4).**
+
+- A motivação de segurança de RL4.1 não é o comentário em si (que não
+  altera nenhum controle), mas **evitar que uma documentação incompleta
+  induza um desenvolvedor futuro a remover `'unsafe-inline'` de
+  `style-src`** por acreditar, incorretamente, que menos páginas dependem
+  dela do que na realidade — o que quebraria a página não citada. Esse é
+  precisamente o risco que motivou o achado original do QA em T4.4 (nota
+  do Executor não citava `404.html`).
+- Reexecução independente da varredura por `style=`/`<style` nas 4 páginas
+  reais (mesmo método já usado na auditoria do Lote 4 acima): confirma que
+  são exatamente 3 os arquivos dependentes de `'unsafe-inline'` —
+  `apps.html` (2 atributos `style=`, linhas 78-79), `sobre.html` (5
+  atributos `style=`, linhas 51-69) e `404.html` (bloco `<style>` no
+  `<head>`, linhas 20-70). O comentário atual de `_headers` cita
+  corretamente os 3, sem faltar nenhum e sem incluir nenhum arquivo a
+  mais — a lacuna que motivou RL4.1 está de fato fechada.
+- Nenhum quarto arquivo do projeto (`index.html`, `assets/css/*.smoke.html`)
+  usa `style=`/`<style>` inline (confirmado por grep dedicado) — se
+  `'unsafe-inline'` fosse removida hoje com base só na leitura do
+  comentário, nenhuma página adicional além das 3 já citadas seria afetada
+  incorretamente. O comentário está, portanto, completo o suficiente para
+  cumprir sua função preventiva.
+
+### 4. Achado Simples do QA (referência de linha "~67-68" vs real 78-79) — sem dimensão de segurança adicional
+
+**Achado: nenhum, confirmação.**
+
+- Reexecução independente do grep em `apps.html`: os 2 atributos `style=`
+  reais estão nas linhas **78-79**, não "~67-68" como o comentário afirma
+  — confirma exatamente o achado já registrado pelo QA (`QA-REPORT.md`,
+  seção "Refatoração Lote-4", achado #1, RL4.2).
+- **Avaliação de segurança própria deste Validador:** essa imprecisão é
+  estritamente de *localização* (o número da linha dentro do arquivo
+  citado), não de *identificação* (qual arquivo depende da diretiva). O
+  arquivo certo (`apps.html`) já está corretamente citado como dependente
+  de `'unsafe-inline'`; o número de linha errado não muda essa conclusão
+  nem cria um cenário em que um desenvolvedor futuro decida remover a
+  diretiva por achar que `apps.html` não depende dela — o comentário afirma
+  claramente que depende, só erra em qual linha exata. Não há, portanto,
+  caminho para esse achado motivar uma remoção incorreta de
+  `'unsafe-inline'` (o risco real que este Validador avalia neste lote,
+  item 3 acima). **Não atinge o limiar de achado de segurança** — é
+  puramente uma imprecisão de referência para navegação humana no código,
+  já corretamente classificada pelo QA como Simples e encaminhada como
+  RL4.2, sem necessidade de tratamento adicional por este Validador nem de
+  nova entrada de débito em `Refatoração Lote-4`.
+
+### 5. Conformidade regulatória (LGPD)
+
+**N/A.** Comentário de documentação técnica sobre CSP, sem nenhuma coleta,
+processamento ou exposição de dado pessoal — mesma conclusão já registrada
+para o Lote 4.
+
+### 6. Requisitos de segurança operacional para o chapéu DevOps
+
+- Nenhum item novo. Mantêm-se os já registrados na seção "Lote 4" acima —
+  em particular, a confirmação em preview real de que `_headers` é
+  aplicado sem erro de CSP no console, e a reconciliação do domínio real
+  do beacon do Cloudflare Web Analytics (já em andamento, conforme o
+  próprio comentário de correção presente no arquivo, linhas 11-22, datado
+  desta preparação de infraestrutura).
+
+---
+
+## Achados deste lote (resumo)
+
+| # | Item | Severidade | Status | Ação |
+|---|---|---|---|---|
+| — | Nenhum achado novo de severidade Baixa, Média, Alta ou Crítica neste lote | — | — | — |
+
+Nenhum achado **Alto/Crítico** neste lote. Nenhum achado de compliance
+obrigatório em aberto. O achado Simples do QA (RL4.2, referência de linha
+imprecisa) foi avaliado quanto à dimensão de segurança (item 4 acima) e
+confirmado como não tendo nenhuma — não gera nova entrada de débito em
+`Refatoração Lote-4`, permanece só como a tarefa RL4.2 já criada pelo QA.
+
+## Fechamento — Refatoração Lote-4 (chapéu DevSecOps)
+
+- Nenhum achado de severidade alta/crítica em RL4.1.
+- Nenhum item de compliance obrigatório pendente.
+- Nenhum item novo de débito de baixa/média severidade a registrar — RL4.2
+  (correção de linha, já criada pelo QA) não tem dimensão de segurança
+  adicional que justifique tratamento próprio deste Validador.
+- Nenhum achado de relevância estratégica a sinalizar ao Gestor.
+- Nada nesta auditoria exige redesenho de dependência/decomposição — não
+  escala ao `coordenador`.
+
+**Veredito geral da Refatoração Lote-4 (chapéu DevSecOps): Aprovado, sem
+ressalvas e sem débito de segurança novo.** RL4.1 é estritamente
+documentação — nenhuma diretiva de CSP ou outro header foi alterada;
+nenhum segredo/credencial no comentário; os 3 arquivos citados como
+dependentes de `'unsafe-inline'` batem com a realidade do código,
+neutralizando o risco real que motivou a tarefa (remoção futura incorreta
+da diretiva). O achado Simples do QA (RL4.2) é confirmado como imprecisão
+de referência sem dimensão de segurança. Combinado com o veredito funcional
+do chapéu QA ("Aprovado com ressalvas", `QA-REPORT.md`, seção "Refatoração
+Lote-4"), este lote de refatoração tem a dupla aprovação (QA + DevSecOps)
+necessária para o chapéu DevOps considerar o build no fluxo de deploy —
+sujeito apenas ao fechamento estrutural do lote e aos demais
+débitos/pendências não relacionados à segurança já registrados em lotes
+anteriores (nenhum deles bloqueante; RL4.2 e RL1.1 seguem `Pendente`,
+ambos com prazo antes do deploy de produção, nenhum de natureza de
+segurança).

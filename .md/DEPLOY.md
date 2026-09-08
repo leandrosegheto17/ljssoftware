@@ -138,23 +138,22 @@ exata (antes de `assets/js/analytics.js`) em cada um dos 4 arquivos.
      `git status`).
    - **Build command**: deixar em branco/vazio (site sem build step,
      ADR-001).
-   - **Build output directory**: `/` (raiz do repositório — é onde estão
-     `index.html`, `apps.html`, `sobre.html`, `404.html`, `assets/`,
-     `_headers`, `_redirects`).
+   - **Build output directory**: `public` (não mais `/`) — o repositório foi
+     reestruturado nesta preparação em `public/` (tudo que é servido pelo
+     site: `index.html`, `apps.html`, `sobre.html`, `404.html`, `assets/`,
+     `_headers`, `_redirects`, `robots.txt`, `sitemap.xml`) e `dev/`
+     (smoke-tests e scripts de verificação, fora do output). Confirmado
+     junto à documentação oficial do Cloudflare Pages: não existe mecanismo
+     de "ignorar arquivo" — a única forma de excluir algo da publicação é
+     através do diretório de build output, por isso a reestruturação em vez
+     de um arquivo `.pages-ignore` (que não existe).
 4. Confirmar **Save and Deploy**. O primeiro deploy de preview deve ficar
    acessível em uma URL `*.pages.dev` gerada automaticamente, atualizando a
    cada novo push na branch principal (critério de aceite de T5.1).
-5. **Excluir do deploy** os arquivos que não são página real do site (já
-   recomendado em `SECURITY-REVIEW.md`, Lotes 1-4): `*.smoke.html` e os
-   scripts Node de verificação (`assets/css/tokens.contrast-check.js`,
-   `assets/fonts/fonts.smoke.check.js`, `assets/css/a11y-contrast-check.js`).
-   Como o Cloudflare Pages publica todo o diretório de output por padrão,
-   a forma mais simples sem build step é usar um arquivo
-   `.pages-ignore`/mover esses arquivos para fora do output publicado, ou
-   aceitar que fiquem publicados como arquivos estáticos não referenciados
-   por nenhum link (risco baixo, já avaliado como tal nos lotes anteriores,
-   mas o ideal é excluí-los). Recomenda-se confirmar com o usuário qual
-   caminho prefere antes da segunda chamada de `/deploy`.
+5. Com o **Build output directory = `public`**, nada em `dev/` (smoke-tests
+   HTML, scripts Node de verificação) é publicado — resolve definitivamente
+   o risco de publicação indevida já sinalizado em `SECURITY-REVIEW.md`
+   (Lotes 1-4), sem depender de "risco baixo aceito".
 6. Depois de conectado, marcar T5.1 como `Concluída` no `TASK.md` (o
    Validador confirma isso na segunda chamada de `/deploy`, ao revisar o
    preview real).
@@ -230,13 +229,13 @@ nos Lotes 1-4.
      data-cf-beacon='{"token": "SEU_TOKEN_AQUI"}'></script>
    ```
 4. Copiar esse snippet (com o token real) e colar em **cada uma das 4
-   páginas HTML**, imediatamente **antes** da linha
+   páginas HTML dentro de `public/`**, imediatamente **antes** da linha
    `<script src="assets/js/analytics.js" defer></script>` (que hoje é a
    última tag de script de cada página):
-   - `index.html`, linha ~260
-   - `apps.html`, linha ~171
-   - `sobre.html`, linha ~139
-   - `404.html`, linha ~160
+   - `public/index.html`
+   - `public/apps.html`
+   - `public/sobre.html`
+   - `public/404.html`
 5. Confirmar no console do navegador (preview ou produção) que não há erro
    de bloqueio de CSP (`Content-Security-Policy` não deve barrar
    `static.cloudflareinsights.com` — já liberado no `_headers` corrigido

@@ -28,26 +28,31 @@ Traduzidas das restrições/ADRs do `SDD.md` e dos padrões do `UX-SPEC.md`
 
 ```
 /
-├── index.html
-├── apps.html
-├── sobre.html
-├── 404.html
-├── _headers                # headers de segurança (Cloudflare Pages)
-├── robots.txt
-├── sitemap.xml
-├── assets/
-│   ├── css/
-│   │   ├── tokens.css      # custom properties (paleta Geométrico/Glass, glass, shapes)
-│   │   ├── base.css        # reset + grid/layout responsivo
-│   │   └── components.css  # header, footer, cards "glass", badges, botões, formas decorativas
-│   ├── fonts/              # Unbounded e Outfit em .woff2, self-hosted
-│   ├── img/
-│   │   ├── favicon/        # favicon.ico, png 32/180/512, apple-touch-icon (derivados do ícone da logo)
-│   │   └── logo/           # logo-ljssoftware.png, logo-ljssoftware-transparente.png,
-│   │                       # logo-ljssoftware-icone.png (copiados/otimizados de .md/assets/)
-│   └── js/
-│       ├── nav.js          # toggle do menu mobile
-│       └── analytics.js    # evento custom de clique em contato
+├── public/                 # Build output directory do Cloudflare Pages (T5.1)
+│   ├── index.html
+│   ├── apps.html
+│   ├── sobre.html
+│   ├── 404.html
+│   ├── _headers            # headers de segurança (Cloudflare Pages)
+│   ├── _redirects          # redirect 301 www -> apex (Cloudflare Pages)
+│   ├── robots.txt
+│   ├── sitemap.xml
+│   └── assets/
+│       ├── css/
+│       │   ├── tokens.css      # custom properties (paleta Geométrico/Glass, glass, shapes)
+│       │   ├── base.css        # reset + grid/layout responsivo
+│       │   └── components.css  # header, footer, cards "glass", badges, botões, formas decorativas
+│       ├── fonts/               # Unbounded e Outfit em .woff2, self-hosted
+│       ├── img/
+│       │   ├── favicon/         # favicon.ico, png 32/180/512, apple-touch-icon (derivados do ícone da logo)
+│       │   └── logo/            # logo-ljssoftware.png, logo-ljssoftware-transparente.png,
+│       │                        # logo-ljssoftware-icone.png (copiados/otimizados de .md/assets/)
+│       └── js/
+│           ├── nav.js          # toggle do menu mobile
+│           └── analytics.js    # evento custom de clique em contato
+└── dev/                     # NUNCA publicado (fora do Build output directory)
+    ├── css/                 # smoke-tests visuais + scripts de verificação (Node, sem dependências)
+    └── fonts/               # smoke-test de fontes + script de verificação
 ```
 
 > **Mudança nesta revisão:** pasta `assets/img/logo/` adicionada para os 3
@@ -55,6 +60,17 @@ Traduzidas das restrições/ADRs do `SDD.md` e dos padrões do `UX-SPEC.md`
 > favicon/` não deriva mais de um monograma tipográfico "LJ", e sim de
 > `logo-ljssoftware-icone.png` (ver T1.4). `assets/fonts/` passa a conter
 > Unbounded/Outfit no lugar de Sora/Inter.
+
+> **Mudança na preparação do Lote 5 (T5.1):** repositório reestruturado em
+> `public/` (tudo que é servido pelo site — vira o *Build output directory*
+> no Cloudflare Pages) e `dev/` (smoke-tests HTML e scripts Node de
+> verificação, nunca publicados). Motivo: o Cloudflare Pages não tem
+> mecanismo de "ignorar arquivo" — a única forma de excluir algo da
+> publicação é através do diretório de build output (confirmado na
+> documentação oficial). Todos os caminhos relativos dentro de `public/`
+> permanecem inalterados entre si (moveram juntos); os arquivos em `dev/`
+> tiveram seus caminhos relativos para CSS/JS/imagens ajustados para
+> apontar de volta para `public/assets/...`.
 
 ### 1.2 Convenções obrigatórias
 
