@@ -434,3 +434,51 @@ chamada: (1) a confirmação visual dos eventos no dashboard do Web Analytics
 depende de acesso ao painel, que este agente não tem; (2) a capacidade de
 rollback é nativa do provedor e documentada, mas não foi exercitada de
 fato nesta chamada.
+
+---
+
+## Confirmação de produção (2026-09-08) — `/deploy`, Seção 5 (Gate de produção)
+
+**Confirmado explicitamente pelo usuário.** Este é o registro formal de
+fechamento do Gate de produção: o conjunto abaixo está oficialmente
+publicado em produção real, após validação final de integração (sem
+achado crítico).
+
+- **Data da confirmação:** 2026-09-08
+- **Lotes incluídos:** Lote 1, Lote 2, Lote 3, Lote 4, Refatoração Lote-1,
+  Refatoração Lote-4, Lote 5 (T5.1-T5.4 — infraestrutura, domínio, HTTPS,
+  Web Analytics)
+- **URL de produção:** `https://ljssoftware.com.br`
+- **Modelo de deploy:** contínuo, via Cloudflare Pages, a cada push em
+  `main` (sem staging clássico separado — ver seção "Modelo de deploy
+  real" acima)
+- **Dupla aprovação confirmada:** `QA-REPORT.md` (Aprovado/Aprovado com
+  ressalvas em todos os lotes) + `SECURITY-REVIEW.md` (Aprovado/Aprovado
+  com débito de baixa severidade — RL5.2/HSTS — sem bloqueio), sobre o
+  mesmo conjunto de lotes acima
+- **Snapshot final de disponibilidade (nesta chamada):** `GET
+  https://ljssoftware.com.br` → HTTP 200, confirmado por requisição HTTP
+  real
+- **Decisão do usuário — Email Address Obfuscation (Scrape Shield,
+  Cloudflare):** a validação de integração anterior identificou, como
+  achado informativo (não bloqueante), que este recurso da Cloudflare
+  reescreve automaticamente `mailto:` no HTML servido e injeta um script
+  de decodificação no client, fora do controle do código-fonte do site.
+  Perguntado explicitamente, **o usuário decidiu manter o recurso
+  ligado**. Não há nenhuma ação adicional exigida no código do site em
+  função dessa decisão — registrado aqui apenas para rastreabilidade,
+  sem gerar tarefa em `Refatoração Lote-X`.
+- **Débitos abertos, sem bloqueio de deploy (já registrados em
+  `QA-REPORT.md`/`SECURITY-REVIEW.md`):** RL5.1 (clean URL em
+  `/apps`/`/sobre`, redirecionando via 308), RL5.2 (HSTS ainda não
+  habilitado no painel Cloudflare) — ambos baixa/média severidade, com
+  prazo registrado, não impedem a confirmação deste Gate.
+- **Observabilidade:** Cloudflare Web Analytics ativo (T5.4), beacon
+  confirmado presente e sem bloqueio de CSP/rede nas 4 páginas (ver
+  seção acima); confirmação visual de dashboard pendente de acesso ao
+  painel (limitação de escopo do agente, não falha de instrumentação).
+- **Rollback:** capacidade nativa do Cloudflare Pages, documentada, não
+  exercitada de fato (sem acesso ao painel neste ambiente).
+
+**Veredito:** Gate de produção fechado. Nenhum achado crítico em aberto.
+Pronto para o registro de fechamento do Gestor (Gate 4).

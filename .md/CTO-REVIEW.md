@@ -128,3 +128,68 @@ já validadas em `SDD.md`/`CTO-REVIEW.md`. `GUARDRAILS.md` está liberado
 como guardrail vigente do projeto a partir desta data.
 
 ---
+
+## Gate 4 — Registro de fechamento (deploy em produção)
+
+**Data:** 2026-09-08
+**Chamada:** `/deploy`, Seção 6 — registro de fechamento, **sem poder de
+veto**. O resultado já foi confirmado pelo Validador (chapéus QA,
+DevSecOps, DevOps) e pelo usuário diretamente na Seção 5 de `/deploy`; este
+registro apenas formaliza o fechamento no log do Gestor.
+**Artefato de entrada:** `.md/DEPLOY.md`, seção "Confirmação de produção"
+(2026-09-08), com base em `QA-REPORT.md` e `SECURITY-REVIEW.md` (dupla
+aprovação de todos os lotes, sem achado crítico).
+
+### Resultado
+
+**Sucesso.** Deploy em produção confirmado, sem achado crítico em aberto.
+
+- **Commit publicado:** `d620c29` (branch `main`, deploy contínuo via
+  Cloudflare Pages — produção e preview `.pages.dev` servem exatamente o
+  mesmo build a partir deste push).
+- **URL de produção:** `https://ljssoftware.com.br`
+- **Lotes incluídos:**
+  - Lote 1 — Fundação de Design System
+  - Lote 2 — Componentes Compartilhados
+  - Lote 3 — Páginas
+  - Lote 4 — SEO, Acessibilidade e Segurança Transversal
+  - Refatoração Lote-1
+  - Refatoração Lote-4
+  - Lote 5 — Deploy e Infraestrutura (T5.1-T5.4)
+- **Dupla aprovação confirmada:** `QA-REPORT.md` (Aprovado/Aprovado com
+  ressalvas em todos os lotes) + `SECURITY-REVIEW.md` (Aprovado/Aprovado
+  com débito de baixa severidade), sobre o mesmo conjunto de lotes acima.
+
+### Débitos técnicos conhecidos, não bloqueantes (com prazo registrado)
+
+- **RL5.1** — redirect 308 de clean URL (`/apps`, `/sobre`), comportamento
+  nativo do Cloudflare Pages; inconsistência leve de SEO, sem impacto
+  funcional.
+- **RL5.2** — HSTS ainda não habilitado no painel Cloudflare.
+
+Ambos já registrados em `QA-REPORT.md`/`SECURITY-REVIEW.md`, com prazo
+próprio, e não impediram a confirmação do Gate de produção (Seção 5).
+
+### Decisão de produto já registrada, sem gerar débito
+
+Email Address Obfuscation (Scrape Shield, Cloudflare) mantido **ligado**
+por decisão do usuário — sem ação pendente em código; registrado em
+`DEPLOY.md` para rastreabilidade.
+
+### O que falta para o projeto estar 100% completo
+
+Lote 6 (T6.1-T6.3): T6.2 e T6.3 concluídas. T6.1 concluída, com ressalva
+de escopo: o link de LinkedIn publicado no site aponta para o perfil
+**pessoal** do stakeholder, como solução provisória — está marcado para
+ser trocado pelo link da página oficial da empresa assim que ela existir.
+Não bloqueia o fechamento deste Gate (T6.1 está `Concluída` no `TASK.md`
+com essa ressalva já documentada); fica como pendência de acompanhamento
+futuro, fora do escopo de qualquer lote formal em aberto.
+
+### Veredito
+
+**Aprovado — registro de fechamento, sem veto.** O deploy em produção do
+conjunto listado acima está formalmente encerrado no ciclo do Gestor.
+Nenhuma ação adicional exigida deste chapéu neste momento.
+
+---
