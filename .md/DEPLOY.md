@@ -482,3 +482,49 @@ achado crítico).
 
 **Veredito:** Gate de produção fechado. Nenhum achado crítico em aberto.
 Pronto para o registro de fechamento do Gestor (Gate 4).
+
+---
+
+## Confirmação de produção (2026-09-08) — Lote 6, T6.4
+
+Registro de publicação do Lote 6 — Confirmação de Conteúdo Pendente,
+incluindo a tarefa nova T6.4. Validação (chapéus QA e DevSecOps) concluída
+sem achado bloqueante, atualizando `QA-REPORT.md` e `SECURITY-REVIEW.md`
+(nova seção "T6.4"). Publicado no mesmo modelo de deploy contínuo já
+descrito acima ("Modelo de deploy real") — o push em `main` já é o
+mecanismo de publicação em produção real, sem staging clássico separado.
+O usuário confirmou explicitamente, via pergunta direta, que queria
+publicar agora, antes do push acontecer.
+
+- **Data da confirmação:** 2026-09-08
+- **Commit publicado:** `77444f9` ("T6.4 concluida: 3 novos apps..."),
+  branch `main`
+- **Lotes incluídos:** Lote 6 — Confirmação de Conteúdo Pendente, com
+  destaque para **T6.4** (conteúdo novo desde o último registro de
+  publicação, commit `d620c29`): adiciona 3 novos apps — **SportsLM**
+  ("Suas notícias em um único lugar"), **FutebolApp** ("Gestão completa do
+  seu grupo de futebol") e **Evolução Segura** ("Prontuário digital
+  simples, com seus dados sempre com você") — à vitrine `public/apps.html`
+  e à prévia de apps da Home `public/index.html`, mantendo paridade de
+  conteúdo entre as duas páginas (6 cards em cada). Nenhum CSS novo — grid
+  responsivo já acomodava os itens extras.
+- **URL de produção confirmada:** `https://ljssoftware.com.br/` (Home) e
+  `https://ljssoftware.com.br/apps.html` (via redirect 308 conhecido,
+  débito RL5.1, ainda não corrigido) — confirmado por requisição HTTP real
+  (`curl -sL`), ambas retornando os 6 cards de apps: `Curta Mais`, `Bíblia
+  Fácil`, `My Money`, `SportsLM`, `FutebolApp`, `Evolução Segura`.
+- **Modelo de deploy:** contínuo, via Cloudflare Pages, a cada push em
+  `main` (sem staging clássico separado — ver seção "Modelo de deploy
+  real" acima)
+- **Dupla aprovação confirmada:** `QA-REPORT.md` (seção "T6.4") +
+  `SECURITY-REVIEW.md` (seção "T6.4"), ambos sem achado bloqueante
+- **Débitos abertos, sem bloqueio de deploy (já registrados
+  anteriormente):** RL5.1 (clean URL em `/apps`/`/sobre`, redirecionando
+  via 308), RL5.2 (HSTS ainda não habilitado no painel Cloudflare) — ambos
+  baixa/média severidade, com prazo registrado, não impedem a confirmação
+  deste registro
+- **Incidentes/rollback:** nenhum incidente reportado, nenhum rollback
+  necessário
+
+**Veredito:** publicação do Lote 6 (T6.4) confirmada em produção real, sem
+achado crítico. Pronto para o registro de fechamento do Gestor (Gate 4).

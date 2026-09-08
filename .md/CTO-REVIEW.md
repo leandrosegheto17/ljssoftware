@@ -193,3 +193,45 @@ conjunto listado acima está formalmente encerrado no ciclo do Gestor.
 Nenhuma ação adicional exigida deste chapéu neste momento.
 
 ---
+
+## Gate 4 — Registro de fechamento (deploy em produção, Lote 6)
+
+**Data:** 2026-09-08
+**Chamada:** `/deploy`, Seção 6 — registro de fechamento, **sem poder de
+veto**. Validação (chapéus QA e DevSecOps) já concluída sem achado
+bloqueante; este registro apenas formaliza o fechamento no log do Gestor.
+**Artefato de entrada:** `.md/QA-REPORT.md` e `.md/SECURITY-REVIEW.md`,
+seção "T6.4" (dupla aprovação, sem achado bloqueante).
+
+### Resultado
+
+**Sucesso.** Deploy em produção confirmado, sem achado crítico em aberto.
+
+- **Commit publicado:** `77444f9` ("T6.4 concluida: 3 novos apps..."),
+  branch `main`, deploy contínuo via Cloudflare Pages (mesmo modelo já
+  registrado em `DEPLOY.md`, seção "Modelo de deploy real" — push em
+  `main` já publica direto em produção, sem staging clássico separado).
+- **URL de produção confirmada:** `https://ljssoftware.com.br/` (Home) e
+  `https://ljssoftware.com.br/apps.html` (via redirect 308 conhecido,
+  débito RL5.1, ainda não corrigido) — confirmado por requisição HTTP real
+  (`curl -sL`), ambas retornando os 6 cards de apps: `Curta Mais`, `Bíblia
+  Fácil`, `My Money`, `SportsLM`, `FutebolApp`, `Evolução Segura`.
+- **Lote incluído:** Lote 6 — Confirmação de Conteúdo Pendente, com
+  destaque para a tarefa nova **T6.4** (conteúdo novo desde o último Gate
+  registrado em `50255d8`): adiciona os 3 apps `SportsLM`, `FutebolApp` e
+  `Evolução Segura` à vitrine `public/apps.html` e à prévia de apps da Home
+  `public/index.html`, mantendo paridade de conteúdo entre as duas páginas
+  (6 cards em cada). Sem CSS novo — grid responsivo já acomodava os itens
+  extras.
+- **Dupla aprovação confirmada:** `QA-REPORT.md` e `SECURITY-REVIEW.md`,
+  ambos com nova seção "T6.4", sem achado bloqueante.
+- **Incidentes/rollback:** nenhum incidente reportado, nenhum rollback
+  necessário.
+
+### Veredito
+
+**Aprovado — registro de fechamento, sem veto.** O deploy em produção do
+Lote 6 (com destaque para T6.4) está formalmente encerrado no ciclo do
+Gestor. Nenhuma ação adicional exigida deste chapéu neste momento.
+
+---
