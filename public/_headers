@@ -1,12 +1,14 @@
 # style-src 'unsafe-inline' e necessario porque 3 paginas dependem dele, por
 # 2 motivos diferentes cobertos pela mesma diretiva CSP: apps.html (atributos
-# style= inline, linhas ~67-68) e sobre.html (atributos style= inline, linhas
+# style= inline, linhas 78-79) e sobre.html (atributos style= inline, linhas
 # ~51-69) usam o padrao "atributo de estilo inline"; 404.html usa um bloco
 # <style>...</style> completo no <head> (padrao "elemento de estilo inline"),
 # nao um atributo style= — ambos os casos exigem 'unsafe-inline' em style-src
 # segundo a especificacao CSP (Content-Security-Policy Level 3). Nenhuma
 # mudanca funcional na CSP abaixo; apenas documentacao (achado #1 do
-# QA-REPORT.md sobre T4.4, RL4.1).
+# QA-REPORT.md sobre T4.4, RL4.1; referencia de linha de apps.html corrigida
+# em RL4.2, de "~67-68" para a posicao real 78-79 apos a reestruturacao do
+# repositorio em public/ na T5.1).
 #
 # CORRECAO (Validador, chapeu DevOps, /deploy Secao 1, preparacao de T5.4):
 # O dominio usado nos Lotes 2-4 para o beacon do Cloudflare Web Analytics
