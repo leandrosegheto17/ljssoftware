@@ -229,12 +229,12 @@ si**: T4.1, T4.2, T4.3, T4.4.
 
 ### Lote 5 — Deploy e Infraestrutura
 
-| ID | Tarefa | Dono | Critério de aceite | Estimativa |
-|---|---|---|---|---|
-| T5.1 | Setup do repositório Git + conexão ao Cloudflare Pages (build settings "sem build" / diretório raiz, branch principal), primeiro deploy de preview | DevOps | Deploy de preview acessível via URL `*.pages.dev`, atualizando a cada push | 0,5 dia |
-| T5.2 | Domínio customizado `ljssoftware.com.br` no Cloudflare Pages + documentação dos passos de migração de NS para o stakeholder executar no registro.br (RT-03) | DevOps | Domínio adicionado no painel; passo a passo de migração de NS documentado e comunicado como pré-requisito de publicação final | 0,5 dia |
-| T5.3 | Habilitar "Always Use HTTPS" (RF-05) + redirect 301 de `www.ljssoftware.com.br` para o domínio apex | DevOps | `http://` redireciona para `https://`; `www` redireciona para apex; certificado TLS válido emitido | 0,25 dia |
-| T5.4 | Habilitar Cloudflare Web Analytics no projeto + inserir beacon script nas 4 páginas | DevOps | Beacon ativo nas 4 páginas; evento custom do T2.4 aparece no dashboard de analytics, incluindo os cliques na seção de contato da Home | 0,5 dia |
+| ID | Tarefa | Dono | Critério de aceite | Estimativa | Status |
+|---|---|---|---|---|---|
+| T5.1 | **[Ajustada]** Setup do repositório Git + conexão ao Cloudflare Pages (build settings "sem build" / branch principal), primeiro deploy de preview | DevOps | Deploy de preview acessível via URL `*.pages.dev`, atualizando a cada push | 0,5 dia | **Concluída** — repositório reestruturado em `public/` (arquivos publicáveis) e `dev/` (smoke-tests/scripts, nunca publicados — decisão tomada porque o Cloudflare Pages não tem mecanismo de "ignorar arquivo", só o Build output directory, confirmado na documentação oficial); repositório já hospedado em `github.com/leandrosegheto17/ljssoftware`, conectado ao Cloudflare Pages via fluxo legado "Continue to Pages" (o fluxo novo unificado Workers/Pages assume deploy via Wrangler por padrão, não serve para site estático simples). Configuração usada: Production branch `main`, Framework preset `None`, Build command vazio, **Build output directory `public`**. Preview publicado em `https://ljssoftware.pages.dev`, verificado via HTTP: `index.html`/`tokens.css`/`base.css`/`components.css`/`nav.js`/logo respondem 200; `dev/` responde 404 (confirma que smoke-tests não vazaram); headers de `_headers` (CSP, X-Frame-Options, X-Content-Type-Options) aplicados corretamente, sem bloqueio de recurso próprio. |
+| T5.2 | Domínio customizado `ljssoftware.com.br` no Cloudflare Pages + documentação dos passos de migração de NS para o stakeholder executar no registro.br (RT-03) | DevOps | Domínio adicionado no painel; passo a passo de migração de NS documentado e comunicado como pré-requisito de publicação final | 0,5 dia | Pendente |
+| T5.3 | Habilitar "Always Use HTTPS" (RF-05) + redirect 301 de `www.ljssoftware.com.br` para o domínio apex | DevOps | `http://` redireciona para `https://`; `www` redireciona para apex; certificado TLS válido emitido | 0,25 dia | Pendente |
+| T5.4 | Habilitar Cloudflare Web Analytics no projeto + inserir beacon script nas 4 páginas | DevOps | Beacon ativo nas 4 páginas; evento custom do T2.4 aparece no dashboard de analytics, incluindo os cliques na seção de contato da Home | 0,5 dia | Pendente |
 
 **Dependências do Lote 5:** T5.2 depende de T5.1. T5.3 depende de T5.2. T5.4
 depende de T5.1 e do Lote 3 completo (T3.1-T3.6) e de T2.4. **Paralelizáveis
