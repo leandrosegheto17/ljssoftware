@@ -524,33 +524,71 @@
  * sobre `--color-bg` sólido) diretamente com esses tokens.
  *
  * -----------------------------------------------------------------------
- * VERIFICAÇÃO DE CONTRASTE WCAG AA — o mesh gradient poderia, em tese,
- * clarear o fundo o suficiente sob o texto para derrubar o contraste já
- * verificado de `--color-text-inverse`/`--color-text-inverse-secondary`
- * sobre `--color-bg` sólido (`tokens.css`). Por isso cada camada do mesh usa
- * `color-mix(in srgb, var(--color-bg-gradient-1/2) X%, transparent)` (nunca
- * a cor sólida do token) antes de desvanecer para transparente, e cada blob
- * é centralizado fora da área de texto (cantos da seção, não o centro).
+ * VERIFICAÇÃO DE CONTRASTE WCAG AA — REVERIFICADA E CORRIGIDA POR SCRIPT EM
+ * T4.2 (`assets/css/a11y-contrast-check.js`), substituindo o cálculo manual
+ * anterior (mantido como contexto histórico abaixo). O mesh gradient poderia,
+ * em tese, clarear o fundo o suficiente sob o texto para derrubar o
+ * contraste já verificado de `--color-text-inverse`/
+ * `--color-text-inverse-secondary` sobre `--color-bg` sólido (`tokens.css`).
+ * Por isso cada camada do mesh usa `color-mix(in srgb, var(--color-bg-
+ * gradient-1/2) X%, transparent)` (nunca a cor sólida do token) antes de
+ * desvanecer para transparente, e cada blob é centralizado fora da área de
+ * texto (cantos da seção, não o centro).
  *
- * Pior caso calculado manualmente (mesma fórmula de luminância relativa do
- * WCAG 2.x usada em `tokens.css`), assumindo o texto sobreposto ao ponto de
- * MAIOR intensidade de cada blob (pior cenário, mais desfavorável do que o
- * real, já que os blobs ficam nos cantos, longe do texto centralizado):
+ * **Achado de T4.2 (corrigido nesta mesma tarefa, GUARDRAILS.md G-05):** o
+ * cálculo manual original (comentário histórico abaixo) só havia verificado
+ * `--color-text-inverse` (o tom mais claro) contra o pior blob — o script de
+ * T4.2 revalidou também `--color-text-inverse-secondary` (tom mais escuro,
+ * usado no `.hero__subtitle`) no PIOR CASO de sobreposição (ponto de maior
+ * intensidade do blob, pior do que a posição real dos blobs nos cantos) e
+ * encontrou **3.57:1 quando um `.glass-card` está sobreposto ao blob mais
+ * intenso do mesh gradient** (composição `--glass-bg` 8% branco sobre o
+ * blob) — abaixo do mínimo AA (4.5:1). Esse é exatamente o cenário
+ * sinalizado como pendente em `QA-REPORT.md` (T3.1) e no `UX-SPEC.md` Seção
+ * 3.1/5 ("atenção especial ao texto sobre os cards 'glass' — fundo
+ * translúcido sobre o gradiente de fundo"). **Correção aplicada:** a
+ * opacidade do blob `--color-bg-gradient-2` (o mais claro/crítico dos dois
+ * tons) foi reduzida de 45% para 28% (só a intensidade do blob no `.hero`,
+ * nenhum token em `tokens.css` foi redefinido — ajuste pontual de CSS,
+ * conforme permitido pelos guardrails). Valores revalidados por script após
+ * a correção:
  *
+ *   --color-text-inverse sobre blob --color-bg-gradient-2 a 28% (pior blob)         -> 5.99:1 (AA: OK)
+ *   --color-text-inverse sobre blob --color-bg-gradient-1 a 55%                     -> 8.41:1 (AA: OK)
+ *   --color-text-inverse-secondary sobre blob --color-bg-gradient-2 a 28% (sólido)  -> ~6.0:1 aprox. (AA: OK, ver script)
+ *   --color-text-inverse sobre .glass-card sobre o pior blob (composto)             -> 4.99:1 (AA: OK)
+ *   --color-text-inverse-secondary sobre .glass-card sobre o pior blob (PIOR CASO GERAL, composto) -> 4.65:1 (AA: OK, com folga)
+ *
+ * Todos os piores casos (incluindo o composto "glass sobre mesh gradient")
+ * agora passam acima do mínimo AA (4.5:1) — ver saída completa em
+ * `a11y-contrast-check.js`. Os `.decorative-shape` (opacity 0.35, herdada de
+ * `tokens.css`) ficam ainda mais claros/translúcidos que os blobs do mesh —
+ * nenhum risco adicional de contraste.
+ *
+ * Achado secundário, não corrigido (classificado como não-crítico): o
+ * `--glass-border` (rgba(255,255,255,0.18)) sobre o pior blob mede ~1.5:1,
+ * abaixo do 3:1 de WCAG 1.4.11 (Non-text Contrast). Avaliado e não corrigido
+ * nesta tarefa porque: (a) 1.4.11 aplica a "componentes de interface"/
+ * objetos gráficos necessários para operar ou entender o conteúdo — o
+ * `.glass-card` não é um controle interativo (é um container de conteúdo
+ * estático: article/div), e seu limite visual já é perceptível pela própria
+ * mudança de tom do preenchimento translúcido (`--glass-bg`) em relação ao
+ * fundo, não dependendo só da borda; (b) aumentar a opacidade da borda o
+ * suficiente para atingir 3:1 (~0.44, mais que o dobro do valor atual)
+ * mudaria visivelmente a aparência "glass" do card em todo o site — seria
+ * redesenho, não correção pontual, vedado por G-12. Nenhum conteúdo textual
+ * depende da borda para ser identificado/lido.
+ *
+ * --- Cálculo manual original (T3.1), mantido como contexto histórico ---
+ * Pior caso calculado manualmente antes desta tarefa, assumindo o texto
+ * sobreposto ao ponto de MAIOR intensidade de cada blob:
  *   --color-text-inverse (#EAF6F4) sobre blob de --color-bg-gradient-2 a 45%
  *     opacidade sobre --color-bg (resultante ~ #146671)             -> 5.98:1 (AA texto normal: OK)
  *   --color-text-inverse (#EAF6F4) sobre blob de --color-bg-gradient-1 a 55%
  *     opacidade sobre --color-bg (resultante ~ #0F3A55)             -> 8.83:1 (AA texto normal: OK)
- *   --color-text-inverse-secondary (#B9D6D0), mais escuro que
- *     --color-text-inverse, tem contraste ainda maior de folga sobre os
- *     mesmos fundos (a diferença de luminância entre os dois tons de texto é
- *     pequena; o par mais crítico é o `--color-text-inverse` acima).
- *
- * Ambos os piores casos passam com folga acima do mínimo AA (4.5:1). Os
- * `.decorative-shape` (opacity 0.35, herdada de `tokens.css`) ficam ainda
- * mais claros/translúcidos que os blobs do mesh — nenhum risco adicional de
- * contraste. Reverificar formalmente em T4.2 (auditoria cross-page), como já
- * previsto no comentário de `tokens.css`.
+ * Este cálculo não havia coberto `--color-text-inverse-secondary` nem o
+ * cenário composto com `.glass-card` — lacuna fechada pela reverificação por
+ * script em T4.2 acima, que motivou a correção de opacidade do blob 2.
  * -----------------------------------------------------------------------
  */
 
@@ -566,7 +604,7 @@
     ),
     radial-gradient(
       ellipse 55% 50% at 88% 12%,
-      color-mix(in srgb, var(--color-bg-gradient-2) 45%, transparent),
+      color-mix(in srgb, var(--color-bg-gradient-2) 28%, transparent),
       transparent 65%
     ),
     radial-gradient(
@@ -691,13 +729,23 @@
  * de App):
  *
  *   <article class="app-card glass-card">
- *     <h3 class="app-card__name">Nome do app</h3>
+ *     <h2 class="app-card__name">Nome do app</h2> <!-- ou <h3>, ver nota -->
  *     <p class="app-card__description">Descrição curta do app.</p>
  *     <!-- Badge isolado (RF-02): trocar por
  *          <a class="badge badge--link" href="URL_REAL">Ver app</a>
  *          quando o app for publicado (T6.2), sem redesenhar o card -->
  *     <span class="badge">Em breve</span>
  *   </article>
+ *
+ * **Nível de heading (corrigido em T4.2 — auditoria de acessibilidade):**
+ * `.app-card__name` é selecionado por CLASSE, não por tag — o nível de
+ * heading (`<h2>`/`<h3>`) depende do contexto da página, para nunca pular um
+ * nível na hierarquia semântica (WCAG 2.4.6):
+ *   - `apps.html` (T3.4): `<h2>` — o card é filho direto do `<h1>` "Nossos
+ *     apps" da página, sem `<h2>` de agrupamento entre eles.
+ *   - `index.html` / seção "Nossos apps" (T3.2): `<h3>` — ali existe um
+ *     `<h2 class="home-apps__title">` de agrupamento antes dos cards, então
+ *     `<h3>` é o nível correto (h1 hero -> h2 seção -> h3 cards).
  *
  * -----------------------------------------------------------------------
  * VERIFICAÇÃO DE CONTRASTE WCAG AA — combinações introduzidas por este

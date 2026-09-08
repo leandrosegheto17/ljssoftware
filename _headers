@@ -1,0 +1,28 @@
+# style-src 'unsafe-inline' e necessario porque 3 paginas dependem dele, por
+# 2 motivos diferentes cobertos pela mesma diretiva CSP: apps.html (atributos
+# style= inline, linhas ~67-68) e sobre.html (atributos style= inline, linhas
+# ~51-69) usam o padrao "atributo de estilo inline"; 404.html usa um bloco
+# <style>...</style> completo no <head> (padrao "elemento de estilo inline"),
+# nao um atributo style= — ambos os casos exigem 'unsafe-inline' em style-src
+# segundo a especificacao CSP (Content-Security-Policy Level 3). Nenhuma
+# mudanca funcional na CSP abaixo; apenas documentacao (achado #1 do
+# QA-REPORT.md sobre T4.4, RL4.1).
+#
+# CORRECAO (Validador, chapeu DevOps, /deploy Secao 1, preparacao de T5.4):
+# O dominio usado nos Lotes 2-4 para o beacon do Cloudflare Web Analytics
+# (script-src/connect-src) era "static.cloudflarewebanalytics.io", que NAO
+# corresponde ao dominio real do produto. O dominio oficial documentado pela
+# Cloudflare (developers.cloudflare.com/web-analytics) para o script e
+# "static.cloudflareinsights.com/beacon.min.js" (script-src) e o beacon
+# envia os dados via sendBeacon para "cloudflareinsights.com" (connect-src).
+# Esta troca ja era antecipada como possivel pelo proprio SECURITY-REVIEW.md
+# (Lote 4, secao "Requisitos de seguranca operacional para o chapeu DevOps",
+# item T5.4) e pela nota do Executor em analytics.js (T2.4) — corrigida aqui
+# antes do deploy de producao para nao bloquear o beacon real quando o
+# usuario inserir o <script> com o token (ver .md/DEPLOY.md, T5.4).
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()

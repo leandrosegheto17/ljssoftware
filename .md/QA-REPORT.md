@@ -811,3 +811,520 @@ a auditoria de segurança do chapéu DevSecOps (que ainda não rodou sobre
 este lote) e, em paralelo, para o chapéu DevOps considerar este build no
 fluxo de dupla aprovação rumo ao deploy, condicionado à aprovação
 subsequente do `SECURITY-REVIEW.md`.
+
+---
+
+## Lote 4 — SEO, Acessibilidade e Segurança Transversal
+
+**Escopo validado:** T4.1, T4.2, T4.3, T4.4, todas com Status `Concluída` no
+`TASK.md` no momento desta validação.
+
+**Metodologia:** os 4 arquivos HTML reais (`index.html`, `apps.html`,
+`sobre.html`, `404.html`), `assets/css/components.css`, `robots.txt`,
+`sitemap.xml` e `_headers` foram lidos integralmente e inspecionados contra
+o critério de aceite de cada tarefa no `TASK.md`, contra `UX-SPEC.md`
+(Seções 3.1, 5, 6, 7) e `GUARDRAILS.md` (G-01 a G-05, G-09, G-11, G-12,
+G-14) — a nota de implementação do Executor foi usada só como ponto de
+partida de onde olhar, nunca como base de aprovação. `node
+assets/css/a11y-contrast-check.js` e `node
+assets/css/tokens.contrast-check.js` foram **reexecutados** nesta sessão
+(não reaproveitado o resultado relatado pelo Executor), e os valores
+hardcoded do script de contraste (cores dos tokens, alpha dos 3 blobs do
+mesh gradient, alpha de `--glass-bg`) foram conferidos linha a linha contra
+`assets/css/tokens.css`/`assets/css/components.css` para confirmar que o
+script mede a implementação real, não valores desatualizados. Verificações
+adicionais ad-hoc: varredura de `tabindex` positivo e `outline: none` em
+todo o projeto; resolução de todo `href`/`src` referenciado pelas 4 páginas
+e pelos novos arquivos de infraestrutura contra o sistema de arquivos;
+contagem de headings fora de comentário HTML.
+
+### T4.1 — Meta tags SEO finais + favicon + Open Graph
+
+**Veredito: Aprovado.**
+
+- `<title>`/`meta description` únicos e distintos nas 4 páginas —
+  confirmado por leitura direta e comparação textual: Home (proposta de
+  valor + CTA), Apps (portfólio/vitrine), Sobre (proposta e valores), 404
+  (erro), nenhuma duplicação entre si.
+- `<link rel="icon">` presente nas 4 páginas com os 3 formatos já gerados em
+  T1.4 (`favicon.ico` `sizes="any"`, `favicon-32x32.png`,
+  `favicon-512x512.png`) + `<link rel="apple-touch-icon">` — os 4 arquivos
+  referenciados existem de fato em `assets/img/favicon/` (confirmado por
+  listagem de diretório).
+- `og:image` aponta para `https://ljssoftware.com.br/assets/img/logo/logo-ljssoftware-transparente.png`
+  nas 4 páginas — arquivo real existe em `assets/img/logo/` (T1.5, G-14,
+  nenhuma arte nova); URL absoluta com o domínio definitivo do projeto,
+  coerente com `og:url` (`/`, `/apps.html`, `/sobre.html`, `/404.html`,
+  cada um resolvendo para a própria página).
+- `og:type`/`og:title`/`og:description` presentes e espelham o
+  title/description finais de cada página.
+- Nenhum bloco de header/nav/footer foi tocado por esta tarefa — confirmado
+  por comparação com a versão já validada no Lote 3 (RT-02/G-02
+  preservados).
+
+### T4.2 — Auditoria e ajuste de acessibilidade WCAG AA
+
+**Veredito: Aprovado.**
+
+- **Reexecução independente de `node assets/css/a11y-contrast-check.js`:**
+  22/22 combinações reportadas PASS, incluindo as 5 sólidas da tabela de
+  tokens (revalidadas), as combinações dos Lotes 2/3 e — o ponto central
+  desta tarefa — o pior caso do mesh gradient e o pior caso composto
+  `.glass-card` sobre o blob mais intenso.
+- **Verificação de que o script mede a implementação real, não valores
+  desatualizados:** os hex dos tokens (`--color-bg-gradient-1: #146B8C`,
+  `--color-bg-gradient-2: #1FB6A6`, `--glass-bg: rgba(255,255,255,0.08)`,
+  `--glass-border: rgba(255,255,255,0.18)`) e as 3 opacidades de blob usadas
+  pelo script (55%, 28%, 40%) foram conferidas linha a linha contra
+  `assets/css/tokens.css` e a seção "Hero (T3.1)" de
+  `assets/css/components.css` — **idênticas**. A correção de opacidade
+  citada na nota do Executor (blob `--color-bg-gradient-2` de 45% para 28%)
+  está de fato aplicada no CSS real (`color-mix(in srgb,
+  var(--color-bg-gradient-2) 28%, transparent)`, linha da regra
+  `background-image` do `.hero`) — não é só uma alegação na nota de
+  implementação.
+- **Resultado da correção, confirmado por este Validador (não apenas
+  aceito da nota do Executor):** `--color-text-inverse-secondary` sobre o
+  blob 2 isolado passou de reprovado (não recalculado por este Validador
+  no valor antigo, mas a lógica de composição confere) para **5.99:1
+  PASS**; o pior caso composto (`.glass-card` sobre o blob mais intenso)
+  para `--color-text-inverse-secondary` mede **4.82:1 PASS** — acima do
+  mínimo AA (4.5:1), mas com margem pequena (0.32). Não é um achado (passa
+  no critério objetivo), mas fica registrado como ponto de atenção para
+  qualquer ajuste futuro de opacidade do mesh gradient ou do `.glass-card`
+  não reduzir essa margem sem revalidar o script.
+- **Achado do Executor sobre `--glass-border` (~1.6:1, abaixo do 3:1 de
+  WCAG 1.4.11) avaliado por este Validador: aceito como não-crítico.** O
+  raciocínio do Executor está correto — `.glass-card` é um container de
+  conteúdo estático, não um controle interativo, e o critério de aceite
+  desta tarefa ("nenhuma pendência crítica de `accessibility-review`") não
+  torna esse item obrigatório; corrigir exigiria mais que dobrar a
+  opacidade da borda, o que seria uma mudança visual perceptível em todo o
+  site (redesenho, vedado por G-12 nesta tarefa). **Concordo com a
+  classificação de não-crítico e com a decisão de documentar em vez de
+  corrigir.**
+- **Correção de heading `apps.html` (h3→h2): verificada e correta.**
+  Contagem de headings fora de comentário confirma: `apps.html` tem
+  `<h1>` "Nossos apps" seguido diretamente de 3 `<h2 class="app-card__name">`
+  (sem pulo de nível); `index.html` mantém `<h3 class="app-card__name">`
+  nos mesmos cards, corretamente, pois ali existe um `<h2
+  class="home-apps__title">` de agrupamento antes deles — nenhuma página
+  ficou com pulo de nível de heading. `sobre.html` e `404.html` não têm
+  grid de cards, não são afetadas por este achado — confirmado que nenhuma
+  delas tem heading algum além do `<h1>` único.
+- **Landmarks semânticos:** `<header>`/`<footer>` implícitos
+  (banner/contentinfo), exatamente 1 `<main id="main">` por página, 2
+  `<nav>` por página com `aria-label` distintos ("Navegação principal" e
+  "Contato") — confirmado nas 4 páginas reais.
+- **Ordem de foco:** nenhum `tabindex` positivo em nenhum arquivo do
+  projeto (varredura própria deste Validador, `grep` por
+  `tabindex="[1-9]`: zero ocorrências); overlay do menu mobile usa `inert`
+  quando fechado abaixo de 768px (T2.2, já validado no Lote 2, não regrediu
+  nesta tarefa — `nav.js` não foi tocado por T4.2).
+- **`prefers-reduced-motion: reduce`:** regra global em `base.css` mais a
+  regra específica do menu mobile em `components.css`, nenhuma das duas
+  tocada por T4.2 — sem regressão.
+- **`alt`/`aria-hidden`:** confirmado por leitura das 4 páginas — 2
+  `.decorative-shape` do Hero com `aria-hidden="true"`; ícone do
+  header/marca com `alt="LJS Software"` (funcional); ícone do rodapé com
+  `alt=""` (decorativo, com texto ao lado); `404` numeral grande de
+  `404.html` com `aria-hidden="true"`. Nenhum ícone decorativo sem
+  `aria-hidden`, nenhum ícone funcional sem `alt` significativo.
+- **`outline: none`:** varredura própria deste Validador em
+  `assets/css/*.css` (`grep` por `outline:\s*none`): a única ocorrência é
+  dentro de um comentário explicativo em `base.css` ("nunca `outline:
+  none` sem substituto"), não uma regra real — confirmado que nenhuma
+  regra de foco remove o indicador sem substituto.
+- **Nenhum arquivo fora do escopo declarado foi tocado:** confirmado que
+  `tokens.css`, `base.css`, `nav.js`, `analytics.js`, `index.html`,
+  `sobre.html`, `404.html` não foram alterados por esta tarefa (só
+  `a11y-contrast-check.js` novo, opacidade do blob 2 e comentários em
+  `components.css`, e os 3 headings de `apps.html`).
+
+### T4.3 — `robots.txt` + `sitemap.xml`
+
+**Veredito: Aprovado.**
+
+- `robots.txt` presente na raiz: `User-agent: *` / `Allow: /`, `Disallow:
+  /assets/css/*.smoke.html` (confirmado que o padrão de fato cobre os 4
+  arquivos de smoke-test reais existentes — `base.smoke.html`,
+  `footer.smoke.html`, `header.smoke.html`, `tokens.smoke.html`, todos em
+  `assets/css/`), `Sitemap: https://ljssoftware.com.br/sitemap.xml`.
+- `sitemap.xml` presente na raiz: XML bem formado (`<?xml
+  version="1.0"...?>`, um único `<urlset>` com namespace correto do
+  protocolo sitemaps.org), 3 `<url>/<loc>` absolutas para as páginas
+  públicas reais (`/`, `/apps.html`, `/sobre.html`) — confirmado que as 3
+  URLs resolvem para arquivos reais na raiz do projeto.
+- **`404.html` corretamente excluído do sitemap** — confirmado por leitura
+  direta (só 3 entradas, nenhuma referência a `404.html`), conforme o
+  critério de aceite e a boa prática de não indexar página de erro.
+- Nenhum build step usado (G-01): 2 arquivos estáticos simples, sem
+  geração automática — confirmado, texto plano/XML sem qualquer marcador
+  de template.
+
+### T4.4 — Arquivo `_headers` (headers de segurança)
+
+**Veredito: Aprovado, com pendência de confirmação em ambiente real
+(não-bloqueante) — natural para este tipo de verificação.**
+
+- `_headers` presente na raiz, sintaxe nativa do Cloudflare Pages, com um
+  único bloco `/*` cobrindo todas as rotas (G-09 satisfeita na parte
+  estaticamente verificável).
+- **CSP revisada diretiva a diretiva contra os recursos reais das 4
+  páginas** (verificação própria deste Validador, não só aceite da nota do
+  Executor):
+  - `script-src 'self' https://static.cloudflarewebanalytics.io` —
+    confirmado por `grep` que as 4 páginas reais só carregam `<script
+    src="assets/js/nav.js" defer>` e `<script src="assets/js/analytics.js"
+    defer>` (mesma origem), nenhum `<script>` inline em nenhuma das 4;
+    coerente com a política.
+  - `style-src 'self' 'unsafe-inline'` — confirmado que `apps.html` e
+    `sobre.html` têm atributos `style=` inline (`grep` por `style=`
+    localizou exatamente essas 2, como a nota do Executor descreve).
+    **Achado de detalhe, não coberto pela nota do Executor:** `404.html`
+    também depende de `'unsafe-inline'` em `style-src`, mas por um `<style>`
+    (bloco `<style>...</style>` no `<head>`, não um atributo `style=`
+    inline) — a diretiva `'unsafe-inline'` de `style-src` já cobre ambos os
+    casos (atributo inline e elemento `<style>`) segundo a especificação
+    CSP, então a política **funciona corretamente para as 4 páginas**; a
+    nota de implementação só documentou 2 dos 3 casos reais de uso de
+    `'unsafe-inline'`. **Classificação: Simples** (divergência factual
+    entre a nota de implementação e o artefato real, sem impacto no
+    critério de aceite — a CSP já é suficiente e correta como está).
+  - `img-src 'self'` — confirmado que o único `<img>` usado nas 4 páginas é
+    `assets/img/logo/logo-ljssoftware-icone.png` (self-hosted).
+  - `font-src 'self'` — confirmado que `@font-face` em `tokens.css` só
+    referencia `../fonts/*.woff2` local, nenhum CDN.
+  - `connect-src 'self' https://static.cloudflarewebanalytics.io` —
+    coerente com o domínio de beacon documentado em `analytics.js` (T2.4),
+    ainda não fisicamente incluído (T5.4 pendente, fora de escopo).
+  - `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`,
+    `frame-ancestors 'none'` — endurecimento padrão, nenhum uso de
+    `<object>`/formulário no site (G-04 não violado: nenhum `<form>`
+    encontrado nas 4 páginas).
+- Demais headers presentes e com valores corretos: `X-Content-Type-Options:
+  nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy:
+  strict-origin-when-cross-origin`, `Permissions-Policy` negando
+  câmera/microfone/geolocalização/pagamento/USB + opt-out de
+  `interest-cohort`.
+- **Parte não verificável localmente, documentada como pendência não-
+  bloqueante (conforme a própria tarefa antecipa):** a aplicação real dos
+  headers em `/*` no preview deploy do Cloudflare Pages e a ausência de
+  erro de bloqueio no console do navegador só podem ser confirmadas após
+  deploy real — recomenda-se que o chapéu DevOps confirme isso na primeira
+  chamada de `/deploy` (preparação de infraestrutura), antes do deploy de
+  produção. Isso **não é tratado como bloqueio** desta validação — é
+  natural para este tipo de verificação e o próprio critério de aceite da
+  tarefa já antecipa essa dependência de ambiente real.
+- Nota de interpretação do domínio do beacon (`static.cloudflarewebanalytics.io`)
+  documentada pelo Executor como sujeita a confirmação em T5.4: aceita —
+  não é um achado desta validação, é uma dependência explícita e correta de
+  tarefa futura já fora do escopo do Lote 4.
+
+### Testes de integração cross-platform
+
+- As 4 páginas continuam carregando os mesmos 3 arquivos CSS e os mesmos 2
+  scripts JS já validados nos Lotes 2/3 — nenhuma regressão de integração
+  introduzida por T4.1-T4.4 (nenhum desses arquivos foi tocado, exceto
+  `components.css`, cuja mudança foi isolada à opacidade de um blob do
+  Hero e a comentários, sem alterar seletores/classes consumidos pelo
+  HTML).
+- `_headers`/`robots.txt`/`sitemap.xml` são arquivos de infraestrutura sem
+  dependência de runtime nas páginas — não há integração cross-page a
+  testar além da resolução de URL já verificada acima.
+
+### Requisitos não funcionais
+
+- Contraste WCAG AA: cobertura completa do design system, incluindo o pior
+  caso composto (`.glass-card` sobre o blob mais intenso do mesh gradient)
+  — reexecutado e PASS (ver T4.2).
+- SEO básico (RF-07): title/description únicos, Open Graph, favicon,
+  sitemap/robots — todos verificados (T4.1/T4.3).
+- Segurança operacional de borda (G-09): `_headers` presente e
+  estaticamente coerente com os recursos reais do site (T4.4); parte
+  dependente de ambiente real sinalizada, não bloqueante.
+- Nenhuma regressão nos requisitos não funcionais já validados nos Lotes
+  1-3 (`prefers-reduced-motion`, `outline` de foco, `alt`/`aria-hidden`,
+  ausência de cookies/tracking além do Cloudflare Web Analytics).
+
+### Achados deste lote (resumo)
+
+| # | Tarefa | Achado | Classificação | Ação |
+|---|---|---|---|---|
+| 1 | T4.4 | Nota de implementação do `_headers` documenta `'unsafe-inline'` de `style-src` como necessário só por atributos `style=` inline em `apps.html`/`sobre.html`, mas `404.html` também depende dessa diretiva por ter um bloco `<style>` no `<head>` — a política já cobre corretamente os 3 casos, é só uma lacuna na documentação da nota, sem impacto funcional | **Simples** | Tarefa criada em `Refatoração Lote-4` (ver Fechamento Estrutural abaixo); T4.4 permanece `Concluída` |
+
+Nenhum achado **Crítico** neste lote. Nenhum achado em T4.1, T4.2 ou T4.3.
+
+## Fechamento Estrutural do Lote 4
+
+- T4.1, T4.2, T4.3, T4.4: todas `Concluída` no `TASK.md`, todas aprovadas
+  pelo chapéu QA nesta validação (T4.4 com 1 achado Simples, sem impacto no
+  critério de aceite central).
+- Dependências da Seção 4 do `TASK.md` relativas ao Lote 4 (T3.1-T3.6 →
+  T4.1/T4.2/T4.3; T4.4 sem dependência de página, paralelizável desde o
+  início): estruturalmente coerentes — confirmado que T4.1/T4.2/T4.3 de
+  fato operam sobre as 4 páginas já concluídas no Lote 3, sem exigir
+  nenhuma dependência não declarada; T4.4 de fato não depende de nenhuma
+  página (arquivo `_headers` isolado na raiz), consistente com o grafo de
+  dependências.
+- Nenhuma tarefa `Bloqueada` sem resolução.
+- Achado Simples de T4.4 (lacuna na documentação da nota de implementação,
+  sem impacto funcional na CSP real) vira tarefa no lote
+  `Refatoração Lote-4`:
+
+  **Refatoração Lote-4**
+  | ID | Tarefa | Origem | Prazo sugerido |
+  |---|---|---|---|
+  | RL4.1 | Atualizar o comentário/nota de `_headers` (ou de `404.html`) para documentar que o `<style>` inline de `404.html` também depende de `style-src 'unsafe-inline'`, junto com os atributos `style=` de `apps.html`/`sobre.html` já documentados | QA-REPORT.md, achado #1 (T4.4) | Antes do deploy de produção (Lote 5); não bloqueia avanço/deploy — a CSP real já está correta |
+
+  Esta tarefa não exige redesenho de dependência/decomposição — não escala
+  ao `coordenador`.
+
+**Veredito geral do Lote 4: Aprovado com ressalvas** (1 achado Simples em
+T4.4, de documentação, sem impacto na CSP real; registrado em
+`Refatoração Lote-4`). O lote está liberado para a auditoria de segurança
+do chapéu DevSecOps (que ainda não rodou sobre este lote) e, em paralelo,
+para o chapéu DevOps considerar este build no fluxo de dupla aprovação
+rumo ao deploy — incluindo a confirmação em ambiente real da aplicação de
+`_headers`/CSP (T4.4), sinalizada acima como pendência não-bloqueante desta
+validação funcional.
+
+---
+
+## Refatoração Lote-1
+
+**Escopo validado:** RL1.1 e RL1.2, ambas com Status `Concluída` no
+`TASK.md` no momento desta validação. Origem: achados Simples do Lote 1
+(QA-REPORT.md, achado #1 de T1.4) e do chapéu DevSecOps (SECURITY-REVIEW.md,
+achado #1) sobre o mesmo lote.
+
+**Metodologia:** os dois artefatos reais foram inspecionados diretamente no
+disco contra o critério de aceite exato do `TASK.md`, sem usar a nota de
+implementação do Executor como base de aprovação (usada só como ponto de
+partida de onde olhar).
+
+- Para RL1.1: script Python ad-hoc lendo o cabeçalho binário do formato ICO
+  (`ICONDIR`/`ICONDIRENTRY`, 6 + 16×N bytes) para contar entradas e extrair
+  largura/altura/tamanho de cada uma; e Pillow (`Image.open(...).info['sizes']`
+  + comparação pixel a pixel via `get_flattened_data()`) para confirmar que o
+  frame de 32×32 embutido no `.ico` é idêntico ao `favicon-32x32.png` já
+  existente e aprovado no Lote 1.
+- Para RL1.2: leitura direta e comparação textual da tag `<meta
+  name="robots">` nos 4 arquivos de smoke-test reais do Lote 1
+  (`tokens.smoke.html`, `base.smoke.html`, `header.smoke.html`,
+  `footer.smoke.html`) — nota: o `TASK.md` referencia "`tokens.smoke.html`/
+  `fonts.smoke.html`" como os 2 arquivos de comparação, mas não existe
+  `fonts.smoke.html` no projeto (T1.2 não tem smoke-test HTML próprio, só o
+  script `fonts.smoke.check.js`, já validado no Lote 1); os smoke-tests HTML
+  reais do lote são os 4 listados acima. Não é um achado desta validação —
+  é uma imprecisão de nomenclatura no `TASK.md`/prompt, sem impacto no
+  critério de aceite de RL1.2, que pede identidade com "os outros 2 arquivos
+  de smoke-test do Lote 1"; usei os 4 disponíveis como universo de
+  comparação, o que é estritamente mais rigoroso que os 2 pedidos.
+
+### RL1.1 — Regenerar `favicon.ico` com 3 resoluções reais
+
+**Veredito: Aprovado.**
+
+- Leitura binária do cabeçalho ICO (`assets/img/favicon/favicon.ico`, 6.957
+  bytes) confirma **3 entradas** (`ICONDIR.count = 3`), exatamente como
+  descrito na nota de implementação:
+  - Entrada 0: 16×16, 32 bpp, 844 bytes, offset 54.
+  - Entrada 1: 32×32, 32 bpp, 2.249 bytes, offset 898.
+  - Entrada 2: 48×48, 32 bpp, 3.810 bytes, offset 3.147.
+- `Pillow` (`Image.open(...).info['sizes']`) confirma o mesmo conjunto:
+  `{(16, 16), (32, 32), (48, 48)}` — bate com o relatado pelo Executor e com
+  a leitura binária independente feita por este Validador.
+- **Glifo não alterado (verificação própria, não só aceite da nota do
+  Executor):** extraí o frame de 32×32 do `.ico` (`Image.open(...)`, `size =
+  (32, 32)`, `.load()`) e comparei pixel a pixel (`get_flattened_data()`,
+  após converter ambos para RGBA) contra `assets/img/favicon/favicon-32x32.png`
+  (já existente e aprovado no Lote 1): **idêntico, PASS** — mesma dimensão,
+  mesmo conteúdo de pixel em todos os canais RGBA.
+- Critério de aceite de RL1.1 ("cabeçalho ICO contém as 3 imagens embutidas
+  — 16/32/48px —, sem alterar o glifo/arte do ícone") **satisfeito
+  integralmente**, com evidência binária e visual própria, não apenas a nota
+  do Executor.
+
+### RL1.2 — Adicionar `<meta name="robots">` em `base.smoke.html`
+
+**Veredito: Aprovado.**
+
+- `assets/css/base.smoke.html`, linha 7: `<meta name="robots"
+  content="noindex, nofollow">`, imediatamente após `<title>` — confirmado
+  por leitura direta do arquivo.
+- Comparação textual byte a byte da tag contra os outros 3 arquivos de
+  smoke-test HTML reais do Lote 1:
+  - `tokens.smoke.html` (linha 6): `<meta name="robots" content="noindex,
+    nofollow">` — idêntico.
+  - `header.smoke.html` (linha 6): `<meta name="robots" content="noindex,
+    nofollow">` — idêntico.
+  - `footer.smoke.html` (linha 7): `<meta name="robots" content="noindex,
+    nofollow">` — idêntico.
+- **Idêntico nos 4 arquivos**, sem nenhuma variação de atributo, espaçamento
+  ou capitalização. Critério de aceite de RL1.2 satisfeito (a exigência
+  original — identidade com pelo menos os outros 2 arquivos citados —
+  é subsumida por esta comparação mais ampla, com resultado PASS).
+- Nenhuma outra linha de `base.smoke.html` foi alterada — confirmado por
+  leitura integral do arquivo (135 linhas), conteúdo do restante idêntico ao
+  já validado no Lote 1 (T1.3).
+
+### Testes de integração cross-platform
+
+**N/A para este lote.** RL1.1 e RL1.2 são ajustes pontuais e independentes
+sobre artefatos isolados (um `.ico` binário e um arquivo de smoke-test que
+não faz parte do fluxo de páginas reais do site) — nenhuma dependência
+cruzada entre eles nem com outro lote.
+
+### Requisitos não funcionais
+
+- Nenhum requisito não funcional novo introduzido por este lote de
+  refatoração — RL1.1 é uma correção de fidelidade de artefato binário
+  (não uma mudança de UX/performance/acessibilidade observável além do já
+  coberto no Lote 1); RL1.2 é uma correção de metadado de indexação em um
+  arquivo que já era `noindex` de fato (não é servido/linkado pelo site
+  público), reduzindo apenas o risco residual documentado pelo DevSecOps.
+
+### Achados deste lote
+
+Nenhum achado Crítico nem Simples identificado em RL1.1 ou RL1.2 nesta
+validação. Ambas as tarefas satisfazem integralmente o critério de aceite
+original, confirmado por inspeção direta e independente dos artefatos reais
+(binário do `.ico` e texto dos 4 arquivos de smoke-test).
+
+## Fechamento Estrutural do lote Refatoração Lote-1
+
+- RL1.1 e RL1.2: ambas `Concluída` no `TASK.md`, ambas aprovadas pelo
+  chapéu QA nesta validação, sem achado pendente.
+- Dependências da Seção 4 do `TASK.md` relativas a este lote ("nenhuma
+  dependência de outro lote para começar"; "RL1.1 e RL1.2 são independentes
+  entre si"): confirmadas coerentes com os artefatos reais — RL1.1 tocou
+  apenas `favicon.ico`, RL1.2 tocou apenas `base.smoke.html`, nenhum dos
+  dois arquivos referencia ou depende do outro.
+- Nenhuma tarefa `Bloqueada` sem resolução.
+- Nenhum achado simples/débito novo deste lote — não há nova entrada a
+  criar em `Refatoração Lote-1` (o próprio lote já está com as 2 tarefas de
+  origem concluídas e aprovadas) nem em qualquer outro lote de refatoração.
+- Nada nesta checagem exige redesenho de dependência/decomposição — não
+  escala ao `coordenador`. A única observação registrada (nomenclatura
+  imprecisa "`fonts.smoke.html`" no `TASK.md`, que não existe como arquivo)
+  é cosmética, não afeta nenhum critério de aceite nem grafo de
+  dependências, e não justifica uma nova tarefa de correção.
+
+**Veredito geral do lote Refatoração Lote-1: Aprovado.** RL1.1 e RL1.2
+aprovadas sem ressalvas, com evidência binária/textual própria deste
+Validador (não apoiada apenas na nota de implementação do Executor). Lote
+estruturalmente fechado — liberado para a auditoria de segurança do chapéu
+DevSecOps sobre este lote específico e, em paralelo, para o chapéu DevOps
+considerar este build no fluxo de dupla aprovação rumo ao deploy.
+
+---
+
+## Refatoração Lote-4
+
+**Escopo validado:** RL4.1 (única tarefa do lote), com Status `Concluída` no
+`TASK.md` no momento desta validação. Origem: achado Simples #1 do Lote 4
+(QA-REPORT.md, achado #1 de T4.4 — lacuna de documentação sobre `_headers`).
+
+**Metodologia:** o arquivo real `_headers` foi lido integralmente na raiz do
+projeto, sem usar a nota de implementação do Executor como base de
+aprovação (usada só como ponto de partida de onde olhar); `404.html`,
+`apps.html` e `sobre.html` foram lidos/grepados diretamente para confirmar
+as afirmações factuais do novo comentário.
+
+### RL4.1 — Atualizar o comentário/nota de `_headers` sobre `style-src 'unsafe-inline'`
+
+**Veredito: Aprovado, com 1 achado Simples anexado (ver abaixo) — tarefa
+permanece `Concluída`.**
+
+- **Citação dos 3 arquivos (critério de aceite central):** `_headers`,
+  linhas 1-9, confirma o comentário citando explicitamente os 3 arquivos
+  exigidos — `apps.html` e `sobre.html` (padrão "atributo de estilo
+  inline") e `404.html` (padrão "elemento de estilo inline", bloco
+  `<style>...</style>` completo) — como dependentes de `'unsafe-inline'`
+  em `style-src`, com a justificativa correta (ambos os padrões exigem a
+  diretiva segundo a especificação CSP). **Critério de aceite satisfeito
+  integralmente.**
+- **`404.html` tem de fato um bloco `<style>`, não um atributo `style=`:**
+  confirmado por leitura direta de `404.html`, linhas 20-70 — um único
+  bloco `<style>...</style>` no `<head>` (regras `.error-page*`), nenhum
+  atributo `style=` inline nesse arquivo. A afirmação factual do novo
+  comentário está correta.
+- **Nenhuma mudança na CSP real:** a diretiva `style-src 'self'
+  'unsafe-inline'` no `_headers` atual é textualmente idêntica à mesma
+  diretiva já documentada e aprovada como correta na auditoria de
+  segurança do Lote 4 (`.md/SECURITY-REVIEW.md`, linha 701) — nenhuma
+  palavra alterada em `style-src` especificamente. Nota: a linha completa
+  de `Content-Security-Policy` no `_headers` atual difere da registrada em
+  `SECURITY-REVIEW.md` no domínio de `script-src`/`connect-src`
+  (`static.cloudflarewebanalytics.io` → `static.cloudflareinsights.com`/
+  `cloudflareinsights.com`) — mudança de uma correção separada e já
+  documentada no próprio arquivo (linhas 11-22, "CORRECAO (Validador,
+  chapeu DevOps, preparação de T5.4)"), fora do escopo de RL4.1 e sem
+  relação com `style-src`; não é um achado desta tarefa.
+- **Achado Simples (novo, desta validação) — referência de linha incorreta
+  para `apps.html`:** o comentário afirma que os atributos `style=` de
+  `apps.html` estão nas "linhas ~67-68" (`_headers`, linha 2-3). Grep
+  direto em `apps.html` mostra os 2 atributos `style=` reais nas linhas
+  **78-79**, não 67-68 — divergência de 11 linhas. Para comparação, a
+  mesma afirmação sobre `sobre.html` ("linhas ~51-69") bate com os 5
+  atributos `style=` reais encontrados nas linhas 51, 52, 53, 63 e 69
+  (grep confirma). **Classificação: Simples** — é um detalhe de precisão
+  numa referência de linha dentro de um comentário de documentação, sem
+  impacto no critério de aceite central de RL4.1 (que exige apenas citar
+  os 3 arquivos como dependentes de `'unsafe-inline'`, o que está correto)
+  e sem qualquer impacto na CSP real ou em qualquer outra tarefa do lote.
+  RL4.1 **permanece `Concluída`**; o achado vira tarefa em
+  `Refatoração Lote-4` (ver Fechamento Estrutural abaixo), não retorno ao
+  `executor`.
+
+### Testes de integração cross-platform
+
+**N/A para este lote.** RL4.1 é um ajuste pontual de comentário em um único
+arquivo de configuração de headers (`_headers`), sem dependência cruzada
+com outro artefato/lote.
+
+### Requisitos não funcionais
+
+**N/A para este lote.** Mudança é puramente documental (comentário `#`),
+sem efeito observável de performance/usabilidade/acessibilidade — a CSP
+real já era e continua a mesma para efeitos de `style-src`.
+
+### Achados deste lote
+
+| # | Tarefa | Achado | Classificação | Ação |
+|---|---|---|---|---|
+| 1 | RL4.1 | Comentário novo em `_headers` cita "linhas ~67-68" para os atributos `style=` de `apps.html`, mas os 2 atributos reais estão nas linhas 78-79 (grep confirma) — a referência de `sobre.html` ("~51-69") está correta | **Simples** | Tarefa criada em `Refatoração Lote-4` (ver Fechamento Estrutural abaixo); RL4.1 permanece `Concluída` |
+
+Nenhum achado **Crítico** neste lote.
+
+## Fechamento Estrutural do lote Refatoração Lote-4
+
+- RL4.1: única tarefa do lote, `Concluída` no `TASK.md`, aprovada pelo
+  chapéu QA nesta validação (com 1 achado Simples, sem impacto no critério
+  de aceite central).
+- Dependências da Seção 4 do `TASK.md` relativas a este lote ("nenhuma
+  dependência de outro lote para começar"): confirmadas coerentes — RL4.1
+  tocou apenas `_headers`, arquivo isolado, sem referenciar nem depender de
+  nenhuma tarefa de outro lote.
+- Nenhuma tarefa `Bloqueada` sem resolução.
+- Achado Simples de RL4.1 (referência de linha incorreta para `apps.html`
+  no comentário de `_headers`) vira nova tarefa no mesmo lote:
+
+  **Refatoração Lote-4** (atualizado)
+  | ID | Tarefa | Origem | Prazo sugerido |
+  |---|---|---|---|
+  | RL4.1 | *(já `Concluída` — ver acima)* | — | — |
+  | RL4.2 | Corrigir a referência de linha de `apps.html` no comentário de `_headers` (de "linhas ~67-68" para as linhas reais dos 2 atributos `style=`, hoje 78-79 — reconferir no momento da correção, pois pode mudar se o arquivo for editado) | QA-REPORT.md, achado #1 (RL4.1) | Antes do deploy de produção (Lote 5); não bloqueia avanço/deploy — é só uma imprecisão de comentário, sem efeito na CSP real |
+
+  Esta tarefa não exige redesenho de dependência/decomposição — não escala
+  ao `coordenador`.
+
+**Veredito geral do lote Refatoração Lote-4: Aprovado com ressalvas** (1
+achado Simples em RL4.1, uma referência de linha imprecisa dentro do
+comentário, sem impacto na citação dos 3 arquivos exigida pelo critério de
+aceite nem na CSP real; registrado como RL4.2 em `Refatoração Lote-4`). O
+lote está estruturalmente fechado (única tarefa, sem dependência externa,
+nenhuma tarefa `Bloqueada`) e liberado para a auditoria de segurança do
+chapéu DevSecOps sobre este lote específico e, em paralelo, para o chapéu
+DevOps considerar este build no fluxo de dupla aprovação rumo ao deploy.

@@ -10,8 +10,13 @@
  *   — incluir em toda página que contenha o rodapé (`.footer-link`) e/ou a
  *   seção de contato da Home (T3.3), depois do beacon oficial de Cloudflare
  *   Web Analytics (T5.4):
- *   <script defer src='https://static.cloudflarewebanalytics.io/beacon.min.js'
+ *   <script defer src='https://static.cloudflareinsights.com/beacon.min.js'
  *     data-cf-beacon='{"token": "..."}'></script>
+ *   CORREÇÃO (Validador, chapéu DevOps, /deploy Seção 1): o domínio correto
+ *   documentado pela Cloudflare é static.cloudflareinsights.com (não
+ *   static.cloudflarewebanalytics.io, usado erroneamente nesta nota
+ *   original de T2.4) — já corrigido também em `_headers` (script-src/
+ *   connect-src). Ver .md/DEPLOY.md, T5.4.
  *
  * ADR-003 / GUARDRAILS.md G-03: única ferramenta de analytics permitida é o
  * Cloudflare Web Analytics. Este arquivo NÃO usa cookies, NÃO usa

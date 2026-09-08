@@ -1,0 +1,18 @@
+# _redirects — Cloudflare Pages (T5.3, Lote 5)
+#
+# Redirect 301 de www.ljssoftware.com.br para o domínio apex
+# (ljssoftware.com.br), conforme TASK.md T5.3 e SDD.md/ADR-002 (domínio
+# canônico é o apex — ver og:url/canonical já usando ljssoftware.com.br em
+# todas as 4 páginas, sem "www").
+#
+# Formato suportado nativamente pelo Cloudflare Pages: quando os dois
+# domínios (apex e www) estão anexados ao MESMO projeto Pages (pré-condição:
+# T5.2 concluída), uma origem com hostname completo redireciona entre
+# domínios. "Always Use HTTPS" (também T5.3, habilitado no painel) cobre o
+# redirect http->https automaticamente e não depende deste arquivo.
+#
+# Pré-requisito para esta regra funcionar: www.ljssoftware.com.br precisa
+# estar adicionado como domínio customizado no mesmo projeto Cloudflare
+# Pages (ação manual do usuário, ver .md/DEPLOY.md, T5.2/T5.3).
+
+https://www.ljssoftware.com.br/* https://ljssoftware.com.br/:splat 301!

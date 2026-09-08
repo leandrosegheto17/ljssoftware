@@ -649,3 +649,479 @@ de dependências/tarefas `Bloqueada`), que este Validador realiza a
 seguir, e ao débito de baixa severidade já pendente desde o Lote 1
 (RL1.2, `assets/css/base.smoke.html` sem tag `robots`), que continua sem
 prazo vencido (ainda antes do deploy de produção, Lote 5).
+
+---
+
+## Lote 4 — SEO, Acessibilidade e Segurança Transversal
+
+**Escopo auditado:** T4.1-T4.4 — já aprovadas funcionalmente pelo chapéu QA
+(`QA-REPORT.md`, seção "Lote 4", veredito "Aprovado com ressalvas", 1 achado
+Simples em T4.4 sem relação com segurança — lacuna na nota de implementação
+sobre quais páginas dependem de `style-src 'unsafe-inline'`, sem impacto na
+CSP real). Pré-condição de auditoria satisfeita.
+
+**Natureza do lote:** primeiro lote a introduzir headers de segurança HTTP
+(`_headers`, T4.4 — implementa G-09, antes pendente) e metadados SEO/Open
+Graph com URLs absolutas do domínio de produção (T4.1). T4.2 altera só CSS
+(opacidade de um blob do gradiente) e 3 headings em `apps.html`; T4.3
+introduz `robots.txt`/`sitemap.xml`. Continua sem lógica de servidor, sem
+endpoint, sem formulário (G-04 seguindo intacto) — a superfície de ataque
+cresce qualitativamente pela primeira vez neste lote (headers de borda), não
+por código novo executado no navegador.
+
+**Metodologia:** leitura linha a linha de `_headers` (a peça central deste
+lote do ponto de vista de segurança) contra os recursos reais das 4 páginas
+(reexecução independente da varredura de `style=`/`<style>`/`<script>`
+inline e de domínio externo, não aceite da nota do Executor nem do QA como
+prova), leitura de `robots.txt`/`sitemap.xml` por rota sensível vazada,
+leitura completa das 16 novas tags Open Graph (4 por página) por URL de
+domínio não autorizado ou dado sensível, leitura de `assets/css/a11y-
+contrast-check.js` por I/O de rede/dependência externa (mesma checagem já
+aplicada aos scripts Node dos Lotes 1/2), varredura por segredo/token
+embutido em todos os arquivos novos/alterados do lote, e confirmação do
+status atual de RL1.2 (débito de segurança do Lote 1) no `TASK.md`.
+
+### Arquivos auditados
+
+`_headers`, `robots.txt`, `sitemap.xml`, `assets/css/a11y-contrast-check.js`,
+as 16 tags Open Graph/favicon novas em `index.html`, `apps.html`,
+`sobre.html`, `404.html` (cabeçalho `<head>` completo de cada uma), o bloco
+`<style>` inline de `404.html`, os atributos `style=` inline de `apps.html`/
+`sobre.html`, e a seção "Hero (T3.1)" de `assets/css/components.css`
+(checagem de não-contaminação da mudança de opacidade do blob).
+
+### 1. `_headers` — CSP e demais headers de segurança (G-09, tarefa mais relevante do lote)
+
+**Achado: nenhum bloqueante; 1 ponto de atenção avaliado e aceito (não vira débito separado).**
+
+Leitura linha a linha do arquivo real:
+
+```
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflarewebanalytics.io; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self' https://static.cloudflarewebanalytics.io; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+```
+
+- **(a) Domínio externo único e autorizado — confirmado.** `grep` deste
+  Validador por `https?://` no arquivo inteiro retorna exatamente 2
+  ocorrências, ambas `https://static.cloudflarewebanalytics.io` (em
+  `script-src` e `connect-src`) — nenhum outro domínio em nenhuma diretiva.
+  Esse é precisamente o host do beacon do Cloudflare Web Analytics já
+  documentado em `assets/js/analytics.js` (T2.4) e autorizado por
+  ADR-003/G-11 (única ferramenta de analytics permitida sem novo ADR).
+  Nenhum CDN de fonte, script de terceiro, tag manager ou pixel de
+  rastreamento aparece em nenhuma diretiva. G-11/ADR-003 satisfeitas também
+  na camada de headers, não só no código-fonte já auditado nos Lotes 1-3.
+- **(b) `style-src 'self' 'unsafe-inline'` — necessidade reconfirmada
+  independentemente, e 1 caso a mais do que a nota do Executor documentou
+  (mesmo achado já capturado pelo QA como RL4.1).** Varredura própria deste
+  Validador (`grep` por `style=` e por `<style` nas 4 páginas): confirma
+  `apps.html` (linha 78-79, atributo `style=`), `sobre.html` (linhas 51-69,
+  atributos `style=`) e **`404.html`** (linhas 20-70, bloco
+  `<style>...</style>` completo no `<head>`) — os 3 casos dependem de
+  `'unsafe-inline'` para não serem bloqueados pela CSP. A diretiva cobre os
+  3 corretamente (a especificação CSP não distingui `style=` inline de
+  `<style>` inline para efeito de `'unsafe-inline'` em `style-src`) — a
+  política real já é suficiente e correta, confirmando a conclusão do QA de
+  que o achado é só uma lacuna na documentação da nota (RL4.1), não um
+  problema funcional/de segurança na CSP.
+  - **Avaliação de segurança adicional deste Validador (dimensão não
+    coberta pelo achado do QA, que tratou só da documentação):**
+    `'unsafe-inline'` em `style-src` é, por definição, um relaxamento da CSP
+    — mas o vetor de ataque que ele reabre é especificamente CSS-based
+    attribute/data exfiltration (ex.: seletores de atributo `input[value^=
+    "a"]` para inferir caractere a caractere um valor de formulário, ou
+    `@import`/`url()` disparando requisição condicional) e "CSS injection"
+    via `<style>` controlado por um atacante — nenhum dos dois se aplica
+    aqui: (i) o site não tem `<form>`/`<input>` de dado sensível (G-04, RF-04
+    — não há nada para um atacante inferir via seletor CSS malicioso); (ii)
+    os 3 casos de CSS inline são texto estático do próprio código-fonte
+    versionado, não gerado a partir de input do usuário/parâmetro de
+    URL/dado de terceiro — não há caminho para um atacante injetar `style=`/
+    `<style>` arbitrário nessas páginas (ausência de XSS confirmada nos
+    Lotes 1-3, reafirmada aqui: nenhuma interpolação de string em HTML,
+    `innerHTML`, ou template no lado cliente). **Conclusão: o relaxamento é
+    necessário, o risco residual é teoricamente não-nulo mas praticamente
+    inexplorável na arquitetura atual do site (sem input de usuário, sem
+    geração dinâmica de HTML/CSS) — não atinge o limiar de severidade Baixa
+    para virar um item de débito separado.** Não duplica RL4.1 (que trata só
+    da lacuna de documentação); nenhuma nova entrada de `Refatoração
+    Lote-4` criada por este achado.
+- **(c) `X-Frame-Options: DENY` e `frame-ancestors 'none'` — presentes e
+  coerentes.** Os dois mecanismos (header legado + diretiva CSP moderna)
+  bloqueiam clickjacking via `<iframe>`/`<frame>`/`<object>`/`<embed>` de
+  qualquer origem, incluindo a própria (`'none'`, não `'self'`) —
+  apropriado para um site institucional sem necessidade de ser embutido em
+  nenhum contexto. Redundância intencional (cobertura de navegadores que só
+  suportam um dos dois mecanismos), não um erro.
+- **(d) `Referrer-Policy: strict-origin-when-cross-origin` e
+  `Permissions-Policy` — adequados.** `strict-origin-when-cross-origin` é o
+  valor padrão recomendado atual (envia origem completa só em navegação
+  same-origin/HTTPS-para-HTTPS, reduzido para só a origem em cross-origin,
+  nada em downgrade HTTPS→HTTP) — coerente com G-08 (HTTPS obrigatório,
+  ainda pendente de ativação no Lote 5, mas a política já antecipa o
+  comportamento correto). `Permissions-Policy` nega `camera`, `microphone`,
+  `geolocation`, `payment`, `usb` — nenhum desses recursos é usado pelo
+  site, negação por padrão é a prática correta — e inclui `interest-
+  cohort=()`, opt-out explícito do FLoC/Topics (tracking baseado em
+  cohort do navegador, fora do controle de cookies/JS do próprio site) —
+  reforça G-03 (nenhum tracking além do Cloudflare Web Analytics) mesmo
+  contra mecanismo de rastreamento embutido no navegador do visitante.
+- **(e) Cobertura de rota — `/*`, todas as rotas, conforme G-09.** Único
+  bloco no arquivo, path `/*` — confirmado que não há bloco mais específico
+  nem exceção que reduza a cobertura a um subconjunto de páginas. As 4
+  páginas reais, os arquivos de smoke-test (se publicados) e qualquer rota
+  futura ficam igualmente cobertos.
+- **(f) Nenhum segredo/token embutido.** Varredura por padrões de segredo
+  (`api[_-]?key`, `secret`, `password`, chave privada, `AKIA`, `Bearer `,
+  `token`) no arquivo inteiro: zero ocorrências — `_headers` não contém
+  nenhuma credencial, nem mesmo o token público do Cloudflare Web Analytics
+  (que só será inserido em T5.4, no HTML das páginas via `data-cf-beacon`,
+  não neste arquivo).
+- **Confirmação independente de que as diretivas restritivas (`default-src
+  'self'`, `img-src 'self'`, `font-src 'self'`, `object-src 'none'`,
+  `base-uri 'self'`, `form-action 'self'`) não bloqueiam nenhum recurso
+  real:** reconfirmado por leitura das 4 páginas e de `assets/css/*.css` —
+  único `<img>` é local (`assets/img/logo/...`), `@font-face` só referencia
+  `.woff2` local, nenhum `<object>`/`<embed>`, nenhum `<form>` (G-04),
+  nenhuma navegação `base` customizada.
+- **Pendência não-bloqueante, já sinalizada pelo QA, reafirmada aqui do
+  ponto de vista de segurança:** a aplicação real dos headers em produção
+  (preview deploy do Cloudflare Pages) e a ausência de erro de bloqueio no
+  console do navegador só são verificáveis após deploy — este Validador não
+  trata isso como achado nem como bloqueio desta auditoria estática; é
+  responsabilidade do chapéu DevOps confirmar na preparação de
+  infraestrutura (`/deploy`, primeira chamada) antes do deploy de produção.
+
+### 2. Meta tags SEO/Open Graph (T4.1) — domínio externo e vazamento de metadado
+
+**Achado: nenhum.**
+
+- Varredura própria (`grep` por `https?://` nas 16 tags Open Graph + tags
+  de favicon das 4 páginas): a única URL absoluta usada em `og:image`/
+  `og:url` em todas as 4 páginas é `https://ljssoftware.com.br/...` — o
+  domínio de produção real do projeto, documentado em `SDD.md` Seção 3
+  (`ljssoftware.com.br`) e no fluxograma de arquitetura (linha 54), e
+  citado em ADR-002 (hospedagem/DNS) — não um domínio externo/de terceiro.
+  Nenhuma outra tag `<meta>` introduzida por T4.1 referencia URL de
+  domínio diferente.
+- `og:image` aponta para `assets/img/logo/logo-ljssoftware-transparente.png`
+  — arquivo real, local, já auditado nos Lotes 1/3 (G-14, nenhuma arte
+  nova) — não expõe nenhum ativo novo nem dado sensível (é o logotipo
+  público da marca).
+- `og:title`/`og:description` espelham `<title>`/`meta description` já
+  auditados funcionalmente pelo QA — nenhum conteúdo além do texto
+  institucional público das próprias páginas; nenhum comentário/atributo
+  novo introduzido por T4.1 contém caminho local, credencial ou informação
+  de ambiente de desenvolvimento.
+- `<link rel="icon">`/`apple-touch-icon>` referenciam só os 4 arquivos de
+  favicon já existentes e auditados em T1.4 (Lote 1) — nenhum arquivo novo
+  de favicon introduzido, nenhuma superfície nova.
+
+### 3. `robots.txt` / `sitemap.xml` (T4.3) — vazamento de rota sensível
+
+**Achado: nenhum.**
+
+- `robots.txt`: `User-agent: *` / `Allow: /` (permissivo, esperado para site
+  institucional público) + `Disallow: /assets/css/*.smoke.html` — o padrão
+  cobre `base.smoke.html`, `footer.smoke.html`, `header.smoke.html`,
+  `tokens.smoke.html` (os 4 arquivos de smoke-test residentes em
+  `assets/css/`, confirmado por listagem de diretório), reforçando em
+  camada de crawler a tag `<meta name="robots" content="noindex,
+  nofollow">` que cada um já tem individualmente (Lotes 1/2, incluindo
+  `base.smoke.html` — ver item 4 abaixo, RL1.2 agora corrigida). Nenhuma
+  rota de desenvolvimento/admin/staging (ex.: `/admin`, `/dev`, `/.git`,
+  `/config`) é mencionada em nenhuma direção — nem para permitir nem para
+  bloquear, coerente com "site sem servidor/backend" (G-01/G-04).
+  `Sitemap: https://ljssoftware.com.br/sitemap.xml` aponta para o próprio
+  arquivo do domínio de produção, sem vazamento.
+- **Ponto observado, não um achado:** `assets/fonts/fonts.smoke.check.js`
+  (fora de `assets/css/`) não está coberto pelo padrão `Disallow` de
+  `robots.txt`, que só cobre `assets/css/*.smoke.html` — mas esse arquivo
+  já tem sua própria tag `<meta name="robots" content="noindex, nofollow">`
+  desde o Lote 1 (auditado e confirmado então), que é a camada de proteção
+  primária contra indexação (funciona independente de `robots.txt`); o
+  `Disallow` de `robots.txt` é reforço defensivo adicional, não a única
+  barreira. Não é uma lacuna de segurança — é o mesmo risco residual de
+  publicação indevida de artefato de desenvolvimento já registrado desde o
+  Lote 1 (recomendação operacional ao chapéu DevOps: pipeline de deploy
+  deve publicar só as páginas reais).
+- `sitemap.xml`: XML bem formado, 3 `<loc>` absolutas em
+  `https://ljssoftware.com.br/`, `404.html` corretamente excluído — nenhuma
+  URL de rota não-pública, nenhum parâmetro de query sensível, nenhum
+  identificador interno.
+
+### 4. `assets/css/a11y-contrast-check.js` (T4.2) — escopo de execução (mesma checagem dos Lotes 1/2)
+
+**Achado: nenhum; confirmação do padrão já aprovado.**
+
+- Leitura completa do arquivo: script Node standalone, sem `require`/
+  `import` de módulo de terceiro (`package.json` inexistente, coerente com
+  G-01), sem nenhuma chamada de rede (`fetch`/`http.request`/`https.get`),
+  sem `fs.writeFileSync`/escrita em disco — só funções puras de cálculo de
+  cor/contraste (`srgbToLinear`, `relativeLuminance`, `compositeOver`,
+  `contrastRatio`) operando sobre constantes hexadecimais hardcoded no
+  próprio arquivo, sem leitura de arquivo externo (diferente de
+  `tokens.contrast-check.js`/`fonts.smoke.check.js`, T1.1/T1.2, que liam
+  arquivos do repositório — aqui nem isso: os valores são copiados
+  manualmente dos tokens reais, conferidos linha a linha por este Validador
+  contra `tokens.css`/`components.css`, mesma verificação já registrada
+  pelo QA).
+- `grep` por `<script.*a11y-contrast-check` nas 4 páginas reais e em
+  qualquer `.html` do projeto: nenhuma ocorrência — não é servido ao
+  visitante, é ferramenta de desenvolvimento/CI local, mesmo padrão de
+  `tokens.contrast-check.js`/`fonts.smoke.check.js` já auditado no Lote 1.
+- Mudança de opacidade do blob 2 do Hero (`components.css`, seção
+  "Hero (T3.1)") e os 3 headings alterados em `apps.html`: confirmado por
+  leitura direta que ambas as mudanças são estritamente CSS declarativo
+  (`color-mix()`, `background-image`) e troca de tag semântica
+  (`<h3>`→`<h2>`) — nenhum atributo de evento, nenhum `<script>` novo,
+  nenhuma URL/CDN introduzida por essas 2 alterações. Não introduz nada
+  fora do escopo CSS/HTML declarativo, conforme escopo desta auditoria.
+
+### 5. Dado sensível / segredo commitado (varredura geral do lote)
+
+**Achado: nenhum.**
+
+- Varredura por padrões de segredo (`api[_-]?key`, `secret`, `password`,
+  chave privada, `AKIA`, `Bearer `, `token`) em todos os arquivos
+  novos/alterados do lote (`_headers`, `robots.txt`, `sitemap.xml`,
+  `a11y-contrast-check.js`, as 4 páginas HTML, `components.css`): nenhuma
+  ocorrência de segredo real. Nenhum arquivo binário novo neste lote.
+
+### 6. Conformidade regulatória (LGPD)
+
+**N/A / sem mudança de conclusão.** T4.1-T4.4 não introduzem nenhuma coleta,
+processamento ou exposição de dado pessoal do visitante: meta tags SEO são
+metadado público de página, `_headers` é configuração de borda sem payload
+de dado de visitante, `robots.txt`/`sitemap.xml` são arquivos de descoberta
+de crawler, e a auditoria de acessibilidade (T4.2) não toca em nenhum ponto
+de coleta de dado. Mesma conclusão já registrada nos Lotes 1-3 — beacon do
+Cloudflare Web Analytics continua inativo (T5.4 pendente).
+
+### 7. Confirmação do débito de segurança pendente do Lote 1 (RL1.2)
+
+**RL1.2 — corrigida, fora do escopo deste lote, confirmado por leitura do `TASK.md`.**
+
+- `TASK.md`, seção "Refatoração Lote-1": RL1.2 (`<meta name="robots"
+  content="noindex, nofollow">` em `assets/css/base.smoke.html`) está com
+  Status **`Concluída`** — confirmado também por leitura direta do arquivo
+  (`assets/css/base.smoke.html` tem a tag, na mesma posição/formatação dos
+  outros 3 smoke-tests). O débito de baixa severidade do Lote 1 não está
+  mais em aberto; não há prazo a monitorar para ele.
+- RL1.1 (favicon.ico multi-tamanho) segue **Pendente** no `TASK.md` — não é
+  um item de segurança (é achado funcional do QA sobre fidelidade de
+  metadado do ícone), fora do escopo desta auditoria de segurança; sinalizado
+  apenas para registro de que não foi perdido de vista, mesmo prazo já
+  definido (antes do deploy de produção, Lote 5).
+
+### 8. Requisitos de segurança operacional para o chapéu DevOps
+
+- Confirmar em preview deploy real (primeira chamada de `/deploy`, antes do
+  deploy de produção): headers de `_headers` de fato aplicados a `/*` e
+  ausência de erro de bloqueio de CSP no console do navegador nas 4
+  páginas — pendência estática já antecipada pelo QA e por este Validador,
+  não bloqueante, mas deve ser checklist item do chapéu DevOps antes de
+  liberar produção.
+- G-08 (HTTPS obrigatório + redirect automático) é escopo do Lote 5 (T5.3)
+  — `Referrer-Policy: strict-origin-when-cross-origin` já configurado
+  antecipando esse comportamento, mas a ativação real do "Always Use
+  HTTPS" e do redirect `www`→apex continua pendente, fora deste lote.
+- Mantém-se a recomendação já registrada nos Lotes 1-3: o pipeline de
+  deploy deve publicar só as páginas reais + assets associados, excluindo
+  `*.smoke.html`/scripts de verificação Node (`tokens.contrast-check.js`,
+  `fonts.smoke.check.js`, e agora também `a11y-contrast-check.js`).
+- Quando T5.4 habilitar o beacon real do Cloudflare Web Analytics,
+  reconfirmar que o domínio físico do `<script src=...>` inserido no HTML
+  bate exatamente com `https://static.cloudflarewebanalytics.io` já
+  liberado em `script-src`/`connect-src` de `_headers` — se o domínio
+  oficial divergir nesse momento (já sinalizado como possível pela nota do
+  Executor em T4.4), `_headers` precisa de ajuste pontual antes do beacon
+  funcionar, senão a CSP bloqueará o próprio analytics.
+
+---
+
+## Achados deste lote (resumo)
+
+| # | Item | Severidade | Status | Ação |
+|---|---|---|---|---|
+| — | Nenhum achado novo de severidade Baixa, Média, Alta ou Crítica neste lote | — | — | — |
+
+Nenhum achado **Alto/Crítico** neste lote. Nenhum achado de compliance
+obrigatório em aberto. O achado Simples do QA em T4.4 (RL4.1, lacuna de
+documentação sobre `404.html` também depender de `style-src
+'unsafe-inline'`) foi confirmado e ampliado com uma avaliação de segurança
+própria deste Validador (item 1.b acima) — concluída como risco residual
+não explorável na arquitetura atual do site, sem gerar uma nova entrada de
+débito em `Refatoração Lote-4` (não duplica RL4.1).
+
+## Fechamento — Lote 4 (chapéu DevSecOps)
+
+- Nenhum achado de severidade alta/crítica.
+- Nenhum item de compliance obrigatório pendente (LGPD: N/A).
+- Nenhum item novo de débito de baixa/média severidade a registrar em
+  `Refatoração Lote-4` — o único achado do lote (RL4.1, do QA) já está
+  registrado e é de documentação, sem dimensão de segurança adicional que
+  justifique item próprio (avaliado e descartado no item 1.b acima).
+- Débito de segurança do Lote 1 (RL1.2) confirmado **corrigido** — não há
+  mais prazo a monitorar antes do deploy de produção por conta dele.
+- Nenhum achado de relevância estratégica a sinalizar ao Gestor neste lote.
+- Nada nesta auditoria exige redesenho de dependência/decomposição — não
+  escala ao `coordenador`.
+
+**Veredito geral do Lote 4 (chapéu DevSecOps): Aprovado, sem ressalvas e
+sem débito de segurança novo registrado.** A CSP de `_headers` restringe
+corretamente a `'self'` + o único domínio de beacon autorizado
+(ADR-003/G-11), `X-Frame-Options: DENY`/`frame-ancestors 'none'` protegem
+contra clickjacking, `Referrer-Policy`/`Permissions-Policy` estão
+adequados, a cobertura é `/*` (G-09 satisfeita) e nenhum segredo está
+embutido no arquivo. Nenhum achado bloqueia deploy. Combinado com o
+veredito funcional do chapéu QA ("Aprovado com ressalvas", 1 achado Simples
+de documentação, `QA-REPORT.md`), o Lote 4 tem a dupla aprovação (QA +
+DevSecOps) necessária para o chapéu DevOps considerar este build no fluxo
+de deploy — sujeito ainda: (1) à confirmação em preview real de que
+`_headers` é de fato aplicado em produção sem erro de CSP no console
+(pendência não-bloqueante já sinalizada acima); (2) ao fechamento
+estrutural do lote (checagem de dependências/tarefas `Bloqueada`), que este
+Validador realiza a seguir; e (3) aos débitos de baixa severidade ainda
+pendentes de outros lotes (RL1.1, favicon multi-tamanho, não relacionado a
+segurança) antes do deploy de produção efetivo (Lote 5).
+
+---
+
+## Refatoração Lote-1
+
+**Escopo auditado:** RL1.1 e RL1.2 — as 2 tarefas do lote `Refatoração
+Lote-1`, ambas `Concluída` no `TASK.md` e já aprovadas funcionalmente pelo
+chapéu QA sem ressalvas (`QA-REPORT.md`, seção "Refatoração Lote-1").
+Pré-condição de auditoria satisfeita.
+
+**Natureza do lote:** RL1.1 é a regeneração de um artefato binário
+(`assets/img/favicon/favicon.ico`), sem lógica de servidor nem input de
+usuário — mesma natureza de baixa superfície de ataque já registrada para o
+restante dos favicons no Lote 1. RL1.2 é a correção do próprio débito Baixo
+registrado por este Validador no Lote 1 (achado #1): adição de uma única
+tag `<meta name="robots">` em `assets/css/base.smoke.html`, sem lógica
+nova.
+
+**Metodologia:** inspeção binária de `favicon.ico` por parsing direto do
+cabeçalho ICO (contagem de imagens, offsets e tamanhos de cada entrada,
+para confirmar embedding real e não sobreposição/corrupção), extração de
+todas as strings ASCII imprimíveis (≥4 caracteres) do arquivo completo com
+varredura por padrão de payload polyglot (`<script`, `javascript:`,
+`onerror=`, `onload=`) e por metadado de ambiente local (`C:\`, `/home/`,
+`Users`, nome de usuário do ambiente de desenvolvimento, `OneDrive`,
+`LJSSoftware`); `git diff` linha a linha de `assets/css/base.smoke.html`
+contra a versão do Lote 1 para confirmar que nenhuma mudança além da tag
+`robots` foi introduzida.
+
+### Arquivos auditados
+
+`assets/img/favicon/favicon.ico`, `assets/css/base.smoke.html`.
+
+### 1. RL1.1 — `favicon.ico` multi-resolução: payload embutido / metadado sensível
+
+**Achado: nenhum.**
+
+- Parsing do cabeçalho ICO confirma **3 entradas reais**: 16×16 (844 bytes,
+  offset 54), 32×32 (2249 bytes, offset 898), 48×48 (3810 bytes, offset
+  3147) — tamanho total do arquivo 6957 bytes, offsets e tamanhos
+  consistentes entre si (cada entrada começa exatamente onde a anterior
+  termina, sem sobreposição, e nenhuma extrapola o fim do arquivo). Cada
+  entrada é um PNG embutido válido (assinatura confirmada pelos chunks
+  `IHDR`/`IDAT`/`IEND` presentes 3 vezes, um conjunto por resolução) — este
+  é o formato ICO moderno padrão (imagens PNG comprimidas dentro do
+  container ICO), não uma anomalia. Resolve de fato o achado funcional do
+  QA (antes só 16×16 estava presente).
+- Extração de todas as strings ASCII imprimíveis do arquivo (90 strings no
+  total): nenhuma corresponde a `<script`, `javascript:`, `onerror=` ou
+  `onload=` — as únicas strings legíveis são os marcadores de chunk PNG
+  (`IHDR`, `IDATx`, `IEND`) e sequências de bytes de dados de imagem
+  comprimidos (ruído binário sem significado textual, esperado em qualquer
+  PNG). Nenhum payload polyglot embutido.
+- Mesma varredura por caminho local (`C:\`), diretório home (`/home/`),
+  nome de usuário/pasta do ambiente de desenvolvimento (`Users`, `leand`,
+  `leandro`, `OneDrive`, `LJSSoftware`): nenhuma ocorrência em nenhuma das
+  90 strings extraídas — nenhum metadado de ambiente de desenvolvimento
+  vazou para o binário regenerado.
+- Conclusão: RL1.1 é um artefato binário limpo, sem payload embutido e sem
+  vazamento de metadado sensível.
+
+### 2. RL1.2 — tag `robots` em `base.smoke.html`: escopo da mudança
+
+**Achado: nenhum; confirmação de que o débito foi corrigido sem efeito
+colateral.**
+
+- `git diff` de `assets/css/base.smoke.html` contra a versão commitada no
+  Lote 1 mostra exatamente **uma linha adicionada**:
+  `<meta name="robots" content="noindex, nofollow">`, inserida na mesma
+  posição relativa (logo após `<title>`, antes dos `<link rel="stylesheet">`)
+  já usada em `tokens.smoke.html`/`fonts.smoke.html`/`header.smoke.html`/
+  `footer.smoke.html`. Nenhuma outra linha do arquivo foi tocada — nenhum
+  `<style>`, nenhum CSS de smoke-test, nenhum `<script>` foi
+  adicionado/alterado/removido.
+- Isso corrige de fato o achado Baixo #1 registrado no Lote 1: dos 5
+  arquivos `.smoke.html` do projeto, todos agora têm a mesma tag `robots`
+  (`base.smoke.html`, `tokens.smoke.html`, `fonts.smoke.html`,
+  `header.smoke.html`, `footer.smoke.html`), fechando a divergência de
+  padrão identificada. `robots.txt` (Lote 4) já reforçava esse arquivo
+  específico com `Disallow: /assets/css/*.smoke.html`, mas a proteção
+  primária (a tag `<meta name="robots">` no próprio arquivo, ativa
+  independente de `robots.txt`) só passou a existir de fato com esta
+  correção.
+- Nenhuma nova superfície de risco introduzida — a mudança é estritamente
+  aditiva e restrita a uma tag de metadado declarativo, sem impacto
+  funcional além do já validado pelo QA.
+
+### 3. Conformidade regulatória (LGPD)
+
+**N/A.** Nenhuma das duas tarefas introduz coleta, processamento ou
+exposição de dado pessoal — mesma conclusão já registrada para o Lote 1.
+
+### 4. Requisitos de segurança operacional para o chapéu DevOps
+
+- Nenhum item novo. Mantém-se a recomendação já registrada desde o Lote 1:
+  o pipeline de deploy deve publicar só as páginas reais + assets
+  associados, excluindo `*.smoke.html`/scripts de verificação Node — agora
+  com o risco residual de `base.smoke.html` mitigado em uma camada a mais
+  (tag `robots` própria, além do `Disallow` de `robots.txt`).
+
+---
+
+## Achados deste lote (resumo)
+
+| # | Item | Severidade | Status | Ação |
+|---|---|---|---|---|
+| — | Nenhum achado novo de severidade Baixa, Média, Alta ou Crítica neste lote | — | — | — |
+
+Nenhum achado **Alto/Crítico** neste lote. Nenhum achado de compliance
+obrigatório em aberto.
+
+## Fechamento — Refatoração Lote-1 (chapéu DevSecOps)
+
+- Nenhum achado de severidade alta/crítica em RL1.1 ou RL1.2.
+- Nenhum item de compliance obrigatório pendente.
+- RL1.2 confirmado como **correção efetiva** do débito Baixo #1 registrado
+  no Lote 1 — não há mais nenhum débito de segurança em aberto herdado do
+  Lote 1 (RL1.1 nunca foi um item de segurança; era achado funcional do
+  QA, também já corrigido e auditado aqui do ponto de vista de segurança
+  do binário).
+- Nenhum item novo de débito de baixa/média severidade a registrar — nada
+  a acrescentar a `Refatoração Lote-1` nem a abrir uma nova refatoração.
+- Nenhum achado de relevância estratégica a sinalizar ao Gestor.
+- Nada nesta auditoria exige redesenho de dependência/decomposição — não
+  escala ao `coordenador`.
+
+**Veredito geral da Refatoração Lote-1 (chapéu DevSecOps): Aprovado, sem
+ressalvas e sem débito de segurança pendente.** RL1.1 (favicon
+multi-resolução) não contém payload embutido nem metadado sensível; RL1.2
+corrigiu de fato o único débito de segurança do Lote 1, sem efeito
+colateral. Combinado com o veredito funcional do chapéu QA ("Aprovado",
+`QA-REPORT.md`, seção "Refatoração Lote-1"), este lote de refatoração tem a
+dupla aprovação (QA + DevSecOps) necessária para o chapéu DevOps considerar
+o build no fluxo de deploy — sujeito apenas ao fechamento estrutural do
+lote e aos demais débitos/pendências não relacionados à segurança já
+registrados em lotes anteriores (nenhum deles bloqueante).

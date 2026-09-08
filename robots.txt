@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /assets/css/*.smoke.html
+
+Sitemap: https://ljssoftware.com.br/sitemap.xml

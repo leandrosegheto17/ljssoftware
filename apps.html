@@ -3,8 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Apps — LJS Software</title>
-<meta name="description" content="Conheça os apps em desenvolvimento da LJS Software: uma vitrine dos produtos que estamos construindo, com lançamento em breve.">
+<title>Apps — Portfólio de Produtos LJS Software</title>
+<meta name="description" content="Vitrine dos apps que a LJS Software está construindo, com status de cada produto e lançamentos em breve. Acompanhe o portfólio.">
+<link rel="icon" href="assets/img/favicon/favicon.ico" sizes="any">
+<link rel="icon" href="assets/img/favicon/favicon-32x32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="assets/img/favicon/favicon-512x512.png" type="image/png" sizes="512x512">
+<link rel="apple-touch-icon" href="assets/img/favicon/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Apps — Portfólio de Produtos LJS Software">
+<meta property="og:description" content="Vitrine dos apps que a LJS Software está construindo, com status de cada produto e lançamentos em breve. Acompanhe o portfólio.">
+<meta property="og:image" content="https://ljssoftware.com.br/assets/img/logo/logo-ljssoftware-transparente.png">
+<meta property="og:url" content="https://ljssoftware.com.br/apps.html">
 <link rel="stylesheet" href="assets/css/tokens.css">
 <link rel="stylesheet" href="assets/css/base.css">
 <link rel="stylesheet" href="assets/css/components.css">
@@ -54,13 +63,24 @@
       Conteúdo dos 3 apps abaixo é PLACEHOLDER/EXEMPLO (TASK.md Seção 6,
       Lacuna L-02 — lista definitiva depende do stakeholder, T6.2 substitui
       pelo conteúdo real mantendo esta mesma estrutura de markup).
+
+      Correção de T4.2 (auditoria de acessibilidade): `.app-card__name`
+      renderiza aqui como `<h2>` (não `<h3>`, como em `components.css`
+      comentário original de T3.4) porque, nesta página, o heading dos cards
+      é o filho direto do `<h1>` "Nossos apps" — sem um `<h2>` de agrupamento
+      entre eles (diferente de `index.html`, onde `.home-apps__title` é um
+      `<h2>` real antes dos mesmos cards, tornando `<h3>` correto ali). Usar
+      `<h3>` aqui pularia um nível (h1 -> h3), quebrando a hierarquia
+      semântica de headings (WCAG 2.4.6 / boa prática de navegação por
+      leitor de tela). Estilo visual inalterado (`.app-card__name` é
+      selecionado por classe, não por tag).
     -->
     <section class="container" style="padding-block: 3rem;">
       <h1 style="color: var(--color-text-inverse); font-family: var(--font-heading); margin-bottom: 2rem;">Nossos apps</h1>
 
       <div class="grid grid--3col">
         <article class="app-card glass-card">
-          <h3 class="app-card__name">Gestor Fácil</h3>
+          <h2 class="app-card__name">Gestor Fácil</h2>
           <p class="app-card__description">Organização de tarefas e rotina para pequenos times, sem complicação.</p>
           <!-- Badge isolado (RF-02): trocar por
                <a class="badge badge--link" href="URL_REAL">Ver app</a>
@@ -69,7 +89,7 @@
         </article>
 
         <article class="app-card glass-card">
-          <h3 class="app-card__name">Agenda Smart</h3>
+          <h2 class="app-card__name">Agenda Smart</h2>
           <p class="app-card__description">Agendamento de compromissos e lembretes automáticos, direto do celular.</p>
           <!-- Badge isolado (RF-02): trocar por
                <a class="badge badge--link" href="URL_REAL">Ver app</a>
@@ -78,7 +98,7 @@
         </article>
 
         <article class="app-card glass-card">
-          <h3 class="app-card__name">Financeiro Simples</h3>
+          <h2 class="app-card__name">Financeiro Simples</h2>
           <p class="app-card__description">Controle de receitas e despesas para autônomos e pequenos negócios.</p>
           <!-- Badge isolado (RF-02): trocar por
                <a class="badge badge--link" href="URL_REAL">Ver app</a>
