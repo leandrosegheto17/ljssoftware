@@ -1328,3 +1328,243 @@ lote está estruturalmente fechado (única tarefa, sem dependência externa,
 nenhuma tarefa `Bloqueada`) e liberado para a auditoria de segurança do
 chapéu DevSecOps sobre este lote específico e, em paralelo, para o chapéu
 DevOps considerar este build no fluxo de dupla aprovação rumo ao deploy.
+
+---
+
+## Lote 5 — Deploy e Infraestrutura
+
+**Escopo validado:** T5.1, T5.2, T5.3, T5.4, todas com Status `Concluída`
+no `TASK.md` no momento desta validação.
+
+**Metodologia:** diferente dos Lotes 1-4, este lote envolveu ações reais de
+infraestrutura fora do repositório (conta Cloudflare, DNS/registro.br),
+executadas manualmente pelo stakeholder — não há como reexecutar essas
+ações, apenas auditar o resultado publicado. Este Validador **não tem
+acesso a uma conta Cloudflare real** (não navega no painel), mas tem
+acesso de leitura à internet real e ao repositório. Por isso, cada critério
+de aceite de T5.1-T5.4 foi verificado por **requisição HTTP real** contra
+`https://ljssoftware.pages.dev` e `https://ljssoftware.com.br`/
+`https://www.ljssoftware.com.br` (via `curl`, inspecionando status code,
+`Location`, e os headers de resposta), não por leitura de nota de
+implementação nem por confiança no relato do Executor. Também foram lidos
+diretamente `public/_headers`, `public/_redirects` e as 4 páginas HTML
+publicadas (`public/index.html`, `public/apps.html`, `public/sobre.html`,
+`public/404.html`), e reexecutados nesta sessão os 3 scripts Node de
+verificação movidos para `dev/` na reestruturação desta fase (`node
+dev/css/tokens.contrast-check.js`, `node dev/css/a11y-contrast-check.js`,
+`node dev/fonts/fonts.smoke.check.js`), para confirmar que a reestruturação
+`public/`+`dev/` não quebrou nenhuma checagem de acessibilidade/fontes já
+aprovada nos Lotes 1 e 4.
+
+### T5.1 — Setup do repositório + conexão ao Cloudflare Pages
+
+**Veredito: Aprovado.**
+
+- `https://ljssoftware.pages.dev` responde `200` e serve o conteúdo real do
+  site (confirmado via `curl`), mesmo depois do domínio customizado (T5.2)
+  estar ativo — preview continua acessível de forma independente, conforme
+  exigido pelo critério de aceite.
+- `dev/` **não** é publicado: `https://ljssoftware.pages.dev/dev/css/tokens.smoke.html`
+  responde `404`, assim como `https://ljssoftware.com.br/dev/css/tokens.smoke.html`
+  — confirma que o *Build output directory* `public` de fato exclui `dev/`
+  da publicação, resolvendo o risco de vazamento de smoke-test já sinalizado
+  em `SECURITY-REVIEW.md` (Lotes 1-4).
+- Critério de aceite ("Deploy de preview acessível via URL `*.pages.dev`,
+  atualizando a cada push") satisfeito pelo que é observável hoje (URL
+  acessível com conteúdo real); a atualização automática a cada push não é
+  diretamente testável por este Validador sem disparar um push de teste,
+  mas é comportamento nativo do Cloudflare Pages quando conectado via Git,
+  consistente com a Production branch `main` confirmada em uso.
+
+### T5.2 — Domínio customizado + migração de NS
+
+**Veredito: Aprovado.**
+
+- `https://ljssoftware.com.br` responde `200` com o conteúdo real do site
+  (HTML da Home, não um placeholder/erro do Cloudflare) — confirmado via
+  `curl`.
+- Certificado TLS válido: a conexão HTTPS completa sem erro de certificado
+  (handshake TLS 1.x bem-sucedido via `curl`, sem `SSL certificate problem`
+  nem aviso de nome incompatível).
+
+### T5.3 — Always Use HTTPS + redirect www→apex
+
+**Veredito: Aprovado, com 1 achado Simples anexado (ver abaixo) — tarefas
+permanecem `Concluída`.**
+
+- `http://ljssoftware.com.br` → `301` → `https://ljssoftware.com.br/` —
+  confirmado via `curl` (header `Location`).
+- `https://www.ljssoftware.com.br/` → `301` → `https://ljssoftware.com.br/`
+  — confirmado.
+- `https://www.ljssoftware.com.br/apps.html?x=1` → `301` →
+  `https://ljssoftware.com.br/apps.html?x=1` (path e query string
+  preservados) — confirmado, batendo com o que `DEPLOY.md` já registrava
+  como verificado.
+- Certificado TLS válido nos dois domínios (apex e `www`), sem erro de
+  certificado em nenhuma das requisições acima.
+- **Achado Simples (novo, desta validação) — redirect adicional não
+  documentado, "clean URL" do Cloudflare Pages:** ao testar cada página
+  isoladamente, toda URL com extensão `.html` (`/apps.html`, `/sobre.html`,
+  `/index.html`) responde com **`308 Permanent Redirect`** para a mesma
+  URL sem extensão (`/apps`, `/sobre`, `/`) — comportamento padrão do
+  Cloudflare Pages para sites com arquivos `.html` no *Build output
+  directory*, não configurado explicitamente por nenhuma tarefa do
+  `TASK.md`/`DEPLOY.md` e não mencionado em nenhuma verificação registrada
+  até aqui. Consequência prática, testada:
+  - `https://www.ljssoftware.com.br/apps.html?x=1` → **2 hops**, não 1: o
+    redirect `www`→apex documentado em `DEPLOY.md`/T5.3 (`301` para
+    `https://ljssoftware.com.br/apps.html?x=1`) é seguido por um **segundo**
+    redirect (`308`, Cloudflare Pages) para `https://ljssoftware.com.br/apps?x=1`,
+    que aí sim responde `200` — query string ainda preservada nos dois
+    hops, nenhuma quebra funcional, mas a cadeia real tem 1 hop a mais do
+    que o único hop testado e registrado em `DEPLOY.md`.
+  - Os links internos de navegação das 4 páginas (`href="apps.html"`,
+    `href="sobre.html"`, `href="index.html"`) continuam apontando para os
+    caminhos com extensão, então **todo clique de navegação interna do
+    site dispara um redirect 308** antes de chegar à URL final — sem
+    quebra visível para o usuário (o navegador segue o redirect de forma
+    transparente), mas é um hop de rede evitável em toda navegação.
+  - `sitemap.xml` (T4.3) e `og:url` (T4.1) das páginas `apps.html`/`sobre.html`
+    referenciam explicitamente as URLs **com** `.html`
+    (`https://ljssoftware.com.br/apps.html`), que hoje são a origem, não o
+    destino final, do redirect — motores de busca/crawlers de rede social
+    ainda resolvem por seguirem redirect, mas a prática recomendada é que
+    `sitemap.xml`/`og:url`/link interno apontem direto para a URL
+    canônica final servida (sem redirect no meio).
+  - **Classificação: Simples.** Não compromete o critério de aceite
+    central de T5.3 (http→https `301` ✓, www→apex `301` ✓, TLS válido ✓ —
+    todos confirmados) nem de nenhuma outra tarefa deste lote; o site
+    continua 100% navegável e todas as URLs resolvem para `200` no fim da
+    cadeia. Não é uma falha de segurança (nenhum dos redirects escapa de
+    HTTPS/do domínio correto) nem de compliance. É um ajuste de
+    consistência/performance (menos hops, canonical real) e de precisão de
+    documentação (o próximo `/deploy` ou auditoria não deve assumir que
+    T5.3 tem só 1 hop de redirect por combinação). T5.1-T5.4 **permanecem
+    `Concluída`**; o achado vira tarefa em `Refatoração Lote-5` (ver
+    Fechamento Estrutural abaixo), não retorno ao `executor`.
+
+### T5.4 — Cloudflare Web Analytics + beacon nas 4 páginas
+
+**Veredito: Aprovado.**
+
+- Snippet do beacon (`<script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "bc3ce694258f45c393941b292ba37ac9"}'>`)
+  presente nas 4 páginas publicadas — confirmado por leitura direta de
+  `public/index.html` (linha 260), `public/apps.html` (linha 171),
+  `public/sobre.html` (linha 139) e `public/404.html` (linha 160), sempre
+  imediatamente antes de `assets/js/analytics.js`, mesmo token nas 4.
+- `https://static.cloudflareinsights.com/beacon.min.js` responde `200`
+  (confirmado via `curl` direto ao domínio real da Cloudflare) — o script
+  carrega sem erro de rede.
+- CSP publicada em produção (`curl -I https://ljssoftware.com.br`) já
+  reflete a correção registrada em `DEPLOY.md`/`_headers`: `script-src`
+  inclui `https://static.cloudflareinsights.com` e `connect-src` inclui
+  `https://cloudflareinsights.com` — os domínios reais do beacon (não mais
+  o domínio inexistente `static.cloudflarewebanalytics.io` usado até o
+  Lote 4), confirmando que a CSP publicada não bloqueia o beacon.
+- `assets/js/analytics.js` (verificado no repositório) continua chamando
+  `window.__cfBeacon.track(...)`/fallback `window.zaraz.track(...)` apenas
+  se as funções existirem, sem alterar a lógica de T2.4 — consistente com
+  o snippet real inserido.
+- Confirmação de eventos custom (`contato_email_click`/
+  `contato_linkedin_click`) e de visitas reais aparecendo no dashboard do
+  Cloudflare Web Analytics **não é verificável por este Validador** (exige
+  acesso ao painel Cloudflare, indisponível neste ambiente) — mesma
+  pendência leve, não bloqueante, já sinalizada em `TASK.md`/T5.4 e em
+  `DEPLOY.md`; não impede a aprovação do critério de aceite central
+  (beacon ativo e sem erro nas 4 páginas), que é o que está sob controle
+  observável deste Validador.
+
+### Testes de integração cross-platform
+
+- Cadeia completa `http://` → `https://` → (`www` → apex, quando
+  aplicável) → conteúdo real `200`, testada ponta a ponta para a Home e
+  para uma página interna com query string (`apps.html?x=1`) — todos os
+  hops preservam protocolo/path/query corretamente, sem perda de dados na
+  URL em nenhum ponto da cadeia (ver achado Simples de T5.3 acima sobre o
+  número de hops, não sobre correção do resultado final).
+- CSP publicada em produção testada contra o domínio real do beacon
+  (`static.cloudflareinsights.com`/`cloudflareinsights.com`) — sem
+  divergência entre o que `_headers` declara no repositório e o que o
+  Cloudflare Pages de fato aplica em produção (`curl -I` no domínio real
+  bate byte a byte com `public/_headers`).
+- Reestruturação `public/`+`dev/` (T5.1) testada contra os 3 scripts de
+  verificação movidos para `dev/`: os 3 continuam rodando e passando sem
+  erro depois da mudança de caminhos relativos, confirmando que a
+  reorganização de diretórios não quebrou nenhuma checagem automatizada já
+  aprovada nos Lotes 1 e 4 (ver "Requisitos não funcionais" abaixo para o
+  resultado de cada um).
+
+### Requisitos não funcionais
+
+- **Acessibilidade (WCAG AA), pós-reestruturação:** `node
+  dev/css/tokens.contrast-check.js` (5/5 combinações PASS, idêntico ao
+  resultado original de T1.1) e `node dev/css/a11y-contrast-check.js`
+  (todas as combinações — tokens sólidos, componentes dos Lotes 2/3, pior
+  caso do mesh gradient, pior caso composto `.glass-card` sobre o mesh
+  gradient — PASS, idêntico ao resultado original de T4.2) **reexecutados
+  nesta sessão a partir do novo caminho `dev/css/`**, sem nenhuma
+  regressão.
+- **Fontes self-hosted (G-11), pós-reestruturação:** `node
+  dev/fonts/fonts.smoke.check.js` confirma, a partir do novo caminho
+  `dev/fonts/`, ausência de qualquer referência a CDN externo de fontes em
+  todo HTML/CSS do projeto publicado, `font-display: swap` presente em
+  todos os `@font-face`, e os 4 arquivos `.woff2` íntegros — sem
+  regressão.
+- **Headers de segurança em produção real:** `X-Content-Type-Options:
+  nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy:
+  strict-origin-when-cross-origin`, `Permissions-Policy` restritiva —
+  todos presentes na resposta HTTP real de `https://ljssoftware.com.br`,
+  idênticos ao `public/_headers` do repositório (auditoria de segurança
+  completa fica a cargo do chapéu DevSecOps, aqui confirmado apenas que a
+  publicação real corresponde ao arquivo versionado).
+- **Página 404 real:** `https://ljssoftware.com.br/<rota-inexistente>`
+  responde `404` servindo o conteúdo de `404.html` (`<title>Página Não
+  Encontrada (404) — LJS Software</title>` confirmado no corpo da
+  resposta real), não uma página de erro genérica do Cloudflare.
+
+### Achados deste lote
+
+| # | Tarefa | Achado | Classificação | Ação |
+|---|---|---|---|---|
+| 1 | T5.3 (e, por extensão, T4.1/T4.3) | Cloudflare Pages aplica redirect `308` automático de toda URL `.html` para a URL sem extensão ("clean URL"), não documentado/testado antes desta validação; gera 1 hop extra em toda navegação interna e nos redirects `www`→apex de páginas internas, e deixa `sitemap.xml`/`og:url` apontando para a URL de origem do redirect em vez da URL final canônica | **Simples** | Tarefa criada em `Refatoração Lote-5` (ver Fechamento Estrutural abaixo); T5.1-T5.4 permanecem `Concluída` |
+
+Nenhum achado **Crítico** neste lote — todos os critérios de aceite centrais
+de T5.1-T5.4, verificados por requisição HTTP real contra a infraestrutura
+publicada, estão satisfeitos.
+
+## Fechamento Estrutural do Lote 5
+
+- T5.1, T5.2, T5.3, T5.4: todas `Concluída` no `TASK.md`, todas aprovadas
+  pelo chapéu QA nesta validação (T5.3 com 1 achado Simples anexado, sem
+  impacto no critério de aceite central).
+- Dependências da Seção 4 do `TASK.md` relativas a este lote: confirmadas
+  coerentes — T5.2 depende de T5.1 (satisfeita, T5.1 `Concluída` antes),
+  T5.3 depende de T5.2 (satisfeita), T5.4 depende de T5.1 e do Lote 3
+  completo (T3.1-T3.6, todas `Concluída`) e de T2.4 (`Concluída`); nenhuma
+  dependência órfã/inconsistente encontrada.
+- Nenhuma tarefa `Bloqueada` sem resolução.
+- Achado Simples de T5.3 (redirect `308` "clean URL" não documentado) vira
+  nova tarefa em um novo lote de refatoração:
+
+  **Refatoração Lote-5** (novo)
+  | ID | Tarefa | Origem | Prazo sugerido |
+  |---|---|---|---|
+  | RL5.1 | Resolver a duplicidade de URL introduzida pelo redirect `308` automático do Cloudflare Pages (`.html` → sem extensão): (a) atualizar os links internos de navegação das 4 páginas e o CTA/`href` relevantes para apontar direto para a URL sem extensão (`apps`/`sobre`, sem `.html`), eliminando o hop 308 na navegação normal do site; (b) atualizar `sitemap.xml` (T4.3) e `og:url` (T4.1) das 4 páginas para referenciar a mesma URL final sem extensão, consistente entre si | QA-REPORT.md, achado #1 (T5.3) | Antes do deploy de produção final (após o Lote 6, conteúdo definitivo) — não bloqueia o avanço/deploy: o site já resolve corretamente para `200` em todos os casos, é um ajuste de consistência/performance, não uma correção de algo quebrado |
+
+  Esta tarefa não exige redesenho de dependência/decomposição — não escala
+  ao `coordenador`; é um ajuste de consistência de URL dentro do
+  repositório, mesma natureza dos ajustes já registrados em `Refatoração
+  Lote-1`/`Refatoração Lote-4`.
+
+**Veredito geral do Lote 5: Aprovado com ressalvas** (1 achado Simples em
+T5.3 — redirect `308` "clean URL" do Cloudflare Pages não documentado
+antes desta validação, sem impacto nos critérios de aceite centrais de
+T5.1-T5.4, todos confirmados por requisição HTTP real contra a
+infraestrutura publicada; registrado como RL5.1 em `Refatoração Lote-5`).
+O lote está estruturalmente fechado (4 tarefas `Concluída`, dependências da
+Seção 4 coerentes, nenhuma tarefa `Bloqueada`) e liberado para a auditoria
+de segurança do chapéu DevSecOps sobre este lote específico e, em
+paralelo, para o chapéu DevOps considerar este build (já em produção) no
+fluxo de dupla aprovação — a dupla aprovação (QA + DevSecOps) sobre este
+lote é o que falta para o deploy já realizado ser considerado formalmente
+liberado pelo processo de governança.

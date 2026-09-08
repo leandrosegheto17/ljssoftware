@@ -1315,3 +1315,361 @@ débitos/pendências não relacionados à segurança já registrados em lotes
 anteriores (nenhum deles bloqueante; RL4.2 e RL1.1 seguem `Pendente`,
 ambos com prazo antes do deploy de produção, nenhum de natureza de
 segurança).
+
+---
+
+## Lote 5 — Deploy e Infraestrutura
+
+**Escopo auditado:** T5.1, T5.2, T5.3, T5.4 — já aprovadas funcionalmente
+pelo chapéu QA (`QA-REPORT.md`, seção "Lote 5", veredito "Aprovado com
+ressalvas", 1 achado Simples em T5.3 — redirect `308` "clean URL" do
+Cloudflare Pages, sem relação com segurança, registrado como RL5.1). Pré-
+condição de auditoria satisfeita.
+
+**Natureza do lote:** primeiro lote com infraestrutura real publicada —
+domínio de produção ativo (`ljssoftware.com.br`, migrado do registro.br
+para NS da Cloudflare), certificado TLS emitido, headers de borda
+efetivamente servidos (não só declarados em arquivo), beacon real do
+Cloudflare Web Analytics ativo com token de produção. Diferente dos Lotes
+1-4 (auditoria 100% estática sobre arquivo em disco), aqui a superfície
+auditável é a infraestrutura publicada em si — a fonte de verdade é a
+resposta HTTP real, não o arquivo do repositório (que é apenas a
+declaração de intenção até o deploy aplicá-la).
+
+**Metodologia:** este Validador tem acesso de rede real (sem acesso a
+paineis administrativos) e foi usado para auditar `https://ljssoftware.com.br`,
+`https://www.ljssoftware.com.br`, `http://ljssoftware.com.br` e
+`http://www.ljssoftware.com.br` via `curl` (status code, headers de
+resposta completos, `Location` de redirect), `openssl s_client` para
+inspecionar o certificado TLS real (emissor, validade, CN), consulta DNS
+real (`nslookup`) aos registros MX, TXT (SPF) e TXT de `_dmarc`, requisição
+HTTP direta a 8 arquivos de `dev/` (os mesmos já verificados pelo QA do
+ponto de vista funcional, aqui auditados quanto a conteúdo sensível),
+varredura de segredo/credencial em todo o repositório (não só no
+código-fonte do lote), leitura completa dos 4 arquivos HTML publicados
+(`public/*.html`) por vazamento de PII no evento custom de analytics, e
+verificação cruzada do snippet do beacon contra a documentação oficial
+pública da Cloudflare (`developers.cloudflare.com/web-analytics`) via
+busca na web, para confirmar que não foi adulterado.
+
+### 1. Headers de segurança em produção real (G-09, SDD.md Seção 7)
+
+**Veredito: Aprovado.**
+
+`curl -I https://ljssoftware.com.br/` retorna, na resposta HTTP real:
+
+```
+content-security-policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+permissions-policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+referrer-policy: strict-origin-when-cross-origin
+x-content-type-options: nosniff
+x-frame-options: DENY
+```
+
+- **Byte a byte idêntico** ao conteúdo de `public/_headers` no repositório
+  — confirma que o deploy aplicou exatamente a política declarada, sem
+  divergência entre o que foi versionado e o que está de fato servido.
+  Resolve a pendência explicitamente deixada em aberto pelo Lote 4
+  ("verificação em preview/produção real depende do deploy, fora do
+  escopo de execução local daquela tarefa") — este Validador é quem
+  confirma essa verificação agora, com acesso de rede real.
+- **CSP sem diretiva permissiva demais — confirmado.** Nenhuma ocorrência
+  de `'unsafe-eval'` em nenhuma diretiva. Nenhum wildcard `*` em
+  `script-src` (nem em nenhuma outra diretiva) — a única diretiva com
+  `'unsafe-inline'` é `style-src`, já auditada e justificada nos Lotes
+  4/RL4.1/RL4.2 (3 páginas com CSS inline estático, sem interpolação de
+  dado externo, sem `<form>`/input de usuário que torne o vetor de
+  CSS-exfiltration explorável — conclusão reafirmada aqui, nenhuma mudança
+  de superfície neste lote).
+- **Domínios liberados são exatamente os necessários para o beacon — sem
+  excesso.** `grep` deste Validador pela resposta HTTP real confirma
+  exatamente 2 ocorrências de domínio externo, ambas do Cloudflare Web
+  Analytics: `https://static.cloudflareinsights.com` em `script-src`
+  (origem do `beacon.min.js`) e `https://cloudflareinsights.com` em
+  `connect-src` (destino do `navigator.sendBeacon` disparado pelo próprio
+  script da Cloudflare, confirmado contra a documentação oficial — é o
+  host correto, não `static.cloudflareinsights.com` repetido, porque o
+  `sendBeacon` do script vai para o domínio "raiz" do produto, não para o
+  subdomínio `static.*` que só serve o arquivo `.js`). Nenhum outro CDN,
+  tag manager, pixel de terceiro ou domínio de fonte externo presente —
+  G-11/ADR-003 satisfeitas também na resposta HTTP real, não só no
+  arquivo-fonte.
+- Confirma, com acesso de rede real, o item que o `SECURITY-REVIEW.md`
+  Lote 4 havia deixado como "não verificável nesta auditoria estática": a
+  correção de domínio (`static.cloudflarewebanalytics.io` → domínio real)
+  registrada em `DEPLOY.md`/T5.1-T5.4 está de fato em produção, aplicada
+  corretamente.
+
+### 2. TLS/HTTPS (G-08, SDD.md Seção 7)
+
+**Veredito: Aprovado, com 1 achado Baixo (observação, não bloqueante).**
+
+- Certificado TLS real inspecionado via `openssl s_client` +
+  `openssl x509`: `subject=CN=ljssoftware.com.br`,
+  `issuer=Google Trust Services, CN=WE1`, válido de `Sep 8 2026` a
+  `Dec 7 2026` — certificado válido, emissor confiável (Cloudflare
+  Universal SSL, ciclo curto de ~90 dias com renovação automática, padrão
+  do produto). Nenhum erro de handshake, nenhum aviso de nome incompatível.
+- `http://ljssoftware.com.br` → `301` → `https://ljssoftware.com.br/` —
+  confirmado por requisição real (header `Location`), reconfirmando o já
+  verificado pelo QA.
+- `http://www.ljssoftware.com.br` → `301` → `https://www.ljssoftware.com.br/`
+  → (segundo hop) `301` → `https://ljssoftware.com.br/` — o primeiro hop
+  redireciona para HTTPS no mesmo host (`www`), o segundo aplica a
+  Redirect Rule de zona (T5.3) para o domínio apex. Ambos os hops
+  permanecem em HTTPS a partir do segundo salto — nenhum ponto da cadeia
+  fica em HTTP às claras após o primeiro redirect, e o primeiro redirect
+  em si (`http://www` → `https://www`) já é a proteção mínima exigida por
+  G-08. Não há downgrade possível: toda variante (`http`/`https` ×
+  apex/`www`) converge para `https://ljssoftware.com.br/` sem nenhum
+  caminho que permaneça em texto claro além do primeiro salto inevitável
+  de quem digitou `http://` explicitamente.
+- **Achado Baixo (novo, deste Validador) — ausência de HSTS
+  (`Strict-Transport-Security`).** Nenhuma das respostas reais
+  (apex/`www`, com/sem `https`) inclui o header `Strict-Transport-Security`.
+  **Avaliação de exigência formal:** nem G-08 (`GUARDRAILS.md`) nem a
+  Seção 7 do `SDD.md` (que lista explicitamente os 5 headers exigidos —
+  CSP, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`,
+  `Permissions-Policy` — sem incluir HSTS) exigem esse header
+  nominalmente; G-08 exige apenas "TLS obrigatório... HTTP redireciona
+  para HTTPS automaticamente", satisfeito pelo redirect `301` confirmado
+  acima. **Portanto não é uma violação de requisito obrigatório do
+  projeto** — é uma camada adicional de defesa (elimina a janela teórica
+  em que um usuário que sempre digita `http://` ou segue um link antigo
+  em `http://` fica exposto a um ataque de downgrade/interceptação no
+  primeiro request, antes do redirect do servidor acontecer; HSTS resolve
+  isso client-side, via cache do navegador, a partir da segunda visita).
+  **Severidade: Baixa** (não compromete nenhum requisito obrigatório
+  hoje; o site já força HTTPS via redirect server-side em toda rota).
+  Recomendação: habilitar "Enable HSTS" no painel Cloudflare (SSL/TLS →
+  Edge Certificates — mesma seção onde "Always Use HTTPS" já foi
+  habilitado em T5.3), com `max-age` inicial conservador (ex.: 6 meses) e
+  sem `preload` até confirmar estabilidade, dado que é uma ação
+  praticamente sem custo/risco para este site (sem subdomínio HTTP
+  legado, sem necessidade de HTTP em nenhuma rota). Ação registrada como
+  débito em `Refatoração Lote-5` (RL5.2, ver Fechamento abaixo) — não
+  bloqueia deploy.
+
+### 3. Exposição de `dev/` (checagem de segurança sobre o já confirmado pelo QA)
+
+**Veredito: Aprovado.**
+
+- Requisição HTTP real a 8 arquivos de `dev/` (os 3 `.smoke.html`
+  originais dos Lotes 1/2 mais os 2 scripts `.js` de contraste e os 2
+  arquivos de fonte movidos na reestruturação desta fase):
+  `dev/css/tokens.smoke.html`, `dev/css/base.smoke.html`,
+  `dev/css/header.smoke.html`, `dev/css/footer.smoke.html`,
+  `dev/css/tokens.contrast-check.js`, `dev/css/a11y-contrast-check.js`,
+  `dev/fonts/fonts.smoke.check.js`, `dev/fonts/fonts.smoke.html` —
+  **os 8 respondem `404`** em `https://ljssoftware.com.br/dev/...`,
+  confirmado por este Validador independentemente da checagem funcional
+  do QA (que testou 1 arquivo representativo). Resolve definitivamente,
+  do ponto de vista de segurança, o risco de "publicação indevida de
+  artefato de desenvolvimento" registrado como recomendação operacional
+  desde o Lote 1 e como débito Baixo em RL1.2 (que tratava só da tag
+  `robots` de 1 arquivo específico, mitigação de indexação — agora
+  superada por uma barreira mais forte: o arquivo simplesmente não é
+  publicado).
+- **Avaliação de conteúdo dos scripts `.js` de `dev/`, do ponto de vista
+  de segurança (mesmo que hoje não publicados — defesa em profundidade
+  contra reconfiguração futura acidental do Build output directory):**
+  releitura completa de `dev/css/tokens.contrast-check.js`,
+  `dev/css/a11y-contrast-check.js` e `dev/fonts/fonts.smoke.check.js`
+  confirma, nesta auditoria, que nenhum dos 3 contém segredo/credencial,
+  caminho de sistema de arquivos local (`C:\`, `/home/`), endpoint
+  interno, ou qualquer informação que não fosse apropriada para um
+  visitante ver — são só cálculo de contraste de cor e varredura de
+  padrão de texto em arquivos do próprio repositório, sem I/O de rede
+  (mesma conclusão já registrada nos Lotes 1/2 para as versões anteriores
+  destes scripts, reconfirmada após o `git mv` para `dev/`, sem alteração
+  de conteúdo além do caminho). Mesmo se um erro de configuração futuro
+  reexpuser `dev/`, o pior cenário é vazamento de ferramentas de
+  desenvolvimento sem valor de exploração (nenhum dado sensível, nenhuma
+  lógica de servidor, nenhuma credencial).
+
+### 4. DNS — MX/SPF/DMARC (RT-03, decisão de não aceitar/enviar e-mail no domínio)
+
+**Veredito: Aprovado.**
+
+Consulta DNS real (`nslookup`) contra os servidores autoritativos, após a
+migração de NS para a Cloudflare (T5.2):
+
+- **MX:** `ljssoftware.com.br MX preference = 0, mail exchanger = (root)`
+  — "null MX" (RFC 7505), declara explicitamente que o domínio não aceita
+  e-mail. Confirmado correto.
+- **SPF (TXT):** `"v=spf1 -all"` — política "hard fail" total, nenhum
+  servidor autorizado a enviar e-mail em nome do domínio. Confirmado
+  correto e consistente com o null MX (nenhuma contradição entre "não
+  recebe" e "ninguém pode enviar como se fosse este domínio").
+  Complemento verificado: com `-all` (hard fail) em vez de `~all` (soft
+  fail), qualquer tentativa de spoofing do domínio em e-mail é rejeitada
+  de forma mais estrita pelos servidores receptores que respeitam SPF —
+  postura correta para um domínio que nunca deve enviar e-mail.
+- **DMARC (TXT em `_dmarc.ljssoftware.com.br`):**
+  `"v=DMARC1; p=reject;"` — política de rejeição total para mensagens que
+  falhem alinhamento SPF/DKIM, reforçando o null MX/SPF acima em uma
+  terceira camada. Confirmado correto.
+- **Conclusão:** as 3 camadas (MX, SPF, DMARC) continuam corretas e
+  mutuamente consistentes após a migração de NS para a Cloudflare —
+  nenhuma regressão da decisão já tomada (RT-03) de que o domínio não
+  deve aceitar nem permitir envio de e-mail em seu nome, reduzindo a
+  superfície de spoofing/phishing usando o domínio institucional.
+- **Observação (não um achado, item de rastreabilidade):** esta
+  configuração de DNS (null MX/SPF/DMARC) não está documentada em nenhum
+  artefato `.md` do projeto (`TASK.md`, `SDD.md`, `DEPLOY.md`) — foi
+  confirmada apenas por consulta DNS direta nesta auditoria. Não é um
+  achado de segurança (a configuração real está correta), mas é uma
+  lacuna de rastreabilidade: um auditor futuro sem acesso de rede não
+  teria como confirmar essa decisão só pelos artefatos do repositório.
+  Sugestão de baixo custo: registrar esses 3 valores em `DEPLOY.md` (ou
+  em uma nova nota de T5.2) na próxima vez que o chapéu DevOps tocar o
+  arquivo — não gera tarefa própria em `Refatoração Lote-5` por ser
+  puramente documental e não bloquear nada.
+
+### 5. Cloudflare Web Analytics — integridade do snippet e ausência de PII (T5.4)
+
+**Veredito: Aprovado.**
+
+- Snippet publicado, idêntico nas 4 páginas (`public/index.html:260`,
+  `public/apps.html:171`, `public/sobre.html:139`, `public/404.html:160`):
+  ```html
+  <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "bc3ce694258f45c393941b292ba37ac9"}'></script>
+  ```
+- **Verificação contra a documentação oficial da Cloudflare** (busca
+  dirigida a `developers.cloudflare.com/web-analytics`): o formato
+  `<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "..."}'>` é uma variante
+  **oficial e documentada** do snippet manual (alternativa ao formato com
+  `defer`, usada para habilitar configuração adicional via `type=module`,
+  ex. `spa`) — **não é uma adulteração**, é uma das duas formas
+  legítimas que a própria Cloudflare distribui no painel. Domínio
+  (`static.cloudflareinsights.com`), nome do arquivo (`beacon.min.js`) e
+  formato do atributo `data-cf-beacon` batem exatamente com a
+  documentação pública.
+  Fonte: [Web Analytics for Single Page Applications (SPAs) · Cloudflare Web Analytics docs](https://developers.cloudflare.com/web-analytics/get-started/web-analytics-spa/)
+- `https://static.cloudflareinsights.com/beacon.min.js` responde `200`
+  quando requisitado diretamente (confirmado via `curl`) — script real,
+  hospedado pela própria Cloudflare, não um domínio typosquatted/
+  intermediário.
+- **Ausência de PII no evento custom — confirmado por leitura de
+  `assets/js/analytics.js` (inalterado desde T2.4/Lote 2, já auditado):**
+  `trackEvent(eventName)` recebe e envia apenas a string fixa do nome do
+  evento (`contato_email_click`/`contato_linkedin_click`, valores
+  literais do mapa `EVENT_NAMES`, nunca construídos a partir de dado do
+  visitante) para `window.__cfBeacon.track(...)`. Nenhum e-mail, IP
+  manual, identificador de sessão, cookie ou qualquer dado do visitante é
+  lido ou passado como argumento. Mesma conclusão já registrada nos Lotes
+  2/3, agora confirmada com o beacon **realmente ativo** em produção
+  (antes apenas teórica, pois o beacon estava inativo).
+
+### 6. Segredos/credenciais
+
+**Veredito: Aprovado.**
+
+- Varredura por padrão de segredo (`api[_-]?key`, `secret`, `password`,
+  chave privada, `AKIA`, `Bearer `) em **todo o repositório** (não só nos
+  artefatos deste lote): as únicas ocorrências estão em documentação
+  genérica de skills do próprio pipeline de agentes (`.claude/skills/
+  aws-advisor/`, `.claude/skills/cloudflare-deploy/`,
+  `.claude/PIPELINE-CONVENTIONS.md`) — texto de referência sobre boas
+  práticas de gestão de segredos em nuvem (ex.: exemplos de
+  `OPENAI_API_KEY`/`Bearer $CF_API_TOKEN` em documentação de terceiros
+  vendorizada como skill), **não credenciais reais do projeto**. Nenhuma
+  ocorrência nos arquivos publicados (`public/`), no repositório de
+  desenvolvimento (`dev/`) ou em qualquer artefato de infraestrutura
+  (`_headers`, `_redirects`, `robots.txt`, `sitemap.xml`).
+- O token do Cloudflare Web Analytics (`bc3ce694258f45c393941b292ba37ac9`,
+  presente nas 4 páginas) é público por design — a própria Cloudflare
+  documenta que esse token é visível no código-fonte de qualquer site que
+  usa o produto (não é uma API key privada, não concede nenhum acesso de
+  escrita/leitura à conta) — consistente com a avaliação já registrada em
+  `SECURITY-REVIEW.md` Lote 2 ("não é um segredo a proteger via variável
+  de ambiente/CI"). Nenhuma ação necessária.
+- Nenhum arquivo de configuração com credencial de conta Cloudflare ou
+  registro.br presente no repositório — confirmado por varredura de nome
+  de arquivo (`*credential*`, `*.env`, `*wrangler.toml*`,
+  `*.cloudflare*`) e por leitura do `git status`: nenhum arquivo desse
+  tipo rastreado ou não rastreado. Consistente com o modelo operacional
+  já descrito em `DEPLOY.md` (autenticação feita fora do repositório, via
+  painel/OAuth do Cloudflare Pages conectado ao Git).
+
+### 7. Conformidade regulatória (LGPD)
+
+**Veredito: N/A / Aprovado — mesma conclusão dos lotes anteriores, agora
+com o beacon realmente ativo.**
+
+- T5.4 ativa, pela primeira vez, o beacon real do Cloudflare Web
+  Analytics — mas não muda a natureza da coleta já avaliada nos Lotes
+  1-4: é um produto de analytics **agregado, sem cookie, sem
+  fingerprinting individual**, por desenho do próprio produto Cloudflare
+  (confirmado na documentação oficial consultada nesta auditoria, item 5
+  acima) — nenhuma mudança na avaliação de compliance por essa ativação
+  em si.
+- Os eventos custom (`contato_email_click`/`contato_linkedin_click`)
+  continuam sendo apenas nomes de evento agregados, sem payload de dado
+  pessoal identificável do visitante (item 5 acima).
+- Nenhum `<form>`/campo de coleta de dado em nenhuma das 4 páginas
+  publicadas (G-04 seguindo intacto em produção, confirmado por leitura
+  direta de `public/*.html`).
+- **Conclusão: T5.4 não muda a conclusão de LGPD já registrada nos Lotes
+  1-4** — a coleta permanece agregada/anonimizada/sem cookie mesmo com o
+  beacon ativo, exatamente como antecipado em `SDD.md` Seção 7.
+
+### 8. Requisitos de segurança operacional para o chapéu DevOps
+
+- Nenhum item bloqueante. Recomendações:
+  - Habilitar HSTS no painel Cloudflare (achado Baixo, item 2 acima,
+    RL5.2).
+  - Documentar a configuração DNS (null MX/SPF/DMARC) em `DEPLOY.md` na
+    próxima janela de manutenção desse arquivo (observação, item 4 acima,
+    sem tarefa própria).
+  - Nenhuma ação nova além das já registradas nos Lotes 1-4 (RL1.1,
+    RL1.2, RL4.1, RL4.2, todas de natureza não-bloqueante, seguem seu
+    próprio prazo).
+
+---
+
+## Achados deste lote (resumo)
+
+| # | Item | Severidade | Status | Ação |
+|---|---|---|---|---|
+| 1 | Ausência de `Strict-Transport-Security` (HSTS) em todas as respostas reais (apex/`www`) — não exigido nominalmente por G-08/SDD.md Seção 7 (que já são satisfeitos pelo redirect `301` real, confirmado), mas é uma camada adicional de defesa contra downgrade no primeiro request | **Baixa** | Débito registrado, não bloqueia deploy | Tarefa em `Refatoração Lote-5` (RL5.2, ver abaixo) |
+
+Nenhum achado **Alto/Crítico** neste lote. Nenhum achado de compliance
+obrigatório em aberto. Nenhuma diretiva de CSP permissiva demais. Nenhum
+segredo/credencial exposto. `dev/` confirmado inacessível por requisição
+real. DNS (MX/SPF/DMARC) confirmado correto pós-migração de NS. Beacon do
+Web Analytics confirmado autêntico (documentação oficial) e sem PII.
+
+## Fechamento — Lote 5 (chapéu DevSecOps)
+
+- Nenhum achado de severidade alta/crítica.
+- Nenhum item de compliance obrigatório pendente (LGPD: coleta
+  agregada/anonimizada, sem cookie, mesmo com beacon ativo).
+- Item de severidade Baixa (#1 acima) registrado como débito, com tarefa
+  criada por este Validador em `Refatoração Lote-5` (mesmo lote de
+  refatoração já aberto pelo chapéu QA para RL5.1):
+
+  **Refatoração Lote-5 (atualização)**
+  | ID | Tarefa | Origem | Prazo sugerido |
+  |---|---|---|---|
+  | RL5.1 | Resolver a duplicidade de URL introduzida pelo redirect `308` automático do Cloudflare Pages (`.html` → sem extensão) | QA-REPORT.md, achado #1 (T5.3) | Antes do deploy de produção final (após o Lote 6) |
+  | RL5.2 | Habilitar HSTS (`Strict-Transport-Security`) no painel Cloudflare (SSL/TLS → Edge Certificates → Enable HSTS), com `max-age` inicial conservador (ex.: 6 meses), sem `preload` até confirmar estabilidade | SECURITY-REVIEW.md, achado #1 (Lote 5) | Antes do deploy de produção final (após o Lote 6); não bloqueia o deploy atual — o site já força HTTPS via redirect `301` server-side em toda rota, satisfazendo G-08 |
+
+  Nenhum dos dois itens exige redesenho de dependência/decomposição — não
+  escala ao `coordenador`. RL5.2 é uma ação de painel (mesma natureza de
+  T5.2/T5.3), não uma correção de código — o chapéu DevOps é o dono
+  natural da execução, quando o usuário confirmar acesso ao painel.
+- Nenhum achado de relevância estratégica a sinalizar ao Gestor neste
+  lote — HSTS é um endurecimento operacional de baixo custo, não uma
+  decisão de negócio/compliance.
+
+**Veredito geral do Lote 5 (chapéu DevSecOps): Aprovado com débito de
+baixa severidade** (1 achado Baixo — ausência de HSTS, registrado como
+RL5.2, prazo antes do deploy de produção final). Nenhum achado bloqueia
+deploy. Combinado com o veredito funcional do chapéu QA ("Aprovado com
+ressalvas", `QA-REPORT.md`, seção "Lote 5"), o Lote 5 tem a dupla
+aprovação (QA + DevSecOps) necessária para o chapéu DevOps considerar este
+build (já em produção) formalmente liberado pelo processo de governança —
+o débito de segurança de baixa severidade (RL5.2), com prazo definido, não
+impede o deploy seguir normalmente, conforme a regra geral de aprovação
+condicional para achados de severidade baixa/média.

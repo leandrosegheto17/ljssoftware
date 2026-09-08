@@ -291,6 +291,31 @@ distintos do mesmo comentário, mas independentes entre si). **Prazo
 sugerido:** antes do deploy de produção (Lote 5) — não bloqueia o avanço/
 deploy, a CSP real já está correta.
 
+### Refatoração Lote-5
+
+> **Origem:** achado Simples do `/validar` sobre o Lote 5 — Deploy e
+> Infraestrutura (2026-09-08), registrado pelo Validador (chapéu QA) sem
+> exigir reprovação nem redesenho; achado Baixo de segurança do mesmo
+> `/validar` (chapéu DevSecOps), registrado sem bloquear deploy. Ver
+> `.md/QA-REPORT.md` (Lote 5) e `.md/SECURITY-REVIEW.md` (Lote 5) para o
+> detalhe completo de cada achado.
+
+| ID | Tarefa | Dono | Critério de aceite | Origem | Estimativa | Status |
+|---|---|---|---|---|---|---|
+| RL5.1 | Resolver a duplicidade de URL introduzida pelo redirect `308` automático do Cloudflare Pages (`.html` → sem extensão, confirmado em produção para `/apps.html`→`/apps` e `/sobre.html`→`/sobre`): (a) atualizar os links internos de navegação/CTA das 4 páginas para apontar direto para a URL sem extensão; (b) atualizar `sitemap.xml` (T4.3) e `og:url` (T4.1) das 4 páginas para a mesma URL final sem extensão | DevOps/Frontend | Nenhum link interno das 4 páginas nem entrada de `sitemap.xml`/`og:url` aponta mais para uma URL `.html` que sofre redirect `308`; todas as URLs internas resolvem em `200` sem hop de redirect adicional; nenhuma mudança na CSP/`_headers` | QA-REPORT.md, achado #1 (T5.3) | 0,25 dia | Pendente |
+| RL5.2 | Habilitar HSTS (`Strict-Transport-Security`) no painel Cloudflare (SSL/TLS → Edge Certificates → Enable HSTS), `max-age` inicial conservador (ex.: 6 meses), sem `preload` até confirmar estabilidade | DevOps | Header `Strict-Transport-Security` presente na resposta HTTP real de `https://ljssoftware.com.br` e `https://www.ljssoftware.com.br`, com `max-age` definido; nenhuma outra mudança de configuração de borda | SECURITY-REVIEW.md, achado #1 (Lote 5) | 0,1 dia | Pendente |
+
+**Dependências do lote Refatoração Lote-5:** nenhuma dependência de outro
+lote para começar (ajuste pontual sobre as 4 páginas já publicadas e sobre
+`sitemap.xml`/`og:url` do Lote 4; RL5.2 é uma ação de painel Cloudflare,
+independente de RL5.1). RL5.1 e RL5.2 são independentes entre si
+(paralelizáveis). **Prazo sugerido:** antes do deploy de produção final
+(após o Lote 6, conteúdo definitivo) — não bloqueia o avanço/deploy atual:
+o site já resolve corretamente para `200` em todos os casos hoje (RL5.1) e
+já força HTTPS via redirect `301` server-side em toda rota, satisfazendo
+G-08 mesmo sem HSTS (RL5.2) — ambos são ajustes de consistência/hardening,
+não correção de algo quebrado ou bloqueio de requisito obrigatório.
+
 **Nota sobre o autocheck de granularidade (canário de ~300k tokens),
 reexecutado nesta revisão:** todas as 25 tarefas envolvem no máximo 1
 página HTML (ou uma fatia de seções dela) + os componentes compartilhados
@@ -421,6 +446,8 @@ flowchart TD
 | 5 | T5.2 e T5.4 (após T5.1) | T5.3 depende de T5.2 |
 | 6 | T6.1, T6.2, T6.3 | Nenhuma dependência interna ao lote |
 | Refatoração Lote-1 | RL1.1, RL1.2 | Nenhuma dependência interna ao lote; sem dependência de outro lote — prazo sugerido antes do Lote 5 (deploy de produção) |
+| Refatoração Lote-4 | RL4.1, RL4.2 | RL4.2 não depende de RL4.1; sem dependência de outro lote — prazo sugerido antes do deploy de produção (Lote 5) |
+| Refatoração Lote-5 | RL5.1 | Nenhuma dependência interna ao lote; sem dependência de outro lote — prazo sugerido antes do deploy de produção final (após o Lote 6) |
 
 O ponto de maior paralelismo real passa a ser o início do Lote 3 (4
 instâncias simultâneas: T3.1, T3.4, T3.5, T3.6), com a Home continuando de
