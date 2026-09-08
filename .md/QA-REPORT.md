@@ -1927,3 +1927,176 @@ lote está estruturalmente fechado e liberado para a auditoria de segurança
 do chapéu DevSecOps sobre T6.4/T6.5 especificamente (T6.1-T6.3 já
 auditadas) e, em paralelo, para o chapéu DevOps considerar este build no
 fluxo de dupla aprovação rumo à confirmação final do deploy.
+
+---
+
+## Lote 7 — Botão "Saiba mais" + Modal nos Cards de App
+
+**Escopo validado:** T7.1, único item do lote, `Concluída` no `TASK.md` no
+momento desta validação. Ainda não commitada — confirmado via `git status`
+(`public/apps.html`, `public/assets/css/components.css`,
+`public/index.html` modificados; `public/assets/js/app-modal.js` novo,
+untracked).
+
+**Metodologia:** leitura direta de `public/apps.html`, `public/index.html`,
+`public/assets/css/components.css` e `public/assets/js/app-modal.js`
+(arquivo completo), mais `git diff`/`git status` isolado — a nota de
+implementação do Executor no `TASK.md` foi usada só como ponto de partida
+de onde olhar, nunca como base de aprovação. Reexecutado `node --check
+public/assets/js/app-modal.js` e `node dev/css/a11y-contrast-check.js`.
+
+### T7.1 — Botão "Saiba mais" + Modal
+
+**Veredito: Aprovado.**
+
+- **6 botões `.app-card__more` nas 2 páginas — PASS.** `apps.html` e
+  `index.html` têm, cada uma, 6 botões com `data-app-name`/
+  `data-app-summary`; comparação byte a byte dos 6 pares de atributos entre
+  as duas páginas (via `git diff`) confirma texto **idêntico** (Destino
+  Ideal, Minha Jornada, Meu Objetivo, Radar Esportivo, Gestão da Pelada,
+  Evolução Segura) — mesmo padrão RT-02 já aplicado ao conteúdo comercial em
+  T6.2/T6.4/T6.5. `data-app-name` bate com o `<h2>`/`<h3
+  class="app-card__name">` do próprio card em todos os 6 casos; `data-app-
+  summary` é uma expansão comercial coerente da `<p class="app-card__
+  description">` correspondente (mesmo produto, mesmo tom), sem
+  contradição de conteúdo.
+- **Modal único por página — PASS.** `#app-modal` aparece exatamente 1 vez
+  em cada uma de `apps.html`/`index.html` (confirmado por contagem),
+  `hidden` no HTML estático (estado inicial fechado). Estrutura conforme:
+  `role="dialog"`, `aria-modal="true"`, `aria-labelledby="app-modal-title"`
+  no `.app-modal__dialog`; `<h2 id="app-modal-title">` casa exatamente com
+  o `aria-labelledby`; botão de fechar com `aria-label="Fechar"` e
+  `data-app-modal-close`; overlay também com `data-app-modal-close`.
+- **`node --check public/assets/js/app-modal.js` — PASS**, sem erro de
+  sintaxe (reexecutado nesta validação).
+- **Lógica de acessibilidade do JS — PASS, lida linha a linha:**
+  `openModal(trigger)` guarda `lastFocused = trigger`, aplica `inert` em
+  todo `child` de `document.body` exceto o próprio `modal` (via
+  `document.body.children`, condição `child !== modal &&
+  !child.hasAttribute('inert')`), depois `modal.hidden = false` e foco
+  programático em `.app-modal__close`. `closeModal()` reverte `modal.hidden
+  = true`, remove `inert` de todos os `inertSiblings` guardados, devolve
+  foco a `lastFocused` (o botão que abriu) e limpa `lastFocused = null` —
+  sem vazamento de referência entre aberturas. Fecha via clique no overlay,
+  no botão de fechar (ambos com `data-app-modal-close`, mesmo handler) e via
+  `Escape` (checado com `isOpen()` antes de agir, sem interferir quando o
+  modal já está fechado). Como o `modal` em si nunca recebe `inert`, e
+  título/texto não são focáveis, o único elemento tabulável dentro do modal
+  é o botão de fechar — não é necessário um "focus trap" manual, coerente
+  com a decisão documentada no cabeçalho do arquivo e com a mesma técnica já
+  aprovada em `nav.js` (T2.2, achado Crítico #1 daquele lote, hoje
+  corrigido). Nenhum "vazamento" de foco identificado nesta leitura.
+- **`.app-card__footer` e grid — PASS.** `display:flex; align-items:center;
+  gap:.75rem; flex-wrap:wrap` agrupa badge + botão sem alterar `.grid.grid--
+  3col` (não tocado, confirmado por `git diff` isolado da seção "App Card —
+  botão 'Saiba mais' + Modal (T7.1)", que é inteiramente aditiva a partir da
+  linha 817 de `components.css`, depois do fechamento do bloco anterior).
+  Nenhum token novo declarado: leitura completa da seção nova confirma uso
+  exclusivo de `--color-accent`, `--color-bg`, `--glass-bg`, `--glass-
+  border`, `--glass-blur`, `--glass-radius`, `--color-text-inverse`,
+  `--color-text-inverse-secondary`, `--font-body`, `--font-heading` — todos
+  já existentes em `tokens.css` desde T1.1/T1.2.
+- **`node dev/css/a11y-contrast-check.js` — PASS, sem regressão.**
+  Reexecutado nesta validação: as 24 combinações do script (tabela de
+  tokens, componentes dos Lotes 2/3, pior caso do mesh gradient, pior caso
+  composto `.glass-card` sobre o mesh gradient) continuam todas PASS —
+  esperado, já que T7.1 não toca em nenhum token. **Achado de cobertura,
+  não bloqueante:** o script não cobre as 2 combinações novas introduzidas
+  por T7.1 (`--color-accent` sobre o fundo do botão/`.glass-card`;
+  `--color-text-inverse[-secondary]` sobre o diálogo do modal). O
+  comentário no CSS afirma que são "pares idênticos" aos já validados em
+  `tokens.css` — **isso é uma aproximação, não é exato**: recalculei à mão
+  (mesma fórmula de luminância relativa do script) `--color-accent`
+  (`#7FE3D2`) sobre a cor composta real de `.glass-card` sobre `--color-bg`
+  (`#1F3654`, já calculada pelo próprio script na Seção 4) e obtive
+  **8.06:1** — diferente do 10.13:1 citado (que é o par sobre `--color-bg`
+  sólido, não sobre o composto translúcido), mas **ainda PASS com folga
+  larga** sobre o mínimo AA de texto normal (4.5:1, já que o texto do botão
+  tem 0.85rem, abaixo do limiar de "texto grande"). O texto/título do modal
+  reaproveita exatamente os mesmos pares já testados na Seção 4 do script
+  para `.glass-card` sobre `--color-bg` sólido (11.04:1/7.90:1) — o modal
+  não fica sobre o mesh gradient em nenhuma das 2 páginas (a seção
+  `.home-apps` de `index.html` e a seção de vitrine de `apps.html` não têm
+  mesh gradient, só o `.hero` de `index.html` tem — confirmado por leitura
+  do HTML), então nem o pior caso do script se aplica aqui; a combinação
+  real é ainda mais folgada que a testada. **Classificação: não é um
+  achado** (nenhuma combinação falha, a imprecisão é só no texto do
+  comentário do CSS, que descreve o par errado como "idêntico" em vez de
+  "equivalente/mais folgado") — mas fica registrado como nota de
+  documentação a corrigir, ver Fechamento Estrutural abaixo.
+- **Nenhuma regressão nos 6 cards/badges existentes — PASS.** `git diff` de
+  `apps.html`/`index.html` mostra que a única mudança em cada card é a
+  substituição de `<span class="badge">Em breve</span>` solto por
+  `<div class="app-card__footer">` envolvendo o mesmo `<span class="badge">`
+  (texto/atributos do badge inalterados) + o novo botão; `<h2>`/`<h3
+  class="app-card__name">` e `<p class="app-card__description">` de todos
+  os 6 cards, nas 2 páginas, **não foram tocados** (confirmado linha a
+  linha no diff).
+- **Nenhum arquivo fora do escopo tocado — PASS.** `git status` confirma
+  que só `public/apps.html`, `public/assets/css/components.css`,
+  `public/index.html` (modificados) e `public/assets/js/app-modal.js`
+  (novo) fazem parte desta tarefa; `tokens.css`, `base.css`, `nav.js`,
+  `analytics.js`, `sobre.html`, `404.html`, `_headers` permanecem
+  inalterados. (`.md/CTO-REVIEW.md` também aparece modificado no `git
+  status`, mas é resíduo do registro de fechamento do Gate 4 do Lote 6, já
+  commitado em contexto anterior a este lote — não faz parte do diff de
+  T7.1, confirmado por leitura do próprio conteúdo alterado.)
+
+### Testes de integração cross-platform
+
+`apps.html` e `index.html` compartilham o mesmo `components.css`/`app-
+modal.js` — comportamento validado uma vez por página (ambas com marcação
+idêntica de modal e mesmos 6 conjuntos de atributos), sem necessidade de
+teste adicional de contrato entre chapéis (não há API envolvida nesta
+tarefa).
+
+### Requisitos não funcionais
+
+- Contraste WCAG AA: PASS, ver achado de cobertura de script acima (não
+  bloqueante).
+- `prefers-reduced-motion: reduce`: nenhuma transição própria declarada no
+  componente novo (confirmado por leitura da seção CSS), coberto pela regra
+  global de `base.css` por definição (nada a neutralizar).
+- Nenhum `outline: none` sem substituto: confirmado por leitura completa da
+  seção nova — nenhuma ocorrência.
+
+### Achados deste lote (resumo)
+
+| # | Tarefa | Achado | Classificação | Ação |
+|---|---|---|---|---|
+| 1 | T7.1 | Comentário de contraste no CSS descreve o par `--color-accent` sobre o fundo do botão como "idêntico" ao par já validado sobre `--color-bg` sólido; na prática é um par diferente (`--color-accent` sobre o composto `.glass-card`), com contraste real 8.06:1 — ainda PASS com folga, não é uma falha de contraste, só uma imprecisão de documentação | **Simples** | Tarefa criada em `Refatoração Lote-7`; T7.1 permanece `Concluída` |
+| 2 | T7.1 (estrutural) | Diagrama mermaid da Seção 4 do `TASK.md` não inclui nenhum nó para o Lote 7/T7.1 (lote novo, fora do ciclo formal de reabertura) — texto de dependências abaixo da tabela já documenta a dependência corretamente, só o diagrama visual está incompleto | **Simples** | Tarefa criada em `Refatoração Lote-7`; não é dependência órfã/inconsistente, é lacuna de diagrama |
+
+Nenhum achado **Crítico** neste lote.
+
+## Fechamento Estrutural do Lote 7
+
+- T7.1 (única tarefa do lote): `Concluída` no `TASK.md`, aprovada pelo
+  chapéu QA nesta validação.
+- Dependências da Seção 4 do `TASK.md` relativas ao Lote 7: o texto
+  "Dependências do Lote 7" (T7.1 depende de T3.4/T3.2 e do conteúdo
+  pós-T6.5) está correto e coerente com os artefatos reais — os 6 cards e
+  seus nomes/descrições de fato vêm de T3.4 (`apps.html`)/T3.2 (`index.html`)
+  já ajustados pelo Lote 6. O diagrama mermaid da Seção 4 não tem nó para o
+  Lote 7 (achado #2 acima) — não é uma dependência órfã/inconsistente
+  (nenhuma seta aponta para um nó inexistente), é só ausência de um nó
+  novo; correção de rotina, não exige redesenho de dependência/decomposição
+  — não escala ao `coordenador`.
+- Nenhuma tarefa `Bloqueada` sem resolução.
+- 2 achados Simples deste lote viram tarefas em `Refatoração Lote-7`:
+
+  **Refatoração Lote-7**
+  | ID | Tarefa | Origem | Prazo sugerido |
+  |---|---|---|---|
+  | RL7.1 | Corrigir o comentário de verificação de contraste em `assets/css/components.css` (seção "App Card — botão 'Saiba mais' + Modal (T7.1)"): o par `--color-accent` sobre o fundo do botão não é idêntico ao par `--color-accent`/`--color-bg` sólido (10.13:1) — é `--color-accent` sobre o composto `.glass-card` (8.06:1, ainda PASS AA). Atualizar o texto do comentário para refletir o par real | QA-REPORT.md, T7.1 | Baixo esforço; antes do próximo lote que tocar este CSS, não bloqueia deploy |
+  | RL7.2 | Adicionar o nó do Lote 7/T7.1 ao diagrama mermaid da Seção 4 do `TASK.md`, refletindo a dependência já documentada em texto (T3.4/T3.2 → T7.1) | QA-REPORT.md, T7.1 | Baixo esforço; próxima revisão do `TASK.md` |
+
+  Nenhuma das 2 tarefas exige redesenho de dependência/decomposição — não
+  escala ao `coordenador`.
+
+**Veredito geral do Lote 7: Aprovado com ressalvas** (2 achados Simples, de
+documentação, registrados em `Refatoração Lote-7`, sem impacto no critério
+de aceite central da tarefa nem em nenhuma combinação de contraste real).
+O lote está liberado para a auditoria de segurança do chapéu DevSecOps.
+
+---

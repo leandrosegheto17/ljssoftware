@@ -321,6 +321,42 @@ já força HTTPS via redirect `301` server-side em toda rota, satisfazendo
 G-08 mesmo sem HSTS (RL5.2) — ambos são ajustes de consistência/hardening,
 não correção de algo quebrado ou bloqueio de requisito obrigatório.
 
+### Refatoração Lote-7
+
+> **Origem:** 2 achados Simples do `/validar` sobre o Lote 7 — Botão "Saiba
+> mais" + Modal nos Cards de App (2026-09-08), registrados pelo Validador
+> (chapéu QA), ambos de documentação, sem exigir reprovação nem redesenho.
+> Ver `.md/QA-REPORT.md` (Lote 7) para o detalhe completo de cada achado.
+
+| ID | Tarefa | Dono | Critério de aceite | Origem | Estimativa | Status |
+|---|---|---|---|---|---|---|
+| RL7.1 | Corrigir o comentário de verificação de contraste em `assets/css/components.css` (seção "App Card — botão 'Saiba mais' + Modal (T7.1)"): o par `--color-accent` sobre o fundo do botão não é idêntico ao par `--color-accent`/`--color-bg` sólido (10.13:1) — é `--color-accent` sobre o composto `.glass-card` (8.06:1, ainda PASS AA) | Frontend | Comentário atualizado para descrever o par real (`--color-accent` sobre `.glass-card`, ~8.06:1); nenhuma mudança de CSS/comportamento real | QA-REPORT.md, achado #1 (T7.1) | 0,1 dia | Pendente |
+| RL7.2 | Adicionar o nó do Lote 7/T7.1 ao diagrama mermaid da Seção 4 do `TASK.md`, refletindo a dependência já documentada em texto (T3.4/T3.2 → T7.1) | Coordenador | Nó `T71` presente no diagrama mermaid, com setas de T34/T32 para T71, coerente com o texto "Dependências do Lote 7" já existente | QA-REPORT.md, achado #2 (T7.1) | 0,1 dia | Pendente |
+
+**Dependências do lote Refatoração Lote-7:** nenhuma dependência de outro
+lote para começar (ajustes pontuais de documentação sobre artefatos já
+existentes do Lote 7); RL7.1 e RL7.2 são independentes entre si
+(paralelizáveis). **Prazo sugerido:** baixo esforço, sem urgência — não
+bloqueia o avanço/deploy do Lote 7 (nenhuma combinação de contraste real
+falha, nenhuma dependência real está órfã).
+
+### Lote 7 — Botão "Saiba mais" + Modal nos Cards de App
+
+> **Origem:** pedido direto do usuário, fora do ciclo de reabertura formal —
+> adicionar, ao lado do badge "Em breve" de cada card de app (`apps.html`
+> e a prévia de `index.html`), um botão "Saiba mais" que abre um resumo
+> comercial do produto. Interação (modal) e autoria do texto (rascunho do
+> Coordenador/Executor, aprovado pelo usuário antes da implementação)
+> confirmadas diretamente com o usuário antes desta tarefa.
+
+| ID | Tarefa | Dono | Critério de aceite | Estimativa | Status |
+|---|---|---|---|---|---|
+| T7.1 | **[NOVA]** Botão "Saiba mais" ao lado do badge "Em breve" nos 6 cards de `apps.html` e nos 6 cards replicados em `index.html`; clique abre um modal "glass" com nome + resumo comercial do app (texto aprovado pelo usuário, 1 por app); modal acessível (foco preso via `inert` no restante do `<body>`, `Escape`/clique fora/botão fechar, foco retorna ao botão que abriu) | Frontend | Botão presente nos 6 cards das 2 páginas, mesmo texto/resumo em ambas; modal abre/fecha via clique, teclado (`Tab`/`Enter`/`Space` no botão nativo) e `Escape`; nenhum elemento da página por trás focável enquanto o modal está aberto; contraste WCAG AA do botão e do conteúdo do modal verificado; nenhuma regressão nos 6 cards/badges já existentes | 0,5 dia | **Concluída** — CSS novo aditivo em `assets/css/components.css`, seção "App Card — botão 'Saiba mais' + Modal (T7.1)" (`.app-card__footer`, `.app-card__more`, `.app-modal*`), reaproveitando somente tokens já existentes (`--color-accent`, `--color-bg`, `--glass-*`, `--color-text-inverse[-secondary]`) — nenhum token novo. JS novo `assets/js/app-modal.js` (IIFE, sem framework — G-01), mesma técnica de `inert` já usada em `nav.js` (T2.2) para travar o restante da página enquanto o modal está aberto, sem precisar de "focus trap" manual (único elemento focável dentro do modal é o botão de fechar). Conteúdo do modal vem de `data-app-name`/`data-app-summary` no próprio botão `.app-card__more` de cada card — sem duplicar texto em JS. Badge + botão agrupados em `.app-card__footer` (`display:flex`, `flex-wrap`) nos 6 cards de `apps.html` e nos 6 replicados em `index.html`, mesmo texto comercial nas duas páginas (RT-02 aplicado por analogia ao conteúdo, mesmo critério já usado em T6.2/T6.4/T6.5). Textos comerciais (2-3 frases, tom vendedor) redigidos pelo Executor e aprovados explicitamente pelo usuário antes da implementação. Contraste WCAG AA: botão reaproveita o par já validado `--color-accent`/`--color-bg` (10.13:1, mesmo do badge); modal reaproveita `--color-text-inverse`/`--color-text-inverse-secondary` sobre fundo escuro (13.91:1/9.96:1, já validados em `tokens.css`) — overlay do modal (`rgba(11,37,69,.72)`) só escurece o que está atrás, nunca reduz esse contraste. Fallback `@supports not (backdrop-filter)` do overlay/diálogo do modal usa fundo mais opaco que `.glass-card` (não só remove o blur), decisão documentada em comentário no CSS: o modal cobre a página inteira (fundo de trás variável), diferente de `.glass-card`, que sempre fica sobre o `--color-bg` sólido. `node --check assets/js/app-modal.js` sem erro de sintaxe. Nenhum outro componente/arquivo tocado (`tokens.css`, `base.css`, `nav.js`, `analytics.js`, `sobre.html`, `404.html`, `_headers` inalterados — nenhum recurso novo, nenhuma mudança de CSP necessária). Ainda **não publicada** (`git status` deve confirmar os arquivos modificados/novos na working tree, sem commit) — pendente de `/validar` e `/deploy`. |
+
+**Dependências do Lote 7:** T7.1 depende de T3.4/T3.2 (cards já existentes
+em `apps.html`/`index.html`) e do conteúdo atual pós-T6.5 (nomes/descrições
+dos 6 apps). Sem paralelismo interno (tarefa única).
+
 **Nota sobre o autocheck de granularidade (canário de ~300k tokens),
 reexecutado nesta revisão:** todas as 25 tarefas envolvem no máximo 1
 página HTML (ou uma fatia de seções dela) + os componentes compartilhados
@@ -450,9 +486,11 @@ flowchart TD
 | 4 | T4.1, T4.2, T4.3, T4.4 (T4.4 sem dependência de página) | Nenhuma dependência interna ao lote |
 | 5 | T5.2 e T5.4 (após T5.1) | T5.3 depende de T5.2 |
 | 6 | T6.1, T6.2, T6.3, T6.4 | T6.5 depende de T6.2 e T6.4 (mesmos 6 cards) |
+| 7 | — (tarefa única) | T7.1 depende de T3.4 e T3.2 (cards já existentes) e do conteúdo pós-T6.5 |
 | Refatoração Lote-1 | RL1.1, RL1.2 | Nenhuma dependência interna ao lote; sem dependência de outro lote — prazo sugerido antes do Lote 5 (deploy de produção) |
 | Refatoração Lote-4 | RL4.1, RL4.2 | RL4.2 não depende de RL4.1; sem dependência de outro lote — prazo sugerido antes do deploy de produção (Lote 5) |
 | Refatoração Lote-5 | RL5.1 | Nenhuma dependência interna ao lote; sem dependência de outro lote — prazo sugerido antes do deploy de produção final (após o Lote 6) |
+| Refatoração Lote-7 | RL7.1, RL7.2 | Nenhuma dependência interna ao lote; sem dependência de outro lote — baixo esforço, sem urgência |
 
 O ponto de maior paralelismo real passa a ser o início do Lote 3 (4
 instâncias simultâneas: T3.1, T3.4, T3.5, T3.6), com a Home continuando de

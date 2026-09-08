@@ -235,3 +235,55 @@ Lote 6 (com destaque para T6.4) está formalmente encerrado no ciclo do
 Gestor. Nenhuma ação adicional exigida deste chapéu neste momento.
 
 ---
+
+## Gate 4 — Registro de fechamento (deploy em produção, Lote 6, T6.5)
+
+**Data:** 2026-09-08
+**Chamada:** `/deploy`, Seção 6 — registro de fechamento, **sem poder de
+veto**. Validação (chapéus QA e DevSecOps) já concluída sem achado
+bloqueante; este registro apenas formaliza o fechamento no log do Gestor.
+**Artefato de entrada:** `.md/QA-REPORT.md` e `.md/SECURITY-REVIEW.md`,
+seção "T6.5" (dupla aprovação, sem ressalvas); `.md/DEPLOY.md`, seção
+"Confirmação de produção (2026-09-08) — Lote 6, T6.5" (deploy confirmado
+via requisição HTTP real).
+
+### Resultado
+
+**Sucesso.** Deploy em produção confirmado, sem achado crítico em aberto.
+
+- **Commits publicados:** `17a8af5` e `bd2de3b`, branch `main`, deploy
+  contínuo via Cloudflare Pages (mesmo modelo já registrado em
+  `DEPLOY.md`, seção "Modelo de deploy real" — push em `main` já publica
+  direto em produção, sem staging clássico separado).
+- **URL de produção confirmada:** `https://ljssoftware.com.br/` (Home) e
+  `https://ljssoftware.com.br/apps.html` — confirmadas via requisição HTTP
+  real, documentado em `DEPLOY.md`.
+- **Lote/tarefa incluída:** Lote 6 — Confirmação de Conteúdo Pendente,
+  tarefa **T6.5**: renomeação de 5 dos 6 apps na vitrine
+  (`public/apps.html`) e na prévia da Home (`public/index.html`), por
+  decisão explícita do usuário (produto, não decisão técnica deste chapéu):
+  - Curta Mais → Destino Ideal
+  - Bíblia Fácil → Minha Jornada
+  - My Money → Meu Objetivo
+  - SportsLM → Radar Esportivo
+  - FutebolApp → Gestão da Pelada
+  - Evolução Segura mantido sem alteração.
+- **Dupla aprovação confirmada:** `QA-REPORT.md` e `SECURITY-REVIEW.md`,
+  ambos com nova seção "T6.5", sem ressalvas.
+- **Incidentes/rollback:** nenhum incidente reportado, nenhum rollback
+  necessário.
+
+### Débitos técnicos
+
+Nenhum débito novo gerado por esta mudança. Débitos previamente conhecidos
+e não relacionados a T6.5 permanecem em aberto, sem alteração de status:
+- **RL5.1** — redirect 308 de clean URL.
+- **RL5.2** — HSTS ainda não habilitado no painel Cloudflare.
+
+### Veredito
+
+**Aprovado — registro de fechamento, sem veto.** O deploy em produção da
+tarefa T6.5 (Lote 6) está formalmente encerrado no ciclo do Gestor.
+Nenhuma ação adicional exigida deste chapéu neste momento.
+
+---

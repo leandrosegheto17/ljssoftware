@@ -2074,3 +2074,114 @@ T6.4/T6.5 (T6.1-T6.3 já estavam em produção). Os débitos de baixa
 severidade ainda pendentes de lotes anteriores (RL1.2, RL4.1, RL4.2, RL5.1,
 RL5.2) continuam sem prazo vencido e não bloqueiam este lote nem o deploy
 de produção final.
+
+---
+
+## Lote 7 — Botão "Saiba mais" + Modal nos Cards de App
+
+**Pré-requisito confirmado:** `QA-REPORT.md`, seção "Lote 7", Veredito
+"Aprovado com ressalvas" (2 achados Simples de documentação, sem impacto em
+critério de aceite/contraste real) — auditoria de segurança liberada para
+rodar sobre este lote.
+
+**Escopo auditado:** T7.1, única tarefa do lote. Leitura direta de
+`public/apps.html`, `public/index.html`, `public/assets/css/
+components.css` (seção nova), `public/assets/js/app-modal.js` (arquivo
+completo) e `public/_headers` (para confirmar que não foi tocado), mais
+`git diff`/`git status` isolado.
+
+### 1. `<script>` inline / `on*=` / `javascript:` — PASS, nenhuma violação de CSP
+
+- Varredura de `public/apps.html` e `public/index.html` (blocos alterados +
+  arquivo completo): nenhum atributo `on click`/`onload`/etc., nenhum
+  `<script>` sem `src` externo, nenhuma URL `javascript:`. Os 2 `<script
+  src="assets/js/app-modal.js" defer>` adicionados apontam para arquivo
+  local, mesmo padrão de `nav.js`/`analytics.js` já aprovados.
+- `public/assets/js/app-modal.js`: 100% event listeners via
+  `addEventListener` (`click`, `keydown`), nenhum `eval`/`new Function`/
+  `innerHTML` com conteúdo não controlado (usa `textContent`, não
+  `innerHTML`, para preencher título/texto do modal a partir dos
+  `data-*` — evita injeção mesmo que o conteúdo dos atributos viesse de
+  fonte não confiável, o que não é o caso aqui: são strings estáticas
+  escritas no próprio HTML versionado).
+- `public/_headers`: **não tocado** (confirmado por `git status` e leitura
+  do arquivo) — CSP `script-src 'self' https://static.cloudflareinsights.com`
+  permanece válida sem qualquer ajuste, já que `app-modal.js` é servido como
+  arquivo `'self'`, sem inline.
+
+### 2. Recursos externos novos — PASS, nenhum introduzido
+
+- Nenhum novo `<link>`/`<script src>`/`url()` apontando para CDN, fonte ou
+  imagem externa. O único recurso externo presente nas 2 páginas continua
+  sendo o beacon do Cloudflare Web Analytics, já existente e inalterado
+  neste diff (confirmado por `git diff` isolado — a linha do beacon não
+  aparece no diff de nenhuma das 2 páginas). `app-modal.js` não referencia
+  nenhuma URL, nenhum `fetch`/`XMLHttpRequest`.
+
+### 3. Dados sensíveis/PII nos textos comerciais — PASS, nenhum encontrado
+
+- Leitura integral dos 6 textos de `data-app-summary` (idênticos nas 2
+  páginas): copy comercial genérico sobre cada produto (viagem, leitura
+  bíblica, finanças pessoais, notícias esportivas, futebol amador,
+  prontuário digital) — nenhum dado pessoal, nenhuma credencial, nenhuma
+  informação de cliente real, nenhum dado de saúde real (o texto de
+  "Evolução Segura" descreve a proposta de valor do produto — "prontuário
+  digital... seus dados sempre com você" — sem citar nenhum paciente/caso
+  real). Consistente com o mesmo padrão já aprovado para os textos de
+  `app-card__description` em T3.2/T3.4/T6.2/T6.4/T6.5.
+
+### 4. Nenhuma dependência nova — PASS, ADR-001/G-01 respeitado
+
+- `public/assets/js/app-modal.js`: JS puro, IIFE, sem `import`/`require`,
+  sem referência a `node_modules`/pacote externo. `git status` confirma que
+  nenhum `package.json`/lockfile/toolchain de build foi criado ou alterado
+  — mesmo padrão de `nav.js` (T2.2) e `analytics.js` (T2.4), ambos já
+  aprovados sob a mesma diretriz.
+
+### 5. Uso de `inert` — PASS, sem risco novo de segurança
+
+- `inert` é um atributo HTML padrão que afeta acessibilidade/interação
+  (remove a subárvore da árvore de foco/leitura por leitor de tela e de
+  eventos de ponteiro/teclado) — **não** afeta a CSP, não expande a
+  superfície de rede/execução de script, não introduz nenhum vetor novo de
+  XSS/injeção. Mesma técnica já auditada e aprovada para `nav.js` em T2.2
+  (ver Lote 2 acima, achado Crítico #1 daquele lote foi de acessibilidade —
+  ausência de `inert` —, não de segurança). Aplicação em `app-modal.js`
+  segue a mesma lógica (aplica/remove em pares simétricos, sem deixar
+  `inert` "preso" em nenhum caminho de código revisado na seção QA acima).
+
+### 6. Requisitos de segurança operacional para o chapéu DevOps
+
+- Nenhum item novo. Conteúdo estático adicional não introduz superfície
+  operacional nova (sem novo secret, sem nova rota, sem novo domínio a
+  provisionar, sem ajuste de `_headers`/CSP necessário — confirmado no item
+  1 acima).
+
+**Veredito T7.1: Aprovado, sem ressalvas e sem débito registrado.**
+
+## Achados deste lote (resumo)
+
+| # | Item | Severidade | Status | Ação |
+|---|---|---|---|---|
+| — | Nenhum achado novo de severidade Baixa, Média, Alta ou Crítica neste lote (T7.1) | — | — | — |
+
+Nenhum achado **Alto/Crítico**. Nenhum item de compliance obrigatório em
+aberto. Nenhum dado pessoal exposto.
+
+## Fechamento — Lote 7 (chapéu DevSecOps)
+
+- Nenhum achado de severidade alta/crítica (T7.1).
+- Nenhum item de compliance obrigatório pendente.
+- Nenhum item novo de débito de baixa/média severidade a registrar em
+  `Refatoração Lote-7` por este chapéu (os 2 achados Simples deste lote são
+  de documentação/QA — já registrados como RL7.1/RL7.2 pelo chapéu QA, ver
+  `QA-REPORT.md`; não há achado adicional de segurança a somar).
+- Nenhum achado de relevância estratégica a sinalizar ao Gestor neste lote.
+
+**Veredito geral do Lote 7 (chapéu DevSecOps): Aprovado, sem ressalvas e
+sem débito registrado.** Nenhum achado bloqueia deploy. Combinado com o
+veredito funcional do chapéu QA ("Aprovado com ressalvas", `QA-REPORT.md`,
+seção "Lote 7" — ressalvas de documentação, sem impacto em critério de
+aceite/segurança), o Lote 7 tem a dupla aprovação (QA + DevSecOps)
+necessária para o chapéu DevOps considerar este build formalmente liberado
+para deploy.

@@ -818,6 +818,184 @@
 }
 
 /* ====================================================================== */
+/* App Card — botão "Saiba mais" + Modal (T7.1)                            */
+/* ====================================================================== */
+
+/**
+ * Botão "Saiba mais" ao lado do badge "Em breve" em cada `.app-card` (`apps.
+ * html` e `index.html`), abrindo um modal com um resumo comercial do app.
+ * `.app-card__footer` agrupa badge + botão lado a lado (`flex-wrap` evita
+ * overflow em telas muito estreitas). O conteúdo do modal (nome + resumo)
+ * vem dos atributos `data-app-name`/`data-app-summary` do próprio botão —
+ * sem duplicar texto em JS (`assets/js/app-modal.js`), consistente com G-01
+ * (sem framework/build step).
+ *
+ * Bloco de referência — HTML esperado por card:
+ *
+ *   <div class="app-card__footer">
+ *     <span class="badge">Em breve</span>
+ *     <button type="button" class="app-card__more"
+ *       data-app-name="Nome do app"
+ *       data-app-summary="Resumo comercial do app.">Saiba mais</button>
+ *   </div>
+ *
+ * Modal (marcação única por página, no final do `<body>`, reutilizada pelos
+ * 6 botões via JS):
+ *
+ *   <div class="app-modal" id="app-modal" hidden>
+ *     <div class="app-modal__overlay" data-app-modal-close></div>
+ *     <div class="app-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="app-modal-title">
+ *       <button type="button" class="app-modal__close" data-app-modal-close aria-label="Fechar">×</button>
+ *       <h2 class="app-modal__title" id="app-modal-title"></h2>
+ *       <p class="app-modal__text"></p>
+ *     </div>
+ *   </div>
+ *
+ * -----------------------------------------------------------------------
+ * VERIFICAÇÃO DE CONTRASTE WCAG AA — combinações introduzidas por este
+ * componente:
+ *
+ *   --color-accent (texto/borda do botão) sobre --glass-bg (translúcido
+ *     sobre --color-bg) -> par idêntico ao já verificado em tokens.css
+ *     (--color-accent sobre --color-bg, 10.13:1).
+ *   Hover/foco do botão inverte para --color-bg sobre --color-accent -> par
+ *     idêntico ao badge (10.13:1, já verificado acima nesta seção).
+ *   --color-text-inverse (título do modal) / --color-text-inverse-secondary
+ *     (texto do modal) sobre o overlay `rgba(11,37,69,.72)` + fundo do
+ *     diálogo -> mesmos pares já verificados em tokens.css (13.91:1 / 9.96:1
+ *     sobre --color-bg); o overlay escurece ainda mais o que estiver atrás
+ *     (nunca clareia), então o contraste real é igual ou maior.
+ *
+ * Todas as combinações passam com folga acima do mínimo AA (4.5:1). Nenhum
+ * ajuste de tom foi necessário.
+ * -----------------------------------------------------------------------
+ */
+
+.app-card__footer {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.app-card__more {
+  display: inline-block;
+  padding: 0.35em 0.9em;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid var(--color-accent);
+  color: var(--color-accent);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.app-card__more:hover,
+.app-card__more:focus-visible {
+  background: var(--color-accent);
+  color: var(--color-bg);
+}
+
+/* Modal: overlay em tela cheia + diálogo "glass" centralizado. `[hidden]`
+   (atributo nativo) controla exibição — sem depender de classe/JS extra
+   para o estado inicial fechado. */
+.app-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.app-modal[hidden] {
+  display: none;
+}
+
+.app-modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(11, 37, 69, 0.72);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Sem `backdrop-filter`: overlay mais opaco (em vez do blur) para manter o
+   diálogo legível mesmo sobre conteúdo variado de fundo (o modal cobre a
+   página inteira, diferente de `.glass-card`, que sempre fica sobre o
+   `--color-bg` sólido — por isso um fallback mais forte aqui). */
+@supports not (backdrop-filter: blur(1px)) {
+  .app-modal__overlay {
+    background: rgba(11, 37, 69, 0.92);
+  }
+}
+
+.app-modal__dialog {
+  position: relative;
+  width: 100%;
+  max-width: 30rem;
+  padding: 2rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+/* Mesmo raciocínio do overlay acima: fallback sólido (não só `--glass-bg`
+   sem blur) porque o diálogo pode ficar sobre conteúdo de fundo variado. */
+@supports not (backdrop-filter: blur(1px)) {
+  .app-modal__dialog {
+    background: #14345c;
+  }
+}
+
+.app-modal__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  color: var(--color-text-inverse);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.app-modal__close:hover,
+.app-modal__close:focus-visible {
+  background: var(--glass-border);
+}
+
+.app-modal__title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.35rem;
+  color: var(--color-text-inverse);
+  margin-bottom: 0.75rem;
+  padding-right: 1.5rem;
+}
+
+.app-modal__text {
+  font-family: var(--font-body);
+  color: var(--color-text-inverse-secondary);
+}
+
+/* Trava o scroll da página por trás enquanto o modal está aberto (o próprio
+   conteúdo por trás já fica `inert`, via JS — ver app-modal.js). */
+body.app-modal-open {
+  overflow: hidden;
+}
+
+/* ====================================================================== */
 /* Home — Seções Apps/Sobre (T3.2)                                         */
 /* ====================================================================== */
 
