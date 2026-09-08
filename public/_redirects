@@ -1,18 +1,17 @@
-# _redirects — Cloudflare Pages (T5.3, Lote 5)
+# _redirects — Cloudflare Pages
 #
-# Redirect 301 de www.ljssoftware.com.br para o domínio apex
-# (ljssoftware.com.br), conforme TASK.md T5.3 e SDD.md/ADR-002 (domínio
-# canônico é o apex — ver og:url/canonical já usando ljssoftware.com.br em
-# todas as 4 páginas, sem "www").
+# CORREÇÃO (T5.3, verificado contra a documentação oficial do Cloudflare
+# Pages em developers.cloudflare.com/pages/configuration/redirects/): o
+# arquivo _redirects NÃO suporta redirecionamento entre domínios/hosts
+# ("domain-level redirects" — explicitamente listado como não suportado),
+# só redireciona caminhos dentro do MESMO host. A regra que existia aqui
+# antes (www.ljssoftware.com.br -> ljssoftware.com.br) nunca teve efeito
+# por esse motivo.
 #
-# Formato suportado nativamente pelo Cloudflare Pages: quando os dois
-# domínios (apex e www) estão anexados ao MESMO projeto Pages (pré-condição:
-# T5.2 concluída), uma origem com hostname completo redireciona entre
-# domínios. "Always Use HTTPS" (também T5.3, habilitado no painel) cobre o
-# redirect http->https automaticamente e não depende deste arquivo.
+# O redirect 301 de www para o domínio apex é feito, em vez disso, por uma
+# Redirect Rule no nível da zona Cloudflare (Rules > Redirect Rules,
+# expressão de hostname www.ljssoftware.com.br -> https://ljssoftware.com.br,
+# ver .md/DEPLOY.md, T5.3) — não depende deste arquivo.
 #
-# Pré-requisito para esta regra funcionar: www.ljssoftware.com.br precisa
-# estar adicionado como domínio customizado no mesmo projeto Cloudflare
-# Pages (ação manual do usuário, ver .md/DEPLOY.md, T5.2/T5.3).
-
-https://www.ljssoftware.com.br/* https://ljssoftware.com.br/:splat 301!
+# Este arquivo fica vazio (sem regra) até que surja alguma necessidade real
+# de redirect de CAMINHO dentro do próprio site (ex.: página renomeada).

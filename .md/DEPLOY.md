@@ -198,18 +198,37 @@ nos Lotes 1-4.
 1. No painel Cloudflare, selecionar o domínio `ljssoftware.com.br` (agora
    gerenciado pela Cloudflare) → aba **SSL/TLS** → **Edge Certificates**.
 2. Habilitar o toggle **Always Use HTTPS** (RF-05 — garante que
-   `http://` redirecione automaticamente para `https://`).
+   `http://` redirecione automaticamente para `https://`). Nota: testado em
+   produção e o redirect `http://` → `https://` já funcionava mesmo antes de
+   confirmar esse toggle explicitamente (comportamento padrão de zona nova
+   na Cloudflare) — mesmo assim, confirmar o toggle ligado por ser o
+   requisito explícito de RF-05.
 3. Confirmar que um certificado TLS válido foi emitido automaticamente para
    `ljssoftware.com.br` e `www.ljssoftware.com.br` (a Cloudflare emite via
-   Universal SSL assim que o domínio fica `Active`; pode levar alguns
-   minutos).
-4. O redirect `www` → apex já está coberto pelo `_redirects` criado neste
-   repositório (item 2 da seção anterior) — não precisa de configuração
-   adicional no painel para isso, desde que `www.ljssoftware.com.br` esteja
-   de fato anexado ao mesmo projeto Pages (T5.2, passo 2).
-5. Validar manualmente, depois do deploy: acessar `http://ljssoftware.com.br`
-   (deve cair em `https://`) e `https://www.ljssoftware.com.br` (deve
-   redirecionar 301 para `https://ljssoftware.com.br`).
+   Universal SSL assim que o domínio fica `Active`; confirmado em produção,
+   "SSL enabled" nos dois Custom Domains do projeto Pages).
+4. **Correção (verificado contra a documentação oficial do Cloudflare
+   Pages)**: o arquivo `_redirects` **não suporta redirecionamento entre
+   domínios/hosts** — só redireciona caminhos dentro do mesmo host. A regra
+   originalmente colocada em `_redirects` (www → apex) nunca teve efeito por
+   esse motivo; removida do arquivo. O redirect `www` → apex precisa ser
+   feito por uma **Redirect Rule** de zona:
+   - No painel Cloudflare, dentro do domínio `ljssoftware.com.br` → **Rules**
+     → **Redirect Rules** (ou "Overview" de Rules, dependendo da versão do
+     painel) → **Create rule** → **Redirect Rule**.
+   - **When incoming requests match**: "Custom filter expression" (ou
+     "Wildcard pattern") — Field `Hostname`, operador `equals`, valor
+     `www.ljssoftware.com.br` (ou o padrão wildcard `http*://www.ljssoftware.com.br/*`,
+     conforme a UI apresentar).
+   - **Then**: Type `Dynamic` (ou `Static` com URL fixa, se a UI não pedir
+     wildcard) → Target URL `https://ljssoftware.com.br${1}` (mantendo o
+     caminho/query da requisição original) → Status code `301` → habilitar
+     "Preserve query string".
+   - **Deploy**.
+5. Validar manualmente, depois de criar a regra: acessar
+   `http://ljssoftware.com.br` (deve cair em `https://`) e
+   `https://www.ljssoftware.com.br` (deve redirecionar 301 para
+   `https://ljssoftware.com.br`).
 
 ### T5.4 — Cloudflare Web Analytics + beacon nas 4 páginas
 
