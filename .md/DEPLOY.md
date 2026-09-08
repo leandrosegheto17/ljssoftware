@@ -322,3 +322,115 @@ próxima chamada de `/deploy` deve:
   deploys anteriores com rollback de um clique — testar antes de considerar
   o deploy de produção pronto).
 - Reportar o resultado final ao Gestor (Gate 4), fechando o ciclo.
+
+---
+
+## Confirmação de observabilidade e rollback — pré-Gate de produção (2026-09-08)
+
+**Contexto desta chamada:** T5.1-T5.4 já estão `Concluída` no `TASK.md`,
+dupla aprovação confirmada (`QA-REPORT.md` Lote 5: "Aprovado com
+ressalvas"; `SECURITY-REVIEW.md` Lote 5: "Aprovado com débito de baixa
+severidade" — débito RL5.2/HSTS, sem bloqueio). `git status` está limpo:
+não há nenhuma mudança de código pendente de push. **Não houve deploy novo
+nesta chamada** — o que está em `https://ljssoftware.com.br` já é o
+resultado do último push (commit `d620c29`). Esta seção documenta o modelo
+de deploy real do projeto e confirma observabilidade/rollback antes do
+Gate 4 formal, sem alterar nenhum arquivo de código do site.
+
+### Modelo de deploy real (deploy contínuo, sem staging clássico)
+
+Este projeto **não usa um comando de deploy manual**. O modelo é:
+
+```
+push em `main` → Cloudflare Pages detecta o push (webhook do Git) →
+builda (sem build step, ADR-001) → publica automaticamente em:
+  - https://ljssoftware.pages.dev   (preview — domínio *.pages.dev fixo do projeto)
+  - https://ljssoftware.com.br      (produção — domínio customizado, T5.2)
+```
+
+Os dois domínios publicam **exatamente o mesmo build**, a partir do mesmo
+push — não existe um ambiente de "staging" separado no sentido clássico
+(branch própria, dados diferentes, etc.). O `https://ljssoftware.pages.dev`
+funciona como o staging de fato deste projeto: mesmo código, domínio
+diferente, útil para verificar um build antes de confirmar que o domínio
+customizado está servindo a mesma coisa. Isso já era o comportamento usado
+nas validações de T5.1 e T5.4 (ver checklist acima, que verificou o preview
+antes/depois do domínio customizado ficar `Active`).
+
+Consequência prática para a Seção 4 do `/deploy` (deploy em staging): **não
+há uma ação de "disparar deploy" para executar aqui** — o deploy já
+aconteceu no push do commit `d620c29` (Lote 5, validação). O papel deste
+agente nesta chamada é confirmar que o pipeline automático está saudável e
+que produção reflete esse mesmo commit, não iniciar um novo deploy.
+
+### Verificação real executada nesta chamada
+
+Testes de rede reais contra `https://ljssoftware.com.br` (produção),
+executados por este agente:
+
+| Verificação | Resultado |
+|---|---|
+| `GET /` | HTTP 200. `content-security-policy` presente e correta (`script-src` inclui `static.cloudflareinsights.com`; `connect-src` inclui `cloudflareinsights.com`), demais headers de `_headers` (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy) presentes. `Server: cloudflare`. |
+| Tag do beacon no HTML de `/` | Presente: `<script ... src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "bc3ce694258f45c393941b292ba37ac9"}'>`, imediatamente antes de `assets/js/analytics.js`, como especificado em T5.4. |
+| `GET /apps.html` e `/sobre.html` | 308 → segue redirect (comportamento "clean URL" nativo do Cloudflare Pages, já registrado como débito RL5.1, não relacionado a esta verificação) → 200, mesmo token de beacon presente nas duas. |
+| `GET /pagina-inexistente-teste-deploy` | 404 real (página `404.html`, T4.x), confirmando que o roteamento de erro está ativo. |
+| `GET https://static.cloudflareinsights.com/beacon.min.js` | HTTP 200 — o script do beacon é servido sem erro, sem bloqueio de rede/TLS. |
+| `POST https://cloudflareinsights.com/cdn-cgi/rum` (payload sintético, fora do formato exato gerado pelo `beacon.min.js` real em runtime de navegador) | HTTP 404 — **resposta HTTP real recebida** (não timeout, não erro de conexão/TLS/CORS). Confirma que o endpoint do beacon está alcançável pela rede e que a CSP/`_headers` deste projeto não está bloqueando a origem; o 404 é porque o payload/rota usados no teste manual não reproduzem exatamente o que o `beacon.min.js` gera dentro de um navegador real (ex.: `sendBeacon` com corpo/assinatura específicos do script da Cloudflare). |
+
+Essas 5 requisições (`/`, `/apps.html`, `/sobre.html`,
+`/pagina-inexistente-teste-deploy`, `beacon.min.js`) geraram pageviews e
+uma chamada real ao beacon script — contam como sinal real de tráfego para
+o Cloudflare Web Analytics.
+
+**Limitação explícita:** este agente não tem acesso ao painel Cloudflare
+(sem credenciais/sessão, mesma limitação já registrada na Seção 1 acima).
+Por isso **não é possível confirmar visualmente** no dashboard do Cloudflare
+Web Analytics que os pageviews/eventos custom (`contato_email_click`,
+`contato_linkedin_click`) aparecem — o que foi confirmado é que (a) o
+beacon está corretamente instalado nas páginas reais de produção, (b) a CSP
+não bloqueia o script nem o destino do beacon, e (c) o script e o endpoint
+respondem via rede sem erro. A confirmação visual no dashboard (contagem de
+sessões, eventos custom) depende de acesso ao painel e fica como pendência
+para quem tiver a credencial — não bloqueia o Gate de produção, pois a
+instrumentação em si está tecnicamente correta e sem erro de rede/CORS/CSP.
+
+### Rollback — capacidade nativa, não testada
+
+O Cloudflare Pages mantém histórico de todos os deploys anteriores
+(um por commit/push), com rollback disponível pelo painel: **Workers &
+Pages → projeto → aba Deployments → selecionar um deploy anterior na lista
+→ "Rollback to this deployment"** (ou opção equivalente, conforme a versão
+da UI). Isso promove instantaneamente o build selecionado de volta a
+produção, sem precisar reverter/re-buildar a partir do Git.
+
+**Esta capacidade não foi testada de fato nesta chamada** — testá-la
+exigiria acesso ao painel Cloudflare (sem credenciais disponíveis neste
+ambiente) e provocaria um rollback real em produção, o que também estaria
+fora do escopo autorizado desta chamada (nenhum deploy/alteração de estado
+de produção). Documentado aqui como **capacidade nativa do provedor,
+confirmada pela documentação oficial do Cloudflare Pages, não testada
+nesta chamada por falta de acesso ao painel** — não deve ser lida como
+"rollback testado e validado".
+
+### Avaliação para o Gate de produção (Seção 5 do `/deploy`)
+
+- Deploy contínuo confirmado ativo e saudável (produção reflete o commit
+  `d620c29`, mesmo build do preview `.pages.dev`).
+- Observabilidade mínima (Cloudflare Web Analytics, T5.4) confirmada
+  tecnicamente ativa via rede real (beacon presente, sem bloqueio de CSP/
+  rede) — sem confirmação visual de dashboard por falta de acesso ao
+  painel (limitação registrada, não um erro de instrumentação).
+- Rollback existe como capacidade nativa do Cloudflare Pages, documentada,
+  **não testada** nesta chamada por falta de acesso ao painel.
+- Nenhuma mudança de código foi feita nesta chamada.
+- Dupla aprovação do Lote 5 (QA + DevSecOps) já confirmada, sem achado
+  alto/crítico em aberto; débitos RL5.1 (clean URL) e RL5.2 (HSTS) são
+  baixa/média severidade, com prazo registrado, e não bloqueiam deploy.
+
+**Não há bloqueio identificado por este agente para o Gate de produção.**
+Duas ressalvas devem ser explicitadas ao usuário antes da confirmação final
+do Gate (Seção 5), não como bloqueio, mas como limitação de escopo desta
+chamada: (1) a confirmação visual dos eventos no dashboard do Web Analytics
+depende de acesso ao painel, que este agente não tem; (2) a capacidade de
+rollback é nativa do provedor e documentada, mas não foi exercitada de
+fato nesta chamada.
