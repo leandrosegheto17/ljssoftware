@@ -589,3 +589,92 @@ push acontecer.
 
 **Veredito:** publicação da T6.5 (Lote 6) confirmada em produção real, sem
 achado crítico. Pronto para o registro de fechamento do Gestor (Gate 4).
+
+---
+
+## Confirmação de produção (2026-09-08) — Lote 7, T7.1
+
+Registro de publicação do Lote 7 — Botão "Saiba mais" + Modal nos Cards de
+App, tarefa única T7.1. Dupla aprovação (chapéus QA e DevSecOps) já
+concluída antes do commit, veredito "Validado com ressalvas" — 2 achados
+**simples** de documentação (sem bloqueio, sem exigir retorno ao
+`executor`), registrados como tarefas em `Refatoração Lote-7` (RL7.1,
+RL7.2) pelo próprio Validador na checagem estrutural do lote, ver
+`.md/QA-REPORT.md` e `.md/TASK.md`. Publicado no mesmo modelo de deploy
+contínuo já descrito acima ("Modelo de deploy real") — o push em `main` já
+é o mecanismo de publicação em produção real, sem staging clássico
+separado. O usuário confirmou explicitamente, via pedido direto ("commit
+push deploy"), que queria publicar agora.
+
+- **Data da confirmação:** 2026-09-08
+- **Commit publicado:** `2dfeaa3` ("Publica Lote 7/T7.1: botao Saiba mais +
+  modal nos cards de app"), branch `main`
+- **O que mudou:** botão "Saiba mais" adicionado ao lado do badge "Em
+  breve" nos 6 cards de `public/apps.html` e nos 6 cards replicados em
+  `public/index.html`; clique abre um modal "glass" acessível (foco preso
+  via `inert` no restante do `<body>`, fecha por `Escape`/clique no
+  overlay/botão de fechar, foco devolvido ao botão que abriu) com o nome do
+  app e um resumo comercial (texto redigido pelo Executor e aprovado
+  explicitamente pelo usuário antes da implementação, idêntico nas duas
+  páginas — RT-02). CSS novo, inteiramente aditivo, em
+  `public/assets/css/components.css` (seção "App Card — botão 'Saiba mais'
+  + Modal (T7.1)"), reaproveitando somente tokens já existentes em
+  `tokens.css` (nenhum token novo). JS novo `public/assets/js/app-modal.js`
+  (IIFE, sem framework — G-01), mesma técnica de `inert` já usada em
+  `nav.js` (T2.2) para travar a página por trás enquanto o modal está
+  aberto. Nenhum outro arquivo tocado: `tokens.css`, `base.css`, `nav.js`,
+  `analytics.js`, `sobre.html`, `404.html` e `_headers` permanecem
+  inalterados — nenhum recurso novo de origem externa, nenhuma mudança de
+  CSP necessária (script novo é same-origin, servido de
+  `assets/js/app-modal.js`).
+- **URL de produção confirmada:** `https://ljssoftware.com.br/` (Home) e
+  `https://ljssoftware.com.br/apps.html` (via redirect 308 conhecido,
+  débito RL5.1, ainda não corrigido, seguido até `/apps`) — confirmado por
+  requisição HTTP real (`curl`), ambas retornando 6 ocorrências de
+  `class="app-card__more"` e 1 ocorrência de `id="app-modal"` no HTML
+  servido, com a tag `<script src="assets/js/app-modal.js" defer>`
+  presente; `assets/js/app-modal.js` respondendo `200` (após a propagação
+  inicial: primeira checagem retornou `404`, segunda tentativa ~15s depois
+  já retornou `200` — dentro do esperado para deploy contínuo via
+  Cloudflare Pages).
+- **Modelo de deploy:** contínuo, via Cloudflare Pages, a cada push em
+  `main` (sem staging clássico separado — ver seção "Modelo de deploy
+  real" acima)
+- **Observabilidade e headers de segurança — sem regressão:** beacon do
+  Cloudflare Web Analytics (`static.cloudflareinsights.com/beacon.min.js`,
+  mesmo token `bc3ce694...`) e `assets/js/analytics.js` presentes em ambas
+  as páginas em produção; `assets/js/nav.js` também presente, sem
+  regressão. Headers `content-security-policy`, `x-frame-options: DENY`,
+  `x-content-type-options: nosniff`, `referrer-policy:
+  strict-origin-when-cross-origin` e `permissions-policy` confirmados
+  idênticos aos já validados antes desta mudança, em `/` e em `/apps`
+  (canônico), em ambas as respostas HTTP reais. `strict-transport-security`
+  segue ausente — não é regressão desta tarefa, é o débito já conhecido
+  RL5.2 (HSTS ainda não habilitado no painel Cloudflare).
+- **Dupla aprovação confirmada:** `QA-REPORT.md` (seção "Lote 7 — Botão
+  'Saiba mais' + Modal nos Cards de App", T7.1 "Aprovado") +
+  `SECURITY-REVIEW.md` (seção correspondente ao Lote 7), sem achado
+  bloqueante.
+- **Débitos abertos, sem bloqueio de deploy:**
+  - **RL7.1** (novo, baixo esforço) — corrigir o comentário de verificação
+    de contraste em `components.css` (seção do T7.1): o par
+    `--color-accent` sobre o fundo do botão é `--color-accent` sobre o
+    composto `.glass-card` (~8.06:1, ainda PASS AA), não o par sólido
+    `--color-accent`/`--color-bg` (10.13:1) citado no comentário —
+    correção só de documentação, nenhuma mudança de CSS/comportamento
+    real.
+  - **RL7.2** (novo, baixo esforço) — adicionar o nó do Lote 7/T7.1 ao
+    diagrama mermaid da Seção 4 do `TASK.md`, refletindo a dependência já
+    documentada em texto (T3.4/T3.2 → T7.1).
+  - **RL5.1** (já conhecido) — clean URL em `/apps`/`/sobre`, redirecionando
+    via 308.
+  - **RL5.2** (já conhecido) — HSTS ainda não habilitado no painel
+    Cloudflare.
+  Todos de baixa/média severidade, com prazo registrado (RL7.1/RL7.2 sem
+  urgência, baixo esforço; RL5.1/RL5.2 já com prazo definido em registros
+  anteriores) — nenhum bloqueia esta confirmação de deploy.
+- **Incidentes/rollback:** nenhum incidente reportado, nenhum rollback
+  necessário.
+
+**Veredito:** publicação da T7.1 (Lote 7) confirmada em produção real, sem
+achado crítico.
