@@ -1692,6 +1692,84 @@ continua sendo `contato@ljssoftware.com.br`, não um valor divergente.
   isso) — confirmado que o CTA é byte-idêntico ao já validado em T3.1/T3.3
   (Lote 3), sem regressão.
 
+### T6.4 — 3 novos apps na vitrine e na prévia da Home (SportsLM, FutebolApp, Evolução Segura)
+
+**Veredito: Aprovado.**
+
+**Metodologia específica desta tarefa:** diferente de T6.1/T6.2/T6.3
+(validadas por requisição HTTP real contra a produção, porque já estavam
+publicadas), T6.4 ainda **não foi publicada** no momento desta validação
+(`git status` confirma `public/apps.html`/`public/index.html` modificados
+na working tree, sem commit) — validada por leitura direta dos 2 arquivos
+reais em `public/` e por `git diff` isolado dessas duas mudanças, não pela
+nota de implementação do Executor no `TASK.md`.
+
+- **Os 3 novos cards existem nas 2 páginas, com nome/descrição exatos do
+  critério de aceite**: confirmado por leitura direta de `public/apps.html`
+  (linhas 109-134) e `public/index.html` (linhas 123-139) — **SportsLM**
+  ("Suas notícias em um único lugar"), **FutebolApp** ("Gestão completa do
+  seu grupo de futebol"), **Evolução Segura** ("Prontuário digital simples,
+  com seus dados sempre com você"), nos dois arquivos, mesma ordem, mesmo
+  texto byte a byte entre `apps.html` e `index.html`.
+- **Markup/classes consistentes com os 3 apps já existentes em cada
+  página e entre as duas páginas**: os 3 novos `<article>` usam
+  `class="app-card glass-card"`, mesmo `<span class="badge">Em breve</span>`
+  isolado com o mesmo comentário de troca futura por
+  `<a class="badge badge--link">` (em `apps.html`), sem nenhum atributo novo
+  (`id`, `style=`, classe extra) que os 3 antigos não tivessem. Confirmado
+  por `git diff` isolado (`git diff -- public/apps.html public/index.html`):
+  a única mudança em `apps.html` é a inserção dos 3 blocos `<article>` após
+  "My Money", sem tocar em nenhum card existente; em `index.html`, mesma
+  inserção mais a atualização do comentário de proveniência (linhas 89-95,
+  texto desatualizado que citava os 3 placeholders antigos "Gestor Fácil"/
+  "Agenda Smart"/"Financeiro Simples" corrigido para refletir a paridade
+  real com `apps.html`) — nenhuma outra linha alterada.
+- **Nível de heading correto e consistente com a regra já fixada em T4.2**:
+  os 3 novos cards usam `<h2 class="app-card__name">` em `apps.html` (filhos
+  diretos do `<h1>` "Nossos apps", sem `<h2>` de agrupamento — mesma razão
+  já documentada em T4.2/T6.2) e `<h3 class="app-card__name">` em
+  `index.html` (existe `<h2 class="home-apps__title">` de agrupamento antes
+  deles) — confirmado por leitura direta, nenhum pulo de nível introduzido
+  (WCAG 2.4.6). Agora `apps.html` tem 6 `<h2>` filhos diretos do `<h1>` e
+  `index.html` tem 6 `<h3>` filhos do mesmo `<h2>` de agrupamento — estrutura
+  se mantém coerente ao escalar de 3 para 6 cards.
+- **Grid responsivo sem alteração de CSS, sem overflow esperado**: `.grid`/
+  `.grid--3col` (`public/assets/css/base.css`, linhas ~190-208) usa
+  `grid-template-columns: repeat(N, 1fr)` (1 coluna mobile, 2 em >=768px, 3
+  em >=1024px) — `repeat()` não tem limite de itens, 6 cards se distribuem
+  em 2 ou 3 linhas conforme o breakpoint sem qualquer ajuste necessário;
+  nenhuma regra de altura fixa/`overflow: hidden` em `.app-card`/`.glass-card`
+  que pudesse cortar conteúdo. Nenhum CSS novo foi de fato adicionado
+  (confirmado pelo `git diff` não tocar em nenhum arquivo `.css`).
+- **Nenhum link quebrado**: os 3 novos cards não têm `<a href>` (mesmo
+  padrão dos 3 existentes — badge isolado, não clicável na fase 1, RF-02);
+  nada a testar de navegação nesta tarefa.
+- **Nenhuma regressão de acessibilidade introduzida**: nenhum `alt`/
+  `aria-hidden` novo necessário (os 3 cards são só texto, sem ícone/imagem);
+  contraste dos novos cards usa exatamente os mesmos tokens/classes já
+  verificados PASS em T4.2 (`.app-card__name`/`.app-card__description`
+  sobre `.glass-card`/mesh gradient) — nenhuma cor nova introduzida, então
+  não há necessidade de re-executar `a11y-contrast-check.js` para este
+  achado especificamente (nenhum token de cor tocado, confirmado por
+  `git diff` não tocar `.css`).
+- **Consistência entre as duas páginas (RT-02 aplicado por analogia ao
+  conteúdo, mesmo critério já usado para avaliar T6.2)**: os 6 apps (3
+  antigos + 3 novos) aparecem na mesma ordem e com o mesmo texto em
+  `apps.html` e na prévia de `index.html` — nenhuma divergência.
+- **Nenhum outro arquivo tocado**: confirmado por `git status`/`git diff`
+  que só `public/apps.html` e `public/index.html` foram modificados nesta
+  tarefa — `tokens.css`, `base.css`, `nav.js`, `analytics.js`, `sobre.html`,
+  `404.html` inalterados, exatamente como a nota de implementação do
+  Executor afirma (confirmado de forma independente, não tomado como base).
+
+**Confirmação de que T6.1/T6.2/T6.3 permanecem inalteradas**: `git diff`
+isolado de `public/apps.html`/`public/index.html` mostra apenas as inserções
+dos 3 novos cards (mais o ajuste de comentário em `index.html`) — nenhuma
+linha dos cards de Curta Mais/Bíblia Fácil/My Money, do rodapé, do CTA do
+hero ou de qualquer outro trecho já validado nos vereditos anteriores foi
+tocada. Vereditos já registrados de T6.1/T6.2/T6.3 acima (rodapé HTTP real
+em produção) seguem válidos sem necessidade de revalidação.
+
 ### Requisitos não funcionais
 
 - **Contraste WCAG AA — sem regressão:** `node dev/css/a11y-contrast-check.js`
@@ -1718,43 +1796,53 @@ continua sendo `contato@ljssoftware.com.br`, não um valor divergente.
 
 ### Achados deste lote
 
-Nenhum achado **Crítico** nem **Simples** identificado em T6.1, T6.2 ou
-T6.3 nesta validação. O comportamento de ofuscação de e-mail da Cloudflare,
-investigado em profundidade em T6.1 por ser uma diferença observável entre
-o HTML servido em produção e o HTML versionado no repositório, **não é um
-achado novo** — já está registrado e decidido em `.md/DEPLOY.md`/
-`.md/CTO-REVIEW.md` como decisão de produto do usuário, sem débito
-pendente; citado aqui apenas para registrar que a validação funcional real
-o confirmou como correto e não-regressivo.
+Nenhum achado **Crítico** nem **Simples** identificado em T6.1, T6.2, T6.3
+ou T6.4 nesta validação (T6.4 avaliada nesta atualização do relatório). O
+comportamento de ofuscação de e-mail da Cloudflare, investigado em
+profundidade em T6.1 por ser uma diferença observável entre o HTML servido
+em produção e o HTML versionado no repositório, **não é um achado novo** —
+já está registrado e decidido em `.md/DEPLOY.md`/`.md/CTO-REVIEW.md` como
+decisão de produto do usuário, sem débito pendente; citado aqui apenas para
+registrar que a validação funcional real o confirmou como correto e
+não-regressivo.
 
 ## Fechamento Estrutural do Lote 6
 
 - T6.1 (e-mail `Concluída`, LinkedIn `Provisória` por decisão de negócio já
   registrada — tratada como fechada para fins de fluxo, não uma pendência
-  de implementação), T6.2, T6.3: todas aprovadas pelo chapéu QA nesta
-  validação, sem achado.
+  de implementação), T6.2, T6.3, **T6.4 (adicionada nesta atualização)**:
+  todas aprovadas pelo chapéu QA, sem achado.
 - Dependências da Seção 4 do `TASK.md` relativas ao Lote 6 (T3.1-T3.6 →
-  T6.1; T3.2/T3.4 → T6.2; T3.1 → T6.3): estruturalmente coerentes —
-  confirmado que as 3 tarefas de fato operam sobre artefatos do Lote 3 já
-  `Concluída`/aprovados, sem exigir nenhuma dependência não declarada.
-  Nenhuma dependência órfã.
+  T6.1; T3.2/T3.4 → T6.2; T3.1 → T6.3; T3.4 → T6.4): estruturalmente
+  coerentes — confirmado que as 4 tarefas de fato operam sobre artefatos do
+  Lote 3 já `Concluída`/aprovados, sem exigir nenhuma dependência não
+  declarada. Nenhuma dependência órfã. **Achado de documentação corrigido
+  nesta checagem** (não é um achado de QA sobre código, é uma inconsistência
+  de registro): a "Tabela de paralelismo por lote" (Seção 4 do `TASK.md`,
+  linha do Lote 6) listava só "T6.1, T6.2, T6.3" como paralelizáveis entre
+  si, sem citar T6.4 (que existe desde depois daquele veredito original) —
+  corrigida diretamente pelo Validador para "T6.1, T6.2, T6.3, T6.4",
+  refletindo o que a própria Seção 3 (linha de dependências do Lote 6) já
+  documentava corretamente. Correção de rotina, não exige redesenho —
+  não escala ao `coordenador`.
 - Nenhuma tarefa `Bloqueada` sem resolução.
-- Nenhum achado simples/débito novo deste lote — não há nova entrada a
-  criar em nenhuma `Refatoração Lote-X`. A ressalva de negócio de T6.1
-  (LinkedIn provisório) já está documentada no próprio `TASK.md`, não
-  duplicada aqui, e não é um débito técnico (nada no código precisa mudar
-  até a empresa ter página própria no LinkedIn).
+- Nenhum achado simples/débito novo deste lote (incluindo T6.4) — não há
+  nova entrada a criar em nenhuma `Refatoração Lote-X`. A ressalva de
+  negócio de T6.1 (LinkedIn provisório) já está documentada no próprio
+  `TASK.md`, não duplicada aqui, e não é um débito técnico.
 - Nada nesta checagem exige redesenho de dependência/decomposição — não
   escala ao `coordenador`.
 
 **Veredito geral do Lote 6: Aprovado, sem ressalvas técnicas** (a única
 ressalva do lote é de negócio — LinkedIn provisório, já registrada e aceita
-pelo próprio stakeholder no `TASK.md`, não é um achado de QA). Todas as 3
-tarefas confirmadas por requisição HTTP real contra a produção
+pelo próprio stakeholder no `TASK.md`, não é um achado de QA). T6.1/T6.2/
+T6.3 confirmadas por requisição HTTP real contra a produção
 (`https://ljssoftware.com.br`), incluindo verificação cruzada de
 `target="_blank"`/`rel="noopener"`, atributos de analytics, estrutura de
-card/badge, e ausência de regressão de contraste/acessibilidade. O lote
-está estruturalmente fechado e liberado para a auditoria de segurança do
-chapéu DevSecOps sobre este lote específico e, em paralelo, para o chapéu
-DevOps considerar este build (já em produção com o conteúdo definitivo) no
-fluxo de dupla aprovação rumo à confirmação final do deploy.
+card/badge, e ausência de regressão de contraste/acessibilidade; T6.4
+confirmada por leitura direta dos arquivos reais em `public/` e `git diff`
+isolado (ainda não publicada no momento desta validação). O lote está
+estruturalmente fechado e liberado para a auditoria de segurança do chapéu
+DevSecOps sobre T6.4 especificamente (T6.1-T6.3 já auditadas) e, em
+paralelo, para o chapéu DevOps considerar este build no fluxo de dupla
+aprovação rumo à confirmação final do deploy.

@@ -1683,6 +1683,13 @@ chapéu QA (`QA-REPORT.md`, seção "Lote 6 — Confirmação de Conteúdo
 Pendente", veredito "Aprovado, sem ressalvas técnicas"). Pré-condição de
 auditoria satisfeita.
 
+> **Atualização (T6.4, nova tarefa adicionada depois do veredito original
+> do Lote 6):** ver seção dedicada "T6.4 — 3 novos apps na vitrine e na
+> prévia da Home" ao final deste bloco. O restante deste documento (T6.1,
+> T6.2, T6.3, achados #1-#6 abaixo) permanece como estava — nada foi
+> re-auditado nem reescrito, apenas confirmado que nada mudou (ver
+> confirmação na seção de T6.4).
+
 **Natureza do lote:** lote só de conteúdo (texto/URL), sem lógica nova —
 e-mail confirmado sem mudança de valor, URL de LinkedIn institucional
 trocada pelo perfil pessoal do stakeholder (decisão de negócio já tomada e
@@ -1841,11 +1848,99 @@ buscadas via HTTP real em produção, não do disco).
 
 ---
 
+## T6.4 — 3 novos apps na vitrine e na prévia da Home (SportsLM, FutebolApp, Evolução Segura)
+
+**Pré-condição:** aprovada funcionalmente pelo chapéu QA nesta mesma
+atualização (`QA-REPORT.md`, seção "T6.4", veredito "Aprovado"). Auditoria
+liberada.
+
+**Natureza da mudança:** conteúdo estático puro (3 novos `<article>` com
+nome/descrição de app, mesmas classes já existentes) inserido em
+`public/apps.html` e `public/index.html`; nenhum arquivo `.css`/`.js`
+tocado (confirmado por `git diff -- public/apps.html public/index.html`,
+que mostra só as duas páginas HTML modificadas). Ainda não publicada em
+produção no momento desta auditoria — auditada por leitura direta do
+código local em `public/` e do `git diff` isolado da mudança, não por HTTP
+real (diferente de T6.1-T6.3, já em produção) nem pela nota do Executor.
+
+### 1. Script/CDN externo novo
+
+**Achado: nenhum.**
+
+- `git diff` confirma que nenhuma tag `<script>`/`<link>` foi adicionada ou
+  alterada nas 2 páginas — os únicos recursos externos continuam sendo os
+  já auditados (`static.cloudflareinsights.com/beacon.min.js`, Lote 5/T5.4).
+  Os 3 novos cards não referenciam nenhum domínio, imagem remota ou
+  biblioteca de terceiro.
+
+### 2. Dado pessoal/sensível exposto
+
+**Achado: nenhum.**
+
+- Os 3 novos nomes/descrições ("SportsLM"/"Suas notícias em um único
+  lugar"; "FutebolApp"/"Gestão completa do seu grupo de futebol";
+  "Evolução Segura"/"Prontuário digital simples, com seus dados sempre com
+  você") são texto de produto genérico, mesma natureza dos 3 apps já
+  auditados em T6.2 — nenhum dado pessoal de terceiro, nenhum dado interno
+  de negócio (preço, métrica, nome de cliente) exposto. Nota: a descrição
+  de "Evolução Segura" menciona "prontuário digital"/"seus dados" em tom
+  de marketing do produto (proposta de valor do app), não descreve nem
+  expõe dado de saúde real de nenhum indivíduo — é texto sobre o produto,
+  não um dado tratado pelo site institucional da LJS Software.
+
+### 3. Injeção de conteúdo / XSS estático
+
+**Achado: nenhum.**
+
+- Mesma estrutura de markup já auditada nos Lotes 3/4/T6.2 (texto estático
+  dentro de `<h2>`/`<h3 class="app-card__name">` e
+  `<p class="app-card__description">`); nenhum atributo `on\w+=`,
+  `javascript:` ou interpolação client-side introduzido — confirmado por
+  leitura direta do `git diff`, que mostra apenas texto literal em tags
+  HTML já existentes no padrão do site.
+
+### 4. CSP (`public/_headers`) — cobertura sem ajuste necessário
+
+**Achado: nenhum.**
+
+- Conteúdo 100% estático, sem novo domínio/script/estilo inline — a CSP
+  vigente (`default-src 'self'; script-src 'self'
+  https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline';
+  img-src 'self'; font-src 'self'; connect-src 'self'
+  https://cloudflareinsights.com; object-src 'none'; base-uri 'self';
+  form-action 'self'; frame-ancestors 'none'`, já corrigida antes do
+  deploy de produção, ver `public/_headers`) continua cobrindo integralmente
+  os 2 arquivos alterados sem exigir nenhuma diretiva nova. Nenhum `style=`
+  inline foi introduzido pelos 3 novos cards (confirmado por leitura direta
+  — os cards não usam atributo `style=`, diferente do bloco já existente em
+  `apps.html` linhas 78-79 que já justifica `'unsafe-inline'` em
+  `style-src`).
+
+### 5. Confirmação de que o restante do Lote 6 não mudou
+
+- `git diff` isolado de `public/apps.html`/`public/index.html` confirma que
+  nenhuma linha relativa a T6.1 (rodapé, seção de contato) ou T6.3 (CTA do
+  hero) foi tocada; a única mudança em T6.2 é indireta (os 3 cards de
+  Curta Mais/Bíblia Fácil/My Money permanecem intactos, só ganharam 3
+  vizinhos). Os achados #1-#6 já registrados acima para T6.1/T6.2/T6.3
+  (incluindo a avaliação de LGPD da URL de LinkedIn pessoal) continuam
+  válidos sem necessidade de reavaliação.
+
+### 6. Requisitos de segurança operacional para o chapéu DevOps
+
+- Nenhum item novo. Conteúdo estático não introduz superfície operacional
+  adicional (sem novo secret, sem nova rota, sem novo domínio a
+  provisionar).
+
+**Veredito T6.4: Aprovado, sem ressalvas e sem débito registrado.**
+
+---
+
 ## Achados deste lote (resumo)
 
 | # | Item | Severidade | Status | Ação |
 |---|---|---|---|---|
-| — | Nenhum achado novo de severidade Baixa, Média, Alta ou Crítica neste lote | — | — | — |
+| — | Nenhum achado novo de severidade Baixa, Média, Alta ou Crítica neste lote (T6.1-T6.4) | — | — | — |
 
 Nenhum achado **Alto/Crítico** neste lote. Nenhum achado de compliance
 obrigatório em aberto. Nenhum dado pessoal além do já decidido pelo próprio
@@ -1853,25 +1948,24 @@ stakeholder (URL do seu perfil de LinkedIn) foi encontrado exposto.
 
 ## Fechamento — Lote 6 (chapéu DevSecOps)
 
-- Nenhum achado de severidade alta/crítica.
+- Nenhum achado de severidade alta/crítica (T6.1-T6.4).
 - Nenhum item de compliance obrigatório pendente (LGPD: troca de URL
-  institucional → pessoal avaliada especificamente neste lote, sem impacto
+  institucional → pessoal avaliada especificamente em T6.1, sem impacto
   na conclusão já registrada — é decisão do próprio titular sobre o próprio
-  dado, não coleta de dado do visitante).
+  dado, não coleta de dado do visitante; T6.4 é conteúdo de produto
+  genérico, sem tratamento de dado pessoal).
 - Nenhum item novo de débito de baixa/média severidade a registrar em
   `Refatoração Lote-6` (lote não precisa ser criado neste momento — nenhum
-  achado deste lote atinge o limiar de registro).
-- Nenhum achado de relevância estratégica a sinalizar ao Gestor neste lote
-  — a decisão de expor o LinkedIn pessoal já é uma decisão de negócio
-  tomada e registrada pelo próprio stakeholder, não uma descoberta nova
-  deste Validador.
+  achado deste lote, incluindo T6.4, atinge o limiar de registro).
+- Nenhum achado de relevância estratégica a sinalizar ao Gestor neste lote.
 
 **Veredito geral do Lote 6 (chapéu DevSecOps): Aprovado, sem ressalvas e
 sem débito registrado.** Nenhum achado bloqueia deploy. Combinado com o
 veredito funcional do chapéu QA ("Aprovado, sem ressalvas técnicas",
-`QA-REPORT.md`, seção "Lote 6"), o Lote 6 tem a dupla aprovação (QA +
-DevSecOps) necessária para o chapéu DevOps considerar este build (já em
-produção com o conteúdo definitivo) formalmente liberado pelo processo de
-governança. Os débitos de baixa severidade ainda pendentes de lotes
-anteriores (RL1.2, RL4.1, RL4.2, RL5.1, RL5.2) continuam sem prazo vencido
-e não bloqueiam este lote nem o deploy de produção final.
+`QA-REPORT.md`, seção "Lote 6", incluindo T6.4), o Lote 6 tem a dupla
+aprovação (QA + DevSecOps) necessária para o chapéu DevOps considerar este
+build formalmente liberado pelo processo de governança para o deploy de
+T6.4 (T6.1-T6.3 já estavam em produção). Os débitos de baixa severidade
+ainda pendentes de lotes anteriores (RL1.2, RL4.1, RL4.2, RL5.1, RL5.2)
+continuam sem prazo vencido e não bloqueiam este lote nem o deploy de
+produção final.
