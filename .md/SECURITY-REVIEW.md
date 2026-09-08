@@ -1936,11 +1936,116 @@ real (diferente de T6.1-T6.3, já em produção) nem pela nota do Executor.
 
 ---
 
+## T6.5 — Renomeação de nome/descrição de 5 dos 6 apps já publicados (Destino Ideal, Minha Jornada, Meu Objetivo, Radar Esportivo, Gestão da Pelada; Evolução Segura inalterado)
+
+**Pré-condição:** aprovada funcionalmente pelo chapéu QA nesta mesma
+atualização (`QA-REPORT.md`, seção "T6.5", veredito "Aprovado"). Auditoria
+liberada.
+
+**Natureza da mudança:** conteúdo estático puro — substituição de texto em
+5 pares `<h2>`/`<h3 class="app-card__name">` +
+`<p class="app-card__description">` já existentes, mesmas classes/markup,
+em `public/apps.html` e `public/index.html`; nenhum arquivo `.css`/`.js`
+tocado (confirmado por `git diff -- public/apps.html public/index.html`,
+que mostra só as duas páginas HTML modificadas, 20 linhas cada). Ainda não
+publicada em produção no momento desta auditoria — auditada por leitura
+direta do código local em `public/` e do `git diff` isolado da mudança, não
+por HTTP real (mesma metodologia usada para T6.4) nem pela nota do
+Executor.
+
+### 1. Análise estática (SAST) / injeção de conteúdo — XSS estático
+
+**Achado: nenhum.**
+
+- `git diff` confirma que a única alteração em cada arquivo é o conteúdo
+  textual dentro de tags já existentes (`<h2>`/`<h3
+  class="app-card__name">`, `<p class="app-card__description">`) — nenhum
+  atributo `on\w+=`, `javascript:`, `<script>` inline ou novo, `<a href>`
+  novo, `style=` inline, ou qualquer outro atributo introduzido. Varredura
+  dedicada por `on\w+=`/`javascript:`/`<script` nas 2 páginas locais:
+  nenhuma ocorrência nova além dos 2 `<script src=... defer>`
+  (`nav.js`/`analytics.js`) já auditados nos Lotes 2-5.
+- Nenhuma interpolação de string/template client-side em nenhum arquivo do
+  projeto (reafirmado — não há JS novo neste lote); o texto é literal no
+  `.html` versionado e servido como tal, sem vetor de execução dinâmica.
+
+### 2. Requisitos de segurança — CSP (`public/_headers`)
+
+**Achado: nenhum.**
+
+- Conteúdo 100% estático, sem novo domínio/script/estilo inline —
+  confirmado por leitura direta de `public/_headers`: a CSP vigente
+  (`default-src 'self'; script-src 'self'
+  https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline';
+  img-src 'self'; font-src 'self'; connect-src 'self'
+  https://cloudflareinsights.com; object-src 'none'; base-uri 'self';
+  form-action 'self'; frame-ancestors 'none'`) continua cobrindo
+  integralmente os 2 arquivos alterados; `_headers` **não foi tocado por
+  T6.5** (confirmado por `git status` — não consta entre os arquivos
+  modificados), então não há necessidade de reavaliar `script-src`/
+  `style-src`. Nenhum `on\w+=`/`<script>` novo que exigiria ajuste de CSP.
+
+### 3. Conformidade regulatória (LGPD) / dado sensível exposto
+
+**Achado: nenhum.**
+
+- Os 5 novos nomes/descrições ("Destino Ideal"/"Decida para onde ir e
+  organize tudo em um só lugar."; "Minha Jornada"/"Leitura bíblica guiada e
+  preparo de estudos, tudo em um app."; "Meu Objetivo"/"Defina uma meta, um
+  prazo, e saiba exatamente quanto guardar."; "Radar Esportivo"/"Suas
+  notícias esportivas, sempre em dia."; "Gestão da Pelada"/"Tudo sobre o seu
+  grupo de futebol, em um único app.") são texto de produto genérico, mesma
+  natureza dos apps já auditados em T6.2/T6.4 — nenhum dado pessoal de
+  terceiro, nenhum dado interno de negócio (preço, métrica de uso, nome de
+  cliente) exposto. "Evolução Segura" mantido sem alteração, já avaliado em
+  T6.4 (menção a "prontuário digital"/"seus dados" é proposta de valor do
+  produto, não dado de saúde real de nenhum indivíduo).
+- Nenhuma mudança na avaliação de LGPD já registrada para o Lote 6 (troca de
+  URL de LinkedIn, T6.1) — T6.5 não toca em nenhum dado pessoal, só em copy
+  de produto.
+
+### 4. Superfície de ataque / dependências (ADR-001)
+
+**Achado: nenhum.**
+
+- Mudança puramente cosmética/copy — nenhum link novo, nenhuma rota nova,
+  nenhum novo domínio referenciado, nenhum recurso externo adicionado. Os 6
+  cards continuam sem `<a href>` (badge isolado, não clicável na fase 1,
+  RF-02) — nada de superfície de navegação a testar.
+- **ADR-001 (sem build step/framework):** confirmado que nenhuma
+  dependência nova foi introduzida — `find . -maxdepth 1 -iname
+  package.json` não retorna nenhum arquivo no repositório; a edição foi
+  puramente HTML estático via `Edit` cirúrgico, consistente com a diretriz
+  "HTML/CSS/JS puro" da Seção 1.2 do `TASK.md`. `git status` confirma que
+  só `public/apps.html`/`public/index.html` (mais `.md/TASK.md`,
+  `.md/QA-REPORT.md`, artefatos de planejamento/relatório) foram
+  modificados — nenhum arquivo de configuração de toolchain criado.
+
+### 5. Confirmação de que o restante do Lote 6 não mudou
+
+- `git diff` isolado de `public/apps.html`/`public/index.html` confirma que
+  nenhuma linha relativa a T6.1 (rodapé, seção de contato), T6.3 (CTA do
+  hero) ou à estrutura/markup introduzida em T6.4 foi tocada; o card
+  "Evolução Segura" (T6.4) permanece intocado, confirmando que T6.5 não o
+  alterou (por decisão explícita do usuário). Os achados #1-#6 já
+  registrados para T6.1/T6.2/T6.3 e a seção T6.4 acima continuam válidos
+  sem necessidade de reavaliação.
+
+### 6. Requisitos de segurança operacional para o chapéu DevOps
+
+- Nenhum item novo. Conteúdo estático não introduz superfície operacional
+  adicional (sem novo secret, sem nova rota, sem novo domínio a
+  provisionar, sem ajuste de `_headers`/CSP necessário).
+
+**Veredito T6.5: Aprovado, sem ressalvas e sem débito registrado.**
+
+---
+
 ## Achados deste lote (resumo)
 
 | # | Item | Severidade | Status | Ação |
 |---|---|---|---|---|
-| — | Nenhum achado novo de severidade Baixa, Média, Alta ou Crítica neste lote (T6.1-T6.4) | — | — | — |
+| — | Nenhum achado novo de severidade Baixa, Média, Alta ou Crítica neste lote (T6.1-T6.5) | — | — | — |
 
 Nenhum achado **Alto/Crítico** neste lote. Nenhum achado de compliance
 obrigatório em aberto. Nenhum dado pessoal além do já decidido pelo próprio
@@ -1948,24 +2053,24 @@ stakeholder (URL do seu perfil de LinkedIn) foi encontrado exposto.
 
 ## Fechamento — Lote 6 (chapéu DevSecOps)
 
-- Nenhum achado de severidade alta/crítica (T6.1-T6.4).
+- Nenhum achado de severidade alta/crítica (T6.1-T6.5).
 - Nenhum item de compliance obrigatório pendente (LGPD: troca de URL
   institucional → pessoal avaliada especificamente em T6.1, sem impacto
   na conclusão já registrada — é decisão do próprio titular sobre o próprio
-  dado, não coleta de dado do visitante; T6.4 é conteúdo de produto
+  dado, não coleta de dado do visitante; T6.4/T6.5 são conteúdo de produto
   genérico, sem tratamento de dado pessoal).
 - Nenhum item novo de débito de baixa/média severidade a registrar em
   `Refatoração Lote-6` (lote não precisa ser criado neste momento — nenhum
-  achado deste lote, incluindo T6.4, atinge o limiar de registro).
+  achado deste lote, incluindo T6.4/T6.5, atinge o limiar de registro).
 - Nenhum achado de relevância estratégica a sinalizar ao Gestor neste lote.
 
 **Veredito geral do Lote 6 (chapéu DevSecOps): Aprovado, sem ressalvas e
 sem débito registrado.** Nenhum achado bloqueia deploy. Combinado com o
 veredito funcional do chapéu QA ("Aprovado, sem ressalvas técnicas",
-`QA-REPORT.md`, seção "Lote 6", incluindo T6.4), o Lote 6 tem a dupla
+`QA-REPORT.md`, seção "Lote 6", incluindo T6.4/T6.5), o Lote 6 tem a dupla
 aprovação (QA + DevSecOps) necessária para o chapéu DevOps considerar este
 build formalmente liberado pelo processo de governança para o deploy de
-T6.4 (T6.1-T6.3 já estavam em produção). Os débitos de baixa severidade
-ainda pendentes de lotes anteriores (RL1.2, RL4.1, RL4.2, RL5.1, RL5.2)
-continuam sem prazo vencido e não bloqueiam este lote nem o deploy de
-produção final.
+T6.4/T6.5 (T6.1-T6.3 já estavam em produção). Os débitos de baixa
+severidade ainda pendentes de lotes anteriores (RL1.2, RL4.1, RL4.2, RL5.1,
+RL5.2) continuam sem prazo vencido e não bloqueiam este lote nem o deploy
+de produção final.

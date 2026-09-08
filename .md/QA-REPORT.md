@@ -1770,6 +1770,82 @@ hero ou de qualquer outro trecho já validado nos vereditos anteriores foi
 tocada. Vereditos já registrados de T6.1/T6.2/T6.3 acima (rodapé HTTP real
 em produção) seguem válidos sem necessidade de revalidação.
 
+### T6.5 — Renomeação de nome/descrição de 5 dos 6 apps já publicados (Destino Ideal, Minha Jornada, Meu Objetivo, Radar Esportivo, Gestão da Pelada; Evolução Segura inalterado)
+
+**Veredito: Aprovado.**
+
+**Metodologia específica desta tarefa:** mesma metodologia de T6.4 — T6.5
+ainda **não foi publicada** no momento desta validação (`git status`
+confirma `public/apps.html`/`public/index.html` modificados na working
+tree, sem commit) — validada por leitura direta dos 2 arquivos reais em
+`public/` e por `git diff` isolado dessas duas mudanças, não pela nota de
+implementação do Executor no `TASK.md`.
+
+- **Os 6 pares nome/descrição batem exatamente com o texto aprovado pelo
+  usuário, mesma ordem, nas duas páginas**: confirmado por leitura direta de
+  `public/apps.html` (linhas 82-134) e `public/index.html` (linhas 105-139).
+  Ordem e conteúdo, byte a byte, em ambos os arquivos:
+  1. **Destino Ideal** — "Decida para onde ir e organize tudo em um só
+     lugar."
+  2. **Minha Jornada** — "Leitura bíblica guiada e preparo de estudos, tudo
+     em um app."
+  3. **Meu Objetivo** — "Defina uma meta, um prazo, e saiba exatamente
+     quanto guardar."
+  4. **Radar Esportivo** — "Suas notícias esportivas, sempre em dia."
+  5. **Gestão da Pelada** — "Tudo sobre o seu grupo de futebol, em um único
+     app."
+  6. **Evolução Segura** — "Prontuário digital simples, com seus dados
+     sempre com você." (mantido sem alteração, confirmado por `git diff`
+     — nenhuma linha desse card aparece no diff, nas duas páginas).
+  Pontuação/maiúsculas conferidas caractere a caractere contra o texto
+  aprovado nesta requisição de validação — nenhuma divergência.
+- **`git diff` isolado confirma edição cirúrgica, só texto**: `git diff --
+  public/apps.html public/index.html` mostra exatamente 20 linhas alteradas
+  em cada arquivo (10 pares `<h2>`/`<h3>` + `<p>`, 2 linhas por par × 5 apps
+  renomeados × 2 arquivos) — nenhuma linha de classe/atributo/comentário/
+  badge tocada. O comentário de troca futura do badge por link (`apps.html`)
+  e o badge `<span class="badge">Em breve</span>` (ambas as páginas)
+  permanecem idênticos em todos os 6 cards, incluindo os 5 renomeados.
+- **Nenhum nome antigo remanescente**: confirmado por busca em `public/`
+  (`Grep`) que "Curta Mais", "Bíblia Fácil", "My Money", "SportsLM" e
+  "FutebolApp" não aparecem em nenhum arquivo publicado — só os 3 nomes
+  antigos citados em nota de implementação/histórico do `TASK.md` e deste
+  `QA-REPORT.md`, fora de `public/`.
+- **Nível de heading inalterado**: os 6 cards continuam `<h2
+  class="app-card__name">` em `apps.html` (filhos diretos do `<h1>` "Nossos
+  apps") e `<h3 class="app-card__name">` em `index.html` (filhos do `<h2
+  class="home-apps__title">`) — mesma estrutura já fixada em T4.2/T6.2/T6.4,
+  sem nenhum pulo de nível introduzido pela troca de texto (WCAG 2.4.6).
+- **Nenhuma quebra de grid/layout esperada**: as novas descrições têm entre
+  41 e 63 caracteres, todas mais curtas que a descrição mais longa já
+  validada sem overflow em T6.4/T4.2 ("Controle financeiro em família e
+  metas claras para conquistar seus objetivos.", 79 caracteres, hoje
+  substituída mas que já comprovou a folga do card para texto desse
+  tamanho); nenhum nome novo é mais longo que "Evolução Segura"/"Radar
+  Esportivo", já dentro do padrão dos nomes existentes. `.grid--3col`
+  (`public/assets/css/base.css`) não foi tocado (confirmado por `git diff`
+  não tocar em nenhum `.css`) — sem alteração de CSS não há risco de
+  regressão de layout por este achado.
+- **Nenhuma regressão de contraste/acessibilidade**: `node
+  dev/css/a11y-contrast-check.js` reexecutado nesta validação — todas as
+  combinações (incluindo o pior caso do mesh gradient e o pior caso composto
+  `.glass-card` sobre o mesh gradient) continuam PASS. Coerente com o
+  esperado: T6.5 só trocou texto, nenhum token de cor em `tokens.css` foi
+  tocado (confirmado por `git status`/`git diff` — `tokens.css` não consta
+  entre os arquivos modificados).
+- **Nenhum outro arquivo tocado**: confirmado por `git status` que só
+  `public/apps.html`, `public/index.html` e `.md/TASK.md` (nota de
+  implementação da própria tarefa) foram modificados nesta tarefa —
+  `tokens.css`, `base.css`, `components.css`, `nav.js`, `analytics.js`,
+  `sobre.html`, `404.html` inalterados.
+
+**Confirmação de que T6.1-T6.4 permanecem inalteradas**: `git diff` isolado
+de `public/apps.html`/`public/index.html` mostra apenas a substituição de
+texto dos 5 pares nome/descrição — nenhuma linha do rodapé (T6.1), do CTA do
+hero (T6.3), do card "Evolução Segura" nem da estrutura/markup introduzida
+em T6.4 foi tocada. Vereditos já registrados de T6.1/T6.2/T6.3/T6.4 acima
+seguem válidos sem necessidade de revalidação.
+
 ### Requisitos não funcionais
 
 - **Contraste WCAG AA — sem regressão:** `node dev/css/a11y-contrast-check.js`
@@ -1796,8 +1872,9 @@ em produção) seguem válidos sem necessidade de revalidação.
 
 ### Achados deste lote
 
-Nenhum achado **Crítico** nem **Simples** identificado em T6.1, T6.2, T6.3
-ou T6.4 nesta validação (T6.4 avaliada nesta atualização do relatório). O
+Nenhum achado **Crítico** nem **Simples** identificado em T6.1, T6.2, T6.3,
+T6.4 ou T6.5 nesta validação (T6.5 avaliada nesta atualização do relatório).
+O
 comportamento de ofuscação de e-mail da Cloudflare, investigado em
 profundidade em T6.1 por ser uma diferença observável entre o HTML servido
 em produção e o HTML versionado no repositório, **não é um achado novo** —
@@ -1810,23 +1887,27 @@ não-regressivo.
 
 - T6.1 (e-mail `Concluída`, LinkedIn `Provisória` por decisão de negócio já
   registrada — tratada como fechada para fins de fluxo, não uma pendência
-  de implementação), T6.2, T6.3, **T6.4 (adicionada nesta atualização)**:
-  todas aprovadas pelo chapéu QA, sem achado.
+  de implementação), T6.2, T6.3, T6.4, **T6.5 (adicionada nesta
+  atualização)**: todas aprovadas pelo chapéu QA, sem achado.
 - Dependências da Seção 4 do `TASK.md` relativas ao Lote 6 (T3.1-T3.6 →
-  T6.1; T3.2/T3.4 → T6.2; T3.1 → T6.3; T3.4 → T6.4): estruturalmente
-  coerentes — confirmado que as 4 tarefas de fato operam sobre artefatos do
-  Lote 3 já `Concluída`/aprovados, sem exigir nenhuma dependência não
-  declarada. Nenhuma dependência órfã. **Achado de documentação corrigido
-  nesta checagem** (não é um achado de QA sobre código, é uma inconsistência
-  de registro): a "Tabela de paralelismo por lote" (Seção 4 do `TASK.md`,
-  linha do Lote 6) listava só "T6.1, T6.2, T6.3" como paralelizáveis entre
-  si, sem citar T6.4 (que existe desde depois daquele veredito original) —
-  corrigida diretamente pelo Validador para "T6.1, T6.2, T6.3, T6.4",
-  refletindo o que a própria Seção 3 (linha de dependências do Lote 6) já
-  documentava corretamente. Correção de rotina, não exige redesenho —
-  não escala ao `coordenador`.
+  T6.1; T3.2/T3.4 → T6.2; T3.1 → T6.3; T3.4 → T6.4; T6.2/T6.4 → T6.5):
+  estruturalmente coerentes — confirmado que as 5 tarefas de fato operam
+  sobre artefatos do Lote 3 (e, no caso de T6.5, também do próprio Lote 6)
+  já `Concluída`/aprovados, sem exigir nenhuma dependência não declarada.
+  Nenhuma dependência órfã. **Achado de documentação corrigido nesta
+  checagem** (não é um achado de QA sobre código, é uma inconsistência de
+  registro, mesma natureza do já corrigido para T6.4 na validação
+  anterior): a "Tabela de paralelismo por lote" (Seção 4 do `TASK.md`, linha
+  do Lote 6) ainda listava "T6.1, T6.2, T6.3, T6.4" como o conjunto
+  paralelizável, sem citar a dependência de T6.5 em relação a T6.2/T6.4 (a
+  própria Seção 3 já documentava essa dependência corretamente, e T6.5 de
+  fato não roda em paralelo com T6.2/T6.4 — mesmos arquivos/cards) —
+  corrigida diretamente pelo Validador, coluna de dependência direta da
+  linha do Lote 6 passa a citar "T6.5 depende de T6.2 e T6.4 (mesmos 6
+  cards)". Correção de rotina, não exige redesenho — não escala ao
+  `coordenador`.
 - Nenhuma tarefa `Bloqueada` sem resolução.
-- Nenhum achado simples/débito novo deste lote (incluindo T6.4) — não há
+- Nenhum achado simples/débito novo deste lote (incluindo T6.5) — não há
   nova entrada a criar em nenhuma `Refatoração Lote-X`. A ressalva de
   negócio de T6.1 (LinkedIn provisório) já está documentada no próprio
   `TASK.md`, não duplicada aqui, e não é um débito técnico.
@@ -1839,10 +1920,10 @@ pelo próprio stakeholder no `TASK.md`, não é um achado de QA). T6.1/T6.2/
 T6.3 confirmadas por requisição HTTP real contra a produção
 (`https://ljssoftware.com.br`), incluindo verificação cruzada de
 `target="_blank"`/`rel="noopener"`, atributos de analytics, estrutura de
-card/badge, e ausência de regressão de contraste/acessibilidade; T6.4
-confirmada por leitura direta dos arquivos reais em `public/` e `git diff`
-isolado (ainda não publicada no momento desta validação). O lote está
-estruturalmente fechado e liberado para a auditoria de segurança do chapéu
-DevSecOps sobre T6.4 especificamente (T6.1-T6.3 já auditadas) e, em
-paralelo, para o chapéu DevOps considerar este build no fluxo de dupla
-aprovação rumo à confirmação final do deploy.
+card/badge, e ausência de regressão de contraste/acessibilidade; T6.4 e
+T6.5 confirmadas por leitura direta dos arquivos reais em `public/` e `git
+diff` isolado (ambas ainda não publicadas no momento desta validação). O
+lote está estruturalmente fechado e liberado para a auditoria de segurança
+do chapéu DevSecOps sobre T6.4/T6.5 especificamente (T6.1-T6.3 já
+auditadas) e, em paralelo, para o chapéu DevOps considerar este build no
+fluxo de dupla aprovação rumo à confirmação final do deploy.
