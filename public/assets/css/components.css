@@ -434,6 +434,7 @@
 
 .site-footer__icon {
   display: block;
+  filter: brightness(0) invert(1);
 }
 
 .site-footer__brand-text {
