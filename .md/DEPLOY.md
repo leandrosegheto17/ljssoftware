@@ -678,3 +678,153 @@ push deploy"), que queria publicar agora.
 
 **Veredito:** publicação da T7.1 (Lote 7) confirmada em produção real, sem
 achado crítico.
+
+---
+
+## Confirmação de produção (2026-09-17) — Lote 8, Lote 9 e Lote 10 (Rodada 3)
+
+Registro de confirmação final do Gate de produção para os três lotes da
+Rodada 3 — Lote 8 (Fundação de Componentes da Página de Produto), Lote 9
+(página `public/evolucao-segura.html`) e Lote 10 (Integração na Vitrine,
+`apps.html`/`index.html`). O push já havia acontecido antes desta chamada
+(commit `ad8d919`, mesmo modelo de deploy contínuo já descrito acima em
+"Modelo de deploy real" — não há uma ação de "disparar deploy" a executar
+aqui). O papel desta chamada foi a confirmação final exigida pela Seção 4
+do `/deploy`: reconfirmar que nada mudou desde os vereditos já registrados,
+checar regressão cruzada entre os 3 lotes publicados juntos, e rodar
+verificação de rede real contra produção.
+
+- **Data da confirmação:** 2026-09-17
+- **Commit publicado:** `ad8d919` ("Publica pagina de divulgacao do
+  Evolucao Segura (Lotes 8-10, Rodada 3)"), branch `main`
+- **Lotes incluídos:** Lote 8 (fundação de 8 componentes CSS reutilizáveis
+  em `components.css`/`tokens.css`, sem tela renderizada), Lote 9 (página
+  `public/evolucao-segura.html` completa — hero, prova social, capturas de
+  tela, instalação, licença, requisitos e FAQ), Lote 10 (card real
+  "Evolução Segura" em `apps.html`/`index.html` apontando para a nova
+  página via `href="evolucao-segura.html"`)
+
+### 1. Nada mudou entre os vereditos já registrados e o push
+
+`QA-REPORT.md` e `SECURITY-REVIEW.md` (seções "Lote 8", "Lote 9" e "Lote
+10") foram commitados **no mesmo commit** que publicou o código
+(`ad8d919`) — não há, por construção, nenhuma janela de divergência entre
+o que foi validado e o que foi publicado. `git status` confirma árvore de
+trabalho limpa (nada pendente de commit/push) e `git diff ad8d919~1
+ad8d919 --stat` sobre os arquivos de produto (`public/apps.html`,
+`public/index.html`, `public/evolucao-segura.html`,
+`public/assets/css/components.css`, `public/assets/css/tokens.css`)
+confirma exatamente o escopo descrito nos vereditos — nenhum arquivo extra,
+nenhuma mudança de última hora fora do que QA/DevSecOps já auditaram.
+
+- **Lote 8:** `QA-REPORT.md`, "Veredito geral do Lote 8: Aprovado com
+  ressalvas" (1 achado Simples, RL8.1, comentário de contraste em
+  `components.css` — documentação, não bloqueante) + `SECURITY-REVIEW.md`,
+  "Veredito geral do Lote 8 (chapéu DevSecOps): Aprovado, sem ressalvas e
+  sem débito registrado" — dupla aprovação confirmada.
+- **Lote 9:** `QA-REPORT.md`, "Veredito geral do Lote 9: Aprovado com
+  ressalvas" (1 achado Simples, RL9.1, nota de Status desatualizada em
+  `TASK.md`/T9.6 — documentação, não bloqueante) + `SECURITY-REVIEW.md`,
+  "Veredito geral do Lote 9 (chapéu DevSecOps): Aprovado, sem ressalvas e
+  sem débito registrado" — dupla aprovação confirmada.
+- **Lote 10:** `QA-REPORT.md`, "Veredito geral do Lote 10: Aprovado, sem
+  ressalvas" + `SECURITY-REVIEW.md`, "Veredito geral do Lote 10 (chapéu
+  DevSecOps): Aprovado, sem ressalvas e sem débito registrado" — dupla
+  aprovação confirmada.
+
+### 2. Regressão cruzada entre os 3 lotes publicados juntos
+
+Verificação específica que a validação por lote isolado não cobre —
+confirmar que os componentes do Lote 8 realmente renderizam corretamente
+dentro da página real do Lote 9, e que o ponto de entrada do Lote 10
+realmente leva à página do Lote 9 sem quebra:
+
+- **Lote 8 → Lote 9 (consumo dos componentes):** `evolucao-segura.html`
+  carrega `assets/css/tokens.css` e `assets/css/components.css` (mesmos
+  arquivos do Lote 8) e usa as classes documentadas nos comentários de
+  referência do Lote 8 (`hero hero--product`, `.faq`, `.faq__item`,
+  `.faq__q`, `.faq__a`, entre outras) — confirmado tanto no HTML fonte
+  quanto na resposta HTTP real de produção (ver seção 3). Nenhum dos 8
+  componentes ficou órfão (documentado sem uso) nem foi duplicado/
+  reescrito no Lote 9.
+- **Lote 10 → Lote 9 (navegação real):** o card "Evolução Segura" em
+  `apps.html` e `index.html` usa `<a class="badge badge--link"
+  href="evolucao-segura.html" data-analytics-event="app-evolucao-segura">Ver
+  app</a>` — link real, não placeholder — confirmado no HTML servido pela
+  produção (ambas as páginas). Clicar nesse link é a integração cruzada
+  entre os 3 lotes: o card do Lote 10 leva à página do Lote 9, que usa os
+  componentes do Lote 8.
+- **Sem regressão nos demais cards:** os outros 5 cards de `apps.html`/
+  `index.html` (Destino Ideal, Minha Jornada, Meu Objetivo, Radar
+  Esportivo, Gestão da Pelada) permanecem com o badge "Em breve" e o botão
+  "Saiba mais"/modal do Lote 7 intactos — nenhuma mudança de CSS/JS do
+  Lote 8-10 tocou nesses cards.
+- **Estado do CTA de download — sem regressão da decisão de escopo:** os 2
+  CTAs de download em `evolucao-segura.html` (`Baixar para Windows`)
+  seguem no estado "Indisponível para download nesta fase" —
+  `<button ... disabled aria-disabled="true">` — confirmado no HTML de
+  produção, conforme decisão do usuário (RN-03/UX-SPEC.md Seção 4) já
+  registrada nos vereditos de Lote 9.
+- **Observabilidade e headers — sem regressão:** beacon do Cloudflare Web
+  Analytics (mesmo token `bc3ce694...`) e `assets/js/analytics.js`
+  presentes em `evolucao-segura.html`; `assets/js/nav.js` também presente.
+  Headers de `_headers` (`content-security-policy`, `x-frame-options:
+  DENY`, `x-content-type-options: nosniff`, `referrer-policy:
+  strict-origin-when-cross-origin`, `permissions-policy`) idênticos aos já
+  validados em lotes anteriores, confirmados em todas as 4 URLs
+  verificadas nesta chamada (ver seção 3). `strict-transport-security`
+  segue ausente — não é regressão desta publicação, é o débito já
+  conhecido RL5.2 (HSTS ainda não habilitado no painel Cloudflare).
+
+Nenhuma regressão cruzada encontrada entre os 3 lotes.
+
+### 3. Verificação de rede real contra produção
+
+Requisições HTTP reais executadas nesta chamada contra
+`https://ljssoftware.com.br` (mesmo padrão do fechamento do Lote 5):
+
+| Verificação | Resultado |
+|---|---|
+| `GET /` | HTTP 200. Headers de `_headers` presentes e corretos (CSP, X-Frame-Options: DENY, X-Content-Type-Options: nosniff, Referrer-Policy, Permissions-Policy). `Server: cloudflare`. |
+| `GET /apps.html` | HTTP 308 → `Location: /apps` (redirect "clean URL" já conhecido, débito RL5.1, não relacionado a esta publicação) → segue para `GET /apps` → HTTP 200, mesmos headers de segurança presentes; HTML servido contém o card real "Evolução Segura" com `<a class="badge badge--link" href="evolucao-segura.html" data-analytics-event="app-evolucao-segura">Ver app</a>`. |
+| `GET /evolucao-segura.html` | HTTP 308 → `Location: /evolucao-segura` → segue para `GET /evolucao-segura` → HTTP 200, mesmos headers de segurança presentes; HTML confirma `tokens.css`/`components.css` carregados, classes `hero hero--product`/`.faq` presentes, 7 imagens `assets/img/evolucao-segura/shot-s{1..7}.png` referenciadas, CTA de download em estado `disabled`. |
+| `GET /index.html` (via `/`) | HTTP 200; HTML confirma o mesmo card "Evolução Segura" com o mesmo link `href="evolucao-segura.html"` replicado na Home, paridade mantida com `apps.html`. |
+| `GET /assets/img/evolucao-segura/shot-s1.png`, `shot-s4.png`, `shot-s7.png` | HTTP 200 cada — capturas de tela reais, servidas sem erro. |
+| `GET /assets/img/icons/icon-evolucao-segura.svg` | HTTP 200 — ícone do card servido sem erro. |
+| `GET /assets/css/components.css` e `/assets/css/tokens.css` | HTTP 200 cada — os dois arquivos do Lote 8 servidos sem erro, consumidos pelas 3 páginas (`apps.html`, `index.html`, `evolucao-segura.html`). |
+
+Todas as URLs listadas no pedido de confirmação (`/`, `/apps.html`,
+`/index.html`, `/evolucao-segura.html`) responderam com status HTTP
+saudável (200 direto ou 200 após o redirect 308 já conhecido), headers de
+segurança de `_headers` intactos, e o link "Ver app" nos cards navegando
+de fato para `evolucao-segura.html`.
+
+### 4. Achados abertos avaliados para bloqueio
+
+- **RL8.1** (Lote 8, Simples/documentação — comentário de contraste em
+  `components.css`) — baixo esforço, não bloqueia.
+- **RL9.1** (Lote 9, Simples/documentação — nota de Status de T9.6 no
+  `TASK.md`) — baixo esforço, não bloqueia.
+- **RL5.1** (clean URL em `/apps`/`/evolucao-segura`, redirecionando via
+  308) e **RL5.2** (HSTS ainda não habilitado no painel Cloudflare) — já
+  conhecidos, baixa/média severidade, com prazo registrado, não bloqueiam.
+- **L-08/RT-07** (ativação/licenciamento server-side, fora de escopo por
+  decisão consciente) e **L-09/RT-08** (repositório GitHub privado,
+  bloqueia só uma futura liberação de link de download) — já registrados
+  no fechamento do Lote 10, não bloqueiam esta publicação (nenhum CTA de
+  download está ativo).
+- **T11.2/screenshot do SmartScreen** — pendência de outro lote/rodada,
+  fora do escopo destes 3 lotes (Lote 8, 9, 10 não incluem T11.x). Não
+  bloqueia esta confirmação.
+
+Nenhum achado de severidade alta/crítica em aberto relativo aos Lotes 8,
+9 e 10. Nenhum compliance obrigatório pendente.
+
+**Veredito:** confirmação final de Gate de produção dos Lotes 8, 9 e 10
+(Rodada 3) fechada, sem achado crítico e sem regressão cruzada entre os
+lotes publicados juntos. Verificação de rede real contra produção
+confirma as 4 URLs saudáveis, headers de segurança intactos e a
+integração real (card → página → componentes) funcionando de ponta a
+ponta. Débitos abertos (RL8.1, RL9.1, RL5.1, RL5.2) são todos baixa
+severidade/baixo esforço, com prazo registrado, e não impedem este Gate.
+Pronto para o registro de fechamento do Gestor (Gate 4).

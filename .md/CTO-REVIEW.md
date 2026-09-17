@@ -464,3 +464,75 @@ tarefa T6.5 (Lote 6) está formalmente encerrado no ciclo do Gestor.
 Nenhuma ação adicional exigida deste chapéu neste momento.
 
 ---
+
+## Gate 4 — Registro de fechamento (deploy em produção, Lotes 8, 9 e 10, Rodada 3)
+
+**Data:** 2026-09-17
+**Chamada:** `/deploy`, Seção 6 — registro de fechamento, **sem poder de
+veto**. O usuário confirmou explicitamente o fechamento do Gate de
+produção; o Validador já rodou a confirmação final (chapéus QA e
+DevSecOps, sem achado bloqueante) e a verificação de rede real contra
+produção, ambas limpas; este registro apenas formaliza o fechamento no log
+do Gestor.
+**Artefato de entrada:** `.md/DEPLOY.md`, seção "Confirmação de produção
+(2026-09-17) — Lote 8, Lote 9 e Lote 10 (Rodada 3)", com base em
+`QA-REPORT.md` e `SECURITY-REVIEW.md` (seções "Lote 8", "Lote 9" e "Lote
+10", dupla aprovação de todos os três lotes, sem achado bloqueante).
+
+### Resultado
+
+**Sucesso.** Deploy em produção confirmado, sem achado crítico em aberto.
+
+- **Commit publicado:** `ad8d919` ("Publica pagina de divulgacao do
+  Evolucao Segura (Lotes 8-10, Rodada 3)"), branch `main`, deploy contínuo
+  via Cloudflare Pages (mesmo modelo já registrado em `DEPLOY.md`, seção
+  "Modelo de deploy real" — push em `main` já publica direto em produção,
+  sem staging clássico separado).
+- **URL de produção:** `https://ljssoftware.com.br` — `/`, `/apps.html`,
+  `/index.html` e `/evolucao-segura.html` verificadas por requisição HTTP
+  real, todas saudáveis (200 direto ou 200 após o redirect 308 "clean URL"
+  já conhecido, débito RL5.1).
+- **Lotes incluídos (Rodada 3):**
+  - Lote 8 — Fundação de Componentes da Página de Produto (8 componentes
+    CSS reutilizáveis em `components.css`/`tokens.css`, sem tela
+    renderizada)
+  - Lote 9 — Página `public/evolucao-segura.html` (hero, prova social,
+    capturas de tela, instalação, licença, requisitos e FAQ)
+  - Lote 10 — Integração na vitrine (card real "Evolução Segura" em
+    `apps.html`/`index.html` apontando para `evolucao-segura.html`)
+- **Dupla aprovação confirmada:** `QA-REPORT.md` (Lote 8: Aprovado com
+  ressalvas; Lote 9: Aprovado com ressalvas; Lote 10: Aprovado, sem
+  ressalvas) + `SECURITY-REVIEW.md` (Lote 8, 9 e 10: Aprovado, sem
+  ressalvas e sem débito registrado), sobre o mesmo conjunto de lotes
+  acima.
+- **Regressão cruzada entre os 3 lotes:** verificada e sem achado — os
+  componentes do Lote 8 renderizam corretamente dentro da página do Lote
+  9, e o link do card do Lote 10 leva de fato à página do Lote 9, sem
+  quebra e sem regressão nos demais 5 cards da vitrine.
+- **Incidentes/rollback:** nenhum incidente reportado, nenhum rollback
+  necessário.
+
+### Ressalvas não bloqueantes (registradas para histórico)
+
+- **RL8.1** (Lote 8, Simples/documentação) — comentário de contraste
+  desatualizado em `components.css`; baixo esforço, não bloqueia.
+- **RL9.1** (Lote 9, Simples/documentação) — nota de Status desatualizada
+  em `TASK.md`/T9.6; baixo esforço, não bloqueia.
+- **RL5.1** (redirect 308 de clean URL, já conhecido desde o Lote 5) e
+  **RL5.2** (HSTS ainda não habilitado no painel Cloudflare, já conhecido
+  desde o Lote 5) — permanecem em aberto, sem relação com esta publicação,
+  não bloqueiam.
+- **T11.2 / screenshot do SmartScreen** — pendência de outro lote (Lote
+  11), fora do escopo desta publicação (Lotes 8, 9 e 10 não incluem
+  T11.x). Não faz parte deste fechamento e não bloqueia.
+
+Nenhum achado de severidade alta/crítica em aberto relativo aos Lotes 8, 9
+e 10.
+
+### Veredito
+
+**Aprovado — registro de fechamento, sem veto.** O deploy em produção dos
+Lotes 8, 9 e 10 (Rodada 3) está formalmente encerrado no ciclo do Gestor.
+Nenhuma ação adicional exigida deste chapéu neste momento.
+
+---

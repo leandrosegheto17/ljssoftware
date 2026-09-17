@@ -1352,6 +1352,31 @@ body.app-modal-open {
   justify-content: flex-start;
 }
 
+/* Breadcrumb de volta à vitrine — presente no mockup de conceito aprovado
+   (evolucao-segura-mockup.html) mas ausente de T9.1; reintroduzido aqui por
+   fidelidade ao mockup (ver avaliação UX/Frontend pontual). Reaproveita
+   apenas pares de contraste já validados (--color-text-inverse-secondary /
+   --color-accent sobre --color-bg), nenhum token novo. */
+.backlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--color-text-inverse-secondary);
+  font-size: 0.9375rem;
+}
+.backlink:hover,
+.backlink:focus-visible {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+.backlink svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
 .hero__eyebrow {
   display: inline-flex;
   align-items: center;
