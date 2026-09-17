@@ -1,11 +1,12 @@
 # PRD-TECNICO.md — Site institucional LJSSoftware
 
-**Status:** Rascunho refinado (Loop A, Rodada 2) — todos os itens antes
-marcados `[PENDENTE]` foram resolvidos com as respostas do stakeholder às 6
-Perguntas em Aberto do `PRD.md`. Documento pronto para o checklist de
-aprovação do chapéu BA (ver seção final).
-**Base:** `PRD.md` (atualizado 2026-09-07, Rodada 2)
-**Data:** 2026-09-07 (Rodada 1) — atualizado 2026-09-07 (Rodada 2)
+**Status:** Rascunho refinado (Loop A, Rodada 2), com **Adendo (Rodada 3 —
+reabertura pontual)** cobrindo o novo RF-09 (página de divulgação de app
+desktop). Rodadas 1-2 permanecem válidas e não foram reescritas; ver Seção 9
+para o adendo completo.
+**Base:** `PRD.md` (atualizado 2026-09-17, Rodada 3/Adendo, Seção 8)
+**Data:** 2026-09-07 (Rodada 1) — atualizado 2026-09-07 (Rodada 2) —
+atualizado 2026-09-17 (Adendo Rodada 3)
 **Autor:** Gestor (chapéu Business Analyst)
 
 ---
@@ -194,6 +195,137 @@ flowchart TD
 | INT-01 (atualizado Rodada 2) | RA-04 ("canal de contato") não especificava, na Rodada 1, se seria simples (link) ou complexo (formulário com envio) | Resolvida pela resposta direta do stakeholder: link simples (e-mail/LinkedIn), sem formulário. RF-04 especificado com esse formato definitivo — não é mais interpretação do BA, e sim decisão de produto já confirmada. | Registrado aqui apenas para rastreabilidade histórica da ambiguidade original; a decisão em si veio do stakeholder (chapéu PM/BA não decidiu por conta própria algo que era escopo de produto). |
 | INT-02 | RA-01 não define se "apresentação da marca" inclui texto longo institucional ou apenas tagline curta | Adotada a interpretação mínima (tagline curta) como piso de aceite em RF-01, permitindo que texto mais elaborado seja adicionado sem violar o critério de aceite | Interpretação de detalhe de conteúdo dentro do requisito já aceito (RA-01), não altera o que é o produto — compatível com o papel do chapéu BA de resolver ambiguidade de interpretação, não de escopo. |
 | INT-03 (nova, Rodada 2) | RA-08 ("identidade visual básica") não especifica se exige logotipo ilustrativo/símbolo gráfico | Adotada a interpretação mínima: wordmark tipográfico (nome estilizado em texto) + paleta de cores satisfaz o critério de aceite de RF-08; logotipo ilustrativo não é exigido | Interpretação de nível de detalhe dentro do requisito já aceito pelo stakeholder ("mesmo que básica/minimalista... talvez um logotipo simples em texto/wordmark" — palavras do próprio stakeholder), não altera o que foi pedido, apenas fixa o piso mínimo de aceite para o Executor. |
+
+---
+
+---
+
+## 9. Adendo (Rodada 3 — reabertura pontual, 2026-09-17)
+
+**Base:** `PRD.md` Seção 8 (adendo), `CTO-REVIEW.md` "Gate 1 — Reabertura
+pontual" (Aprovado, 2026-09-17).
+
+### 9.1 RF-09 — Página de divulgação de app desktop [deriva de RA-09] — nova
+
+**Descrição:** Para apps do portfólio distribuídos como executável desktop
+(sem URL de produto própria), o link "Ver app" do card na vitrine deve
+apontar para uma página de divulgação própria dentro do site, em vez de
+apontar direto para o download do executável. Primeiro caso concreto:
+**Evolução Segura**, página `evolucao-segura.html`.
+
+**Critério de aceite (EARS):**
+- O sistema DEVE disponibilizar, para cada app desktop/instalável do
+  portfólio cujo badge "Em breve" seja substituído por link real, uma página
+  própria dentro do site (`[nome-do-app].html`) antes de o link ser
+  publicado — nunca deve existir um link "Ver app" para um app desktop
+  apontando direto para o arquivo executável a partir do card da vitrine.
+- A página de divulgação DEVE conter, no mínimo: (a) descrição do app
+  (proposta de valor, o que o app resolve); (b) ao menos 1 screenshot real
+  do produto, capturado do repositório
+  (`https://github.com/leandrosegheto17/EvolucaoSegura`) e/ou da execução
+  local do instalado (`evolucao-segura.exe`) — não mockup/arte genérica; (c)
+  um CTA de download do executável, visivelmente identificado como tal
+  (ex.: indicando tamanho/formato do arquivo, quando essa informação
+  estiver disponível); (d) requisitos de sistema do app (ex.: SO suportado),
+  SE essa informação estiver disponível na fonte (repositório/produto) — se
+  não estiver disponível, a seção pode ser omitida, não é bloqueante.
+- QUANDO o visitante clicar no link "Ver app" do card de um app
+  desktop/instalável na vitrine (`apps.html`) ou na prévia da Home
+  (`index.html`), o sistema DEVE navegar para a página de divulgação
+  própria daquele app dentro do mesmo domínio (não abrir download nem
+  navegar para destino externo diretamente).
+- QUANDO o visitante clicar no CTA de download **dentro** da página de
+  divulgação, o sistema DEVE iniciar o download do executável (destino
+  técnico do arquivo — ex.: GitHub Releases — é decisão do Coordenador no
+  SDD.md, fora do escopo deste requisito de produto).
+- A página de divulgação DEVE seguir o mesmo Header/Nav e Footer/Contato
+  byte-idênticos das demais páginas do site (G-02 do `GUARDRAILS.md`
+  permanece aplicável), e a mesma identidade visual (RF-08) — não é uma
+  landing page isolada fora do design system.
+
+### 9.2 Ajuste a RF-02 — critério de roteamento do link "Ver app"
+
+RF-02 (Seção 1) é complementado com a seguinte regra, sem alterar seu
+critério de aceite original:
+
+- QUANDO um app tiver destino de publicação disponível e for um **app web**
+  (URL de produto própria), o sistema DEVE substituir o indicador "Em breve"
+  por um link de saída externo direto ao produto (comportamento já
+  implementado para Destino Ideal e Radar Esportivo — sem mudança).
+- QUANDO um app tiver destino de publicação disponível e for um **app
+  desktop/instalável** (distribuído como executável, sem URL de produto
+  própria), o sistema DEVE substituir o indicador "Em breve" por um link
+  interno para a página de divulgação própria daquele app (RF-09), nunca por
+  um link direto de download a partir do card.
+
+### 9.3 Regra de negócio (adendo à Seção 3)
+
+| # | Regra | Racional |
+|---|---|---|
+| RN-03 | O card de um app na vitrine/prévia nunca aponta diretamente para um arquivo de download (executável) — apps desktop/instalável sempre passam por uma página de divulgação própria antes do CTA de download | Preserva contexto e confiança antes de iniciar o download de um binário; mantém consistência de UX com os apps web, que também levam a uma página de produto (a do próprio app), não a um arquivo direto |
+
+### 9.4 Fluxo de usuário (adendo à Seção 4)
+
+```mermaid
+flowchart TD
+    D[Visitante acessa listagem de apps] --> E{App está publicado?}
+    E -- Sim, app web --> F[Clica em Ver app]
+    F --> G[Sai do site para a URL do app]
+    E -- Sim, app desktop/instalável --> M[Clica em Ver app]
+    M --> N[Navega para pagina de divulgacao propria dentro do site]
+    N --> O[Le descricao, ve screenshots reais, ve requisitos de sistema]
+    O --> P{Decide baixar?}
+    P -- Sim --> Q[Clica no CTA de download]
+    Q --> R[Download do executavel inicia]
+    P -- Nao --> S[Volta a navegacao do site via Header/Nav]
+```
+
+### 9.5 Dependências e integrações (adendo à Seção 5)
+
+| # | Dependência/Integração | Tipo | Observação |
+|---|---|---|---|
+| DI-07 | Screenshots reais do produto Evolução Segura | A capturar (Executor) | Fontes: repositório GitHub `https://github.com/leandrosegheto17/EvolucaoSegura` e/ou execução local do instalado (`C:\Users\leand\AppData\Local\EvolucaoSegura\evolucao-segura.exe`). Tarefa de execução, a detalhar no `TASK.md` — não decisão deste documento. |
+| DI-08 | Hospedagem/distribuição do binário `evolucao-segura.exe` para download | A definir no SDD.md | Decisão técnica do Coordenador (ex.: GitHub Releases do próprio repositório vs. asset versionado no site) — deve respeitar G-01 (zero build/framework) e G-10 (sem serviço pago) do `GUARDRAILS.md`. |
+| DI-09 | Nova página `evolucao-segura.html` | Novo artefato de execução | Deve seguir o mesmo design system/`UX-SPEC.md` das 6 páginas já publicadas (G-02, G-12 do `GUARDRAILS.md` aplicáveis) — decisão de layout cabe ao Coordenador/Executor, não a este documento. |
+
+### 9.6 Premissas e riscos resolvidos (adendo à Seção 6)
+
+| # (origem PRD.md) | Premissa/Risco | Situação |
+|---|---|---|
+| PR-07 | Screenshots reais e suficientes podem ser obtidos do GitHub e/ou execução local, sem arte criada do zero | **Registrada, não resolvida nesta rodada** — depende de o Executor efetivamente inspecionar as duas fontes e confirmar quantidade/qualidade suficiente de imagens; se insuficiente, escalar ao Gestor (chapéu PM/marketing) antes de publicar a página com conteúdo abaixo do mínimo do RF-09. |
+| PR-08 | Distribuição do executável sem custo recorrente, compatível com G-10 | **Plausível, não resolvida nesta rodada** — GitHub Releases do próprio repositório público é a opção mais óbvia (gratuita), mas a decisão final e a verificação de compatibilidade com G-10 cabem ao Coordenador no SDD.md. |
+| PR-09 | O critério de roteamento (Seção 9.2) cobre todos os apps restantes do portfólio | **Assumida como válida nesta rodada** — não há indício hoje de um terceiro tipo de distribuição (ex.: app mobile só em loja) entre os apps restantes (Minha Jornada, Meu Objetivo, Gestão da Pelada); a reavaliar quando cada um for publicado, conforme já registrado no `PRD.md`. |
+
+### 9.7 Interpretações registradas (adendo à Seção 7)
+
+| # | Ambiguidade | Interpretação adotada | Porquê |
+|---|---|---|---|
+| INT-04 (nova, Rodada 3) | O pedido do stakeholder não especifica se "requisitos do sistema" (SO suportado, espaço em disco) é obrigatório na página de divulgação | Adotada a interpretação condicional: exibir SE a informação estiver disponível na fonte (repositório/produto); não bloqueia a publicação da página se a informação não existir | Interpretação de detalhe de conteúdo dentro do requisito já aceito (RF-09), evita bloquear a entrega por uma informação que pode simplesmente não existir documentada no repositório atual |
+| INT-05 (nova, Rodada 3) | Não foi especificado se o critério de roteamento (RF-02/RF-09) deve ser aplicado retroativamente aos 3 apps ainda "Em breve" | Adotada a interpretação de que o critério é uma regra permanente de produto (Seção 9.2), mas sua aplicação a cada app específico só ocorre quando esse app for de fato publicado — não há ação retroativa sobre os cards já existentes | Evita decisão prematura sobre apps cujo tipo de distribuição (web vs. desktop) ainda não foi confirmado pelo stakeholder para os 3 restantes |
+
+---
+
+## Checklist de pronto (chapéu BA) — Adendo Rodada 3
+
+- [x] Todo requisito funcional novo tem critério de aceite testável (RF-09
+      completo, RF-02 complementado sem quebrar seu critério original)
+- [x] Toda regra de negócio nova tem racional declarado (RN-03)
+- [x] O fluxo de usuário do adendo tem pontos de decisão e caminhos
+      alternativos mapeados (Seção 9.4)
+- [x] Toda dependência/integração nova está nomeada (DI-07 a DI-09)
+- [x] Toda premissa/risco herdado do PM (Seção 8.5 do `PRD.md`) está
+      registrada nesta seção (PR-07 a PR-09) — nenhuma marcada como
+      "resolvida" sem evidência, pois dependem de tarefas de execução ainda
+      não realizadas
+- [x] Toda ambiguidade resolvida está registrada na Seção 9.7 (INT-04,
+      INT-05)
+
+**Conclusão do adendo:** este documento está pronto para handoff de contexto
+ao Coordenador (reabertura do `SDD.md`/`TASK.md`) e, na sequência, ao
+Executor. Pontos que permanecem como decisão técnica (não de produto) para o
+Coordenador resolver: hospedagem/distribuição do binário (DI-08), layout da
+nova página (DI-09), e para o Executor: captura efetiva dos screenshots
+reais (DI-07/PR-07).
 
 ---
 

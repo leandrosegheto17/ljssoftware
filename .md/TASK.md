@@ -1,21 +1,28 @@
 # TASK.md — Site institucional LJSSoftware
 
-**Status:** Pronto para revisão do usuário (Loop C do `/definir_organizar`) —
-**revisado** após reabertura pontual do `UX-SPEC.md` (identidade visual final
-"Geométrico/Glass", `ADR-005`, supersede `ADR-004`)
-**Base:** `PRD-TECNICO.md` + `SDD.md` + ADRs 001-003, 005 (004 Superseded) +
-`UX-SPEC.md` (revisado)
-**Data original:** 2026-09-07 · **Data desta revisão:** 2026-09-07
+**Status:** Lotes 1-7 concluídos/implementados. **Reaberto pontualmente
+(Rodada 3, 2026-09-17)** para a demanda "página de divulgação de app desktop
+(Evolução Segura)" — adiciona os Lotes 8-11 (Seção 3) e as respectivas
+entradas de dependência/risco/lacuna (Seções 4-6). Lotes 1-7 permanecem
+inalterados nesta revisão. **Ajuste pontual adicional (mesma reabertura,
+2026-09-17):** o usuário confirmou que os 2 CTAs "Baixar para Windows" de
+`evolucao-segura.html` (T9.1, T9.6) não devem ter nenhuma ação nesta
+entrega — ver `UX-SPEC.md` Seção 4 (novo estado "Indisponível para download
+nesta fase") e L-11 desta Seção 6.
+**Base:** `PRD-TECNICO.md` (+ adendo Rodada 3) + `SDD.md` (+ `ADR-006`) +
+`UX-SPEC.md` (+ Fluxo 5/Rodada 3) + `GUARDRAILS.md` (revisado)
+**Data original:** 2026-09-07 · **Revisão anterior:** 2026-09-07 (`ADR-005`)
+· **Data desta revisão:** 2026-09-17
 **Autor:** Coordenador (chapéu Tech Lead)
 
-> **Nota de proveniência desta revisão:** o `UX-SPEC.md` passou por uma
-> reabertura pontual, fora deste loop, na qual o usuário aprovou diretamente
-> a direção visual "Geométrico/Glass" (a partir da logo real da marca) e
-> ajustou o layout do cabeçalho — ver `ADR-005`. Este `TASK.md` ainda não
-> havia sido aprovado, por isso foi reeditado diretamente nesta mesma
-> instância, sem handoff formal. Toda mudança de escopo/critério de aceite
-> está sinalizada nas tabelas abaixo; o autocheck de granularidade foi
-> reexecutado em todas as tarefas tocadas.
+> **Nota de proveniência desta revisão (Rodada 3):** demanda pontual do
+> stakeholder (RA-09/RF-09/RN-03, `PRD.md`/`PRD-TECNICO.md`) para uma nova
+> página de divulgação do app desktop Evolução Segura, apoiada num mockup
+> de conceito de exploração visual já aprovado informalmente pelo
+> stakeholder (`evolucao-segura-mockup.html`). Os Lotes 1-7 (já concluídos
+> em produção) não foram tocados. Autocheck de granularidade (tamanho-alvo
+> ~1 dia-pessoa, não-mistura, canário ~300k tokens) executado em todas as
+> tarefas novas antes desta apresentação — ver nota ao final da Seção 3.
 
 ---
 
@@ -32,6 +39,7 @@ Traduzidas das restrições/ADRs do `SDD.md` e dos padrões do `UX-SPEC.md`
 │   ├── index.html
 │   ├── apps.html
 │   ├── sobre.html
+│   ├── evolucao-segura.html  # [NOVO, Rodada 3] página de divulgação (RF-09)
 │   ├── 404.html
 │   ├── _headers            # headers de segurança (Cloudflare Pages)
 │   ├── _redirects          # redirect 301 www -> apex (Cloudflare Pages)
@@ -39,14 +47,17 @@ Traduzidas das restrições/ADRs do `SDD.md` e dos padrões do `UX-SPEC.md`
 │   ├── sitemap.xml
 │   └── assets/
 │       ├── css/
-│       │   ├── tokens.css      # custom properties (paleta Geométrico/Glass, glass, shapes)
+│       │   ├── tokens.css      # custom properties (paleta Geométrico/Glass, glass, shapes, notice)
 │       │   ├── base.css        # reset + grid/layout responsivo
-│       │   └── components.css  # header, footer, cards "glass", badges, botões, formas decorativas
+│       │   └── components.css  # header, footer, cards "glass", badges, botões, formas decorativas,
+│       │                        # + [NOVO] hero--product, shot, problem-card/pillar, feature, steps,
+│       │                        #   notice, specs, faq (Lote 8, Rodada 3)
 │       ├── fonts/               # Unbounded e Outfit em .woff2, self-hosted
 │       ├── img/
 │       │   ├── favicon/         # favicon.ico, png 32/180/512, apple-touch-icon (derivados do ícone da logo)
-│       │   └── logo/            # logo-ljssoftware.png, logo-ljssoftware-transparente.png,
-│       │                        # logo-ljssoftware-icone.png (copiados/otimizados de .md/assets/)
+│       │   ├── logo/            # logo-ljssoftware.png, logo-ljssoftware-transparente.png,
+│       │   │                    # logo-ljssoftware-icone.png (copiados/otimizados de .md/assets/)
+│       │   └── evolucao-segura/ # [NOVO, Rodada 3] screenshots S1-S9 (webp + fallback), otimizados (G-07)
 │       └── js/
 │           ├── nav.js          # toggle do menu mobile
 │           └── analytics.js    # evento custom de clique em contato
@@ -123,6 +134,21 @@ Traduzidas das restrições/ADRs do `SDD.md` e dos padrões do `UX-SPEC.md`
   ícone sem texto (UX-SPEC.md, Seção 5).
 - **`prefers-reduced-motion: reduce`** respeitado em qualquer
   transição/scroll suave.
+- **[Novo, Rodada 3] `evolucao-segura.html` segue G-02 por extensão:** o
+  header/footer dessa página devem ser byte-idênticos aos das demais
+  (mesmo bloco copiado literalmente), com a única variação sendo
+  `aria-current="page"` no item "Apps" (não em "Evolução Segura", que não
+  existe como item de nav — `UX-SPEC.md` Seção 7).
+- **[Novo, Rodada 3] Card da vitrine nunca aponta para o arquivo de
+  download (RN-03):** ao trocar o badge "Em breve" por link real para um
+  app `tipo: desktop`, o `href` é sempre `[nome-do-app].html` (página
+  interna), nunca uma URL de Release/arquivo `.exe` — essa URL só aparece
+  dentro da própria página de divulgação (T9.6/T10.2).
+- **[Novo, Rodada 3] Screenshots reais, nunca dado de paciente real:**
+  qualquer captura de tela do Evolução Segura que mostre conteúdo clínico
+  (lista de pacientes, histórico, evolução) deve usar dado 100% fictício
+  criado especificamente para a captura — nunca um prontuário real, mesmo
+  de teste do próprio stakeholder (T11.1).
 
 ## 2. Spikes Técnicos
 
@@ -340,6 +366,41 @@ existentes do Lote 7); RL7.1 e RL7.2 são independentes entre si
 bloqueia o avanço/deploy do Lote 7 (nenhuma combinação de contraste real
 falha, nenhuma dependência real está órfã).
 
+### Refatoração Lote-8
+
+> **Origem:** achado Simples de documentação do `/validar` sobre o Lote 8 —
+> Fundação de Componentes da Página de Produto (2026-09-17), registrado
+> pelo Validador (chapéu QA), sem exigir reprovação nem redesenho. Ver
+> `.md/QA-REPORT.md` (Lote 8) para o detalhe completo do achado.
+
+| ID | Tarefa | Dono | Critério de aceite | Origem | Estimativa | Status |
+|---|---|---|---|---|---|---|
+| RL8.1 | Corrigir o comentário de verificação de contraste em `assets/css/components.css` (seção "Evolução Segura — Prova visual... (T8.2)"): `.hero__facts`/`.hero__cta-note` sobre o pior caso composto do mesh gradient mede 4.82:1 (`dev/css/a11y-contrast-check.js`), não 4.65:1 como citado — atualizar também a referência equivalente já existente na seção "Hero (T3.1)", se ainda não corrigida | Frontend | Comentário(s) atualizado(s) para citar 4.82:1 (ou remissão direta ao resultado do script, sem número fixo desatualizado); nenhuma mudança de CSS/comportamento real | QA-REPORT.md, achado #1 (T8.2) | 0,1 dia | Pendente |
+
+**Dependências do lote Refatoração Lote-8:** nenhuma dependência de outro
+lote para começar (ajuste pontual de documentação sobre um comentário já
+existente do Lote 8, que por sua vez replica um número já desatualizado
+desde a seção de T3.1). **Prazo sugerido:** baixo esforço, sem urgência —
+não bloqueia o avanço/deploy do Lote 8 (nenhuma combinação de contraste
+real falha, nenhuma dependência real está órfã).
+
+### Refatoração Lote-9
+
+> **Origem:** achado Simples de documentação do `/validar` sobre o Lote 9 —
+> Página `evolucao-segura.html` (2026-09-17), registrado pelo Validador
+> (chapéu QA), sem exigir reprovação nem redesenho. Ver `.md/QA-REPORT.md`
+> (Lote 9) para o detalhe completo do achado.
+
+| ID | Tarefa | Dono | Critério de aceite | Origem | Estimativa | Status |
+|---|---|---|---|---|---|---|
+| RL9.1 | Atualizar a nota de Status de T9.6 (Lote 9): remover/corrigir a afirmação de que `dev/html/evolucao-segura.t9-2.check.js` reporta falha esperando a Seção 5 logo após a Seção 3 — rodado nesta validação, o teste passa integralmente (17/17) e checa explicitamente a ordem correta (Seção 4 antes da Seção 5) | Frontend | Nota de Status de T9.6 atualizada para não afirmar mais uma falha inexistente no teste de T9.2; nenhuma mudança de código/comportamento real | QA-REPORT.md, Lote 9, achado #1 (item 2) | 0,1 dia | Pendente |
+
+**Dependências do lote Refatoração Lote-9:** nenhuma dependência de outro
+lote para começar (ajuste pontual de documentação sobre uma nota de status
+já existente do Lote 9). **Prazo sugerido:** baixo esforço, sem urgência —
+não bloqueia o avanço/deploy do Lote 9 (o teste em questão já passa,
+nenhuma dependência real está órfã).
+
 ### Lote 7 — Botão "Saiba mais" + Modal nos Cards de App
 
 > **Origem:** pedido direto do usuário, fora do ciclo de reabertura formal —
@@ -357,16 +418,149 @@ falha, nenhuma dependência real está órfã).
 em `apps.html`/`index.html`) e do conteúdo atual pós-T6.5 (nomes/descrições
 dos 6 apps). Sem paralelismo interno (tarefa única).
 
+---
+
+### Lote 8 — Fundação de Componentes da Página de Produto [NOVO, Rodada 3]
+
+> **Origem:** RF-09 (`PRD-TECNICO.md` Seção 9.1), `UX-SPEC.md` Seção 3.1/3.2
+> (Rodada 3). Antes de construir `evolucao-segura.html` (Lote 9), os
+> componentes/tokens novos precisam existir em `tokens.css`/`components.css`
+> — mesmo padrão em 2 fases já usado nos Lotes 1-2/3. **Autocheck de
+> granularidade:** os 8 componentes novos foram avaliados como 1 tarefa
+> única inicialmente; **divididos em T8.1 (tokens) + T8.2/T8.3 (2 grupos de
+> 4 componentes cada)** para respeitar o tamanho-alvo de ~1 dia-pessoa —
+> antes/depois documentado aqui: agrupar os 8 em 1 tarefa estimava ~1,5-2
+> dias (acima do alvo); a divisão por "componentes de prova visual"
+> (T8.2) vs. "componentes informativos" (T8.3) manteve cada tarefa coesa
+> (mesma categoria de uso) sem misturar tela/endpoint/regra de
+> negócio/SQL (não há endpoints/SQL neste projeto).
+
+| ID | Tarefa | Dono | Critério de aceite | Estimativa | Status |
+|---|---|---|---|---|---|
+| T8.1 | Tokens novos de "aviso" em `assets/css/tokens.css`: `--color-notice-bg`, `--color-notice-border`, `--color-notice-icon` (`UX-SPEC.md` Seção 3.1) | Frontend | 3 tokens declarados; combinação `--color-notice-icon` sobre `--color-bg` testada em ferramenta de contraste e atinge ≥3:1 (crítico de UI, WCAG AA); nenhum token existente redefinido | 0,25 dia | **Concluída** — 3 tokens acrescentados ao bloco `:root` de `public/assets/css/tokens.css` (aditivo, nenhum token existente tocado): `--color-notice-bg: rgba(255, 209, 102, 0.10)`, `--color-notice-border: rgba(255, 209, 102, 0.35)`, `--color-notice-icon: #FFD166` — valores exatos do UX-SPEC.md Seção 3.1, família de cor "aviso" isolada de `--color-accent` (decisão já registrada lá: teal significa "positivo/destaque", âmbar significa "atenção"). Contraste verificado reaproveitando a mesma fórmula/script já existente no projeto (`dev/css/a11y-contrast-check.js`, T4.2), sem dependência nova (G-01): checagem `--color-notice-icon (#FFD166) sobre --color-bg (#0B2545)` adicionada ao script, PASS com 10,67:1 (mínimo crítico de UI 3:1, folga larga). `--color-notice-bg`/`--color-notice-border` são translúcidos e usados apenas como fundo/borda decorativos do bloco `.notice` (T8.3) — fora do escopo do crítico de contraste texto/UI; o texto do `.notice` reaproveita `--color-text-inverse`, já validado sobre `--color-bg`. Razões documentadas em comentário no topo do CSS, mesmo padrão de T1.1. |
+| T8.2 | Componentes de prova visual em `assets/css/components.css`: `.hero--product` (variante 2 colunas do `.hero`), `.shot` (moldura de screenshot, estados "a capturar"/"capturado"), `.problem-card`/`.pillar` (variantes de `.glass-card`), `.feature` (texto+imagem alternado) | Frontend | Bloco de referência de cada componente pronto para ser copiado em `evolucao-segura.html` (Lote 9); reaproveita só tokens já existentes + T8.1; `.hero--product` colapsa para 1 coluna abaixo de 900px (`UX-SPEC.md` Seção 6); fallback `@supports not (backdrop-filter)` herdado de `.glass-card` funciona nas variantes | 0,75 dia | **Concluída** — 4 componentes acrescentados em seção própria ("Evolução Segura — Prova visual: hero de produto/shot/problem-card/pillar/feature (T8.2, Rodada 3)") ao final de `public/assets/css/components.css`, de forma aditiva (nenhuma regra anterior tocada; sem sobreposição de seletor com a seção paralela de T8.3, que roda no mesmo arquivo). Portado do mockup de conceito já aprovado pelo stakeholder (`evolucao-segura-mockup.html`), adaptado à convenção BEM/organização já usada no arquivo. `.hero--product`: sobrescreve só `.hero__inner`/`.hero__col`/alinhamento herdados de `.hero` (T3.1) para grid de 2 colunas a partir de 900px (breakpoint próprio "entre Tablet e Desktop", igual ao mockup — `UX-SPEC.md` Seção 6), 1 coluna abaixo disso; acrescenta `.hero__eyebrow`/`.hero__facts`/`.hero__cta-note`, sem token novo. `.shot`: 2 estados via composição de classe — "capturado" (`.shot__tag--ready` + `.shot__img` direto, sem `.shot__frame`) e "a capturar" (`.shot__frame` tracejado com `role="img"`/`aria-label` descritivo, nunca imagem quebrada/espaço em branco, `UX-SPEC.md` Seção 4/5); `.shot__frame--tall`/`--wide` como modificadores de proporção. `.problem-card`/`.pillar`: variantes de conteúdo de `.glass-card` (ícone vs. numeração `.pillar__num`), sem token novo — herdam o fallback `@supports not (backdrop-filter)` de `.glass-card` automaticamente por composição de classe (`class="glass-card problem-card"`/`"glass-card pillar"`), sem precisar redeclará-lo. `.feature`/`.feature--reverse`: grid 2 colunas a partir de 900px (mesmo breakpoint do hero, decisão de detalhe documentada em comentário — pequeno desvio da redação mais genérica "a partir de Tablet" da `UX-SPEC.md` Seção 6, para manter hero e "Por dentro" trocando de layout no mesmo ponto), 1 coluna empilhada (texto sempre acima da imagem) abaixo disso. Verificação de contraste: nenhuma combinação de cor nova introduzida — todas reaproveitam pares já validados em `tokens.css`/T3.1/T3.4/T4.2 (incl. o pior caso composto "glass sobre mesh gradient" de 4,65:1 já revalidado por script); razão documentada em comentário no topo da seção, mesmo padrão de T8.1/T8.3. Sinalização para o dono de T9.1: o bloco de referência de `.hero--product` já indica o elemento semântico correto (`<button disabled>`) para o CTA "Baixar para Windows" no estado "indisponível para download nesta fase", mas o estilo visual desse estado (opacidade reduzida/`cursor: not-allowed`) é escopo de T9.1/T9.6, não desta tarefa. |
+| T8.3 | Componentes informativos em `assets/css/components.css`: `.steps` (lista numerada acessível), `.notice` (bloco de aviso âmbar, usa T8.1), `.specs` (tabela de requisitos, responsiva), `.faq` (`<details>`/`<summary>`, sem JS) | Frontend | Bloco de referência de cada componente pronto; `.specs` empilha em 1 coluna abaixo de 768px sem `<table>` com rolagem horizontal; `.notice` com contraste de texto/ícone verificado (T8.1); `.faq` abre/fecha via teclado nativamente (sem JS) | 0,5 dia | **Concluída** — 4 componentes acrescentados em seção própria ("Página de Produto — Componentes informativos (T8.3, Rodada 3)") ao final de `public/assets/css/components.css`, de forma aditiva (nenhuma regra de T8.2/anteriores tocada). `.steps`: `<ol>` semântico com numeração 100% via `counter-reset`/`counter-increment`/`content: counter(steps)` em `.steps__num` (`aria-hidden="true"` no HTML consumidor) — nunca texto digitado no HTML, e a ordem real permanece garantida pelo `<ol>` nativo mesmo se o CSS falhar. `.notice`: reaproveita os 3 tokens `--color-notice-bg`/`--color-notice-border`/`--color-notice-icon` de T8.1 (nenhum valor `rgba`/hex fixo repetido); título explícito + ícone `aria-hidden` (cor nunca é a única pista, UX-SPEC.md Seção 5). `.specs`: `<table>` semântica com `<caption>`/`scope="row"` preservada em qualquer largura; abaixo de 767.98px (breakpoint padrão do projeto, não os 480px do mockup de conceito) `th`/`td` viram `display: block` empilhado — sem rolagem horizontal, conforme critério de aceite. `.faq`: `<details>`/`<summary>` nativos, indicador visual "+"/"–" via `::after` reagindo a `[open]` (puramente decorativo), zero JavaScript novo (G-01). Verificação de contraste: nenhuma combinação de cor nova introduzida — todas reaproveitam pares já validados em `tokens.css`/T8.1/T4.2 (`--color-text-inverse`/`--color-text-inverse-secondary` sobre `--color-bg`, `--color-notice-icon` sobre `--color-bg` 10,67:1, `--color-accent` sobre `--color-bg`); reexecutado `node dev/css/a11y-contrast-check.js` após a mudança — todas as combinações PASS, incluindo a de `--color-notice-icon` (T8.1). Razão/decisões documentadas em comentário no topo da seção, mesmo padrão de T8.1/T8.2. |
+
+**Dependências do Lote 8:** T8.1 não depende de nada (tokens novos,
+arquivo já existente). T8.2 e T8.3 dependem de T8.1 (usam
+`--color-notice-*`) e são **paralelizáveis entre si** (arquivos/seções de
+CSS distintas dentro do mesmo `components.css`, sem sobreposição de
+seletor).
+
+### Lote 9 — Página `evolucao-segura.html` [NOVO, Rodada 3]
+
+> **Origem:** RF-09, `UX-SPEC.md` Fluxo 5/Seção 2 (Rodada 3). **Autocheck
+> de granularidade:** a página tem 10 seções de conteúdo + header/rodapé —
+> mesmo padrão de estouro já visto na Home original (ADR-005/T3.1), que
+> motivou dividir por blocos de seções relacionadas. **Antes:** 1 tarefa
+> única estimava ~3-4 dias (bem acima do alvo e sem necessidade,
+> já que as seções são independentes o bastante para paralelizar).
+> **Depois:** dividida em 6 sub-tarefas (T9.1-T9.6), cada uma cobrindo 1-2
+> seções da mesma página/tela (não é mistura de telas distintas — mesma
+> regra já usada para justificar a divisão da Home em T3.1-T3.3).
+> Dependem do Lote 8 (componentes) e, quando aplicável, das capturas de
+> screenshot do Lote 11 (ver dependências de cada tarefa).
+
+| ID | Tarefa | Dono | Critério de aceite | Estimativa | Status |
+|---|---|---|---|---|---|
+| T9.1 | `evolucao-segura.html` — criação do arquivo (skip-link + header com `aria-current="page"` em "Apps" + `<main>`) + Seção 1 (Hero de produto, `.hero--product`, com screenshot S1 já capturado) + Seção 2 (O problema, 3 `.problem-card`) | Frontend | Arquivo criado na raiz com `<title>`/meta description próprios, `lang="pt-BR"`; header idêntico às demais páginas exceto `aria-current` (`UX-SPEC.md` Seção 7); hero com S1 real (extraído do mockup, T11.4) + 2 CTAs: "Ver por dentro" → `#por-dentro` (funcional); "Baixar para Windows" **no estado "indisponível para download nesta fase" (`UX-SPEC.md` Seção 4)** — elemento não-`<a>` (`<button disabled>` ou `<span role="button" aria-disabled="true">`), **sem** `href` para `.exe`/GitHub Releases, **sem** `href="#"`/JS simulando destino, cursor `not-allowed`, aparência visualmente distinta (opacidade reduzida/variante desabilitada) do CTA "Ver por dentro", e nota textual visível junto ao botão (ex.: "Download ainda não disponível nesta fase"); 3 `.problem-card` renderizando com fallback `@supports` funcionando | 1 dia | **Concluída** — `public/evolucao-segura.html` criado do zero (`lang="pt-BR"`, `<title>`/meta description/Open Graph próprios, favicons idênticos às demais páginas). Header copiado literalmente de `public/apps.html` (skip-link + `.site-header`), único ponto de variação sendo `aria-current="page"` em "Apps" (não "Home"), conforme o visitante chegar via vitrine (`UX-SPEC.md` Seção 7); "Sobre" e o link de marca inalterados. Seção 1 (Hero): `<section class="hero hero--product">` seguindo à risca o bloco de referência de T8.2 (`hero__eyebrow`/`hero__title`/`hero__subtitle`/`hero__facts`/`hero__ctas`/`hero__cta-note`), copy portada do mockup de conceito aprovado (`evolucao-segura-mockup.html`) sem alteração de sentido. Screenshot S1 (já capturado em T11.4) no estado "capturado" do `.shot`: `<picture>` com `<source type="image/webp">` (`shot-s1.webp`) + `<img>` fallback (`shot-s1.png`, `width`/`height` reais 1264×785 para reservar espaço/evitar CLS), `alt` descrevendo o conteúdo real da tela (login com senha mestra, dado fictício) e `.shot__privacy` avisando "Acervo de demonstração — nomes fictícios obrigatórios". 2 CTAs: "Ver por dentro" é `<a href="#por-dentro">` funcional (âncora que T9.3 resolve); "Baixar para Windows" é `<button type="button" disabled aria-disabled="true">` (nunca `<a>`), sem `href` para `.exe`/GitHub Releases e sem `href="#"`/JS simulando destino, com nota `.hero__cta-note` "Download ainda não disponível nesta fase." visível ao lado. **Gap de CSS encontrado e resolvido nesta tarefa (pequeno desvio de implementação, documentado):** T8.2 apontava `<button disabled>` como elemento correto mas deixava o estilo visual do estado desabilitado para esta tarefa — adicionado seletor `.hero__cta--primary:disabled` em `assets/css/components.css` (opacidade 0.45 + `cursor: not-allowed`, sobrescrevendo também `:disabled:hover` para não herdar a opacidade de hover do botão ativo), visualmente distinto do `.hero__cta--secondary` (outline); nenhuma combinação de cor nova, apenas opacidade reduzida do par já verificado `--color-bg` sobre `--color-accent`. **Segundo gap encontrado e resolvido (mesma natureza):** nenhum dos 8 componentes de T8.1-T8.3 cobria o "invólucro" genérico de seção (heading/kicker/texto de intro) que as 10 seções de `evolucao-segura.html` precisam — portado do mockup de conceito (`.section`/`.section--alt`/`.section__head`/`.section__kicker`/`.section__title`/`.section__lead`) para `components.css`, documentado como infraestrutura compartilhada para T9.2-T9.6 (evita cada sub-tarefa reinventar o wrapper); nenhum token novo, nenhuma combinação de cor nova (mesmos pares já verificados de `.hero__eyebrow`/`.home-apps__title`/texto secundário sobre `--color-bg`). Seção 2 ("O problema"): `<section class="section section--alt">` com `.section__head` (kicker "O ponto de partida" + `<h2>` + lead) e 3 `<article class="glass-card problem-card">` (ícone SVG + `<h3>` + texto), copy também portada do mockup; fallback `@supports not (backdrop-filter)` herdado automaticamente de `.glass-card` por composição de classe (nenhum teste manual adicional necessário, mesmo raciocínio de T3.4/T8.2). Comentários HTML `<!-- T9.2 adiciona aqui -->` … `<!-- T9.6 adiciona aqui -->` (incl. rodapé) marcam onde as próximas sub-tarefas continuam, mesmo padrão usado na Home (T3.1-T3.3), para evitar conflito de edição no mesmo arquivo. **Teste automatizado (novo, sem dependências — GUARDRAILS.md G-01):** `dev/html/evolucao-segura.t9-1.check.js` (`node dev/html/evolucao-segura.t9-1.check.js`) cobre por asserção todo o critério de aceite acima (documento/`lang`/title/description, header com `aria-current` só em "Apps", `<picture>`/`<source webp>`/`<img>` fallback com os 2 arquivos reais em disco, CTA secundário funcional, CTA primário como `<button disabled>` sem `href` de `.exe`/GitHub/`#`, nota textual, regra CSS do estado desabilitado com `cursor: not-allowed` + opacidade reduzida, exatamente 3 `.problem-card` completos, marcadores de continuação das próximas sub-tarefas) — todas as 23 verificações PASS. Contraste revalidado com `node dev/css/a11y-contrast-check.js` (T4.2/T8.1) após as 2 adições de CSS — todas as combinações PASS, nenhuma nova. Arquivos alterados: `public/evolucao-segura.html` (novo), `assets/css/components.css` (aditivo: 2 blocos novos ao final, nenhuma regra de T8.1-T8.3 tocada), `dev/html/evolucao-segura.t9-1.check.js` (novo). Não tocados: `tokens.css`, `base.css`, `index.html`, `apps.html`, `sobre.html`, `404.html`, `sitemap.xml`/`robots.txt` (inclusão de `evolucao-segura.html` no sitemap fica fora do escopo desta tarefa — não há sub-tarefa do Lote 9 pedindo isso; a página só fica completa/publicável ao fim de T9.6, ver `TASK.md` Lote 9). Nenhuma ambiguidade do `UX-SPEC.md` impediu a implementação; nenhum desvio grande de escopo/estimativa. |
+| T9.2 | `evolucao-segura.html` — Seção 3 (Proposta de valor, 3 `.pillar`) + Seção 5 (Conformidade, texto institucional) | Frontend | 2 seções adicionadas após a Seção 2 (T9.1); `.pillar` com fallback `@supports` funcionando; texto de Conformidade sem novo componente visual (só `.section`/tipografia já existentes) | 0,5 dia | **Concluída** — Seção 3 ("Proposta de valor") inserida logo após a Seção 2, com `.section`/`.section__head section__head--center` (invólucro genérico de T9.1) e 3 `<article class="glass-card pillar">` numerados (`.pillar__num` 1/2/3 + título + texto + `.pillar__list`), copy portada sem alteração de sentido do mockup de conceito aprovado (`evolucao-segura-mockup.html`); fallback `@supports not (backdrop-filter)` herdado automaticamente de `.glass-card` por composição de classe (mesmo raciocínio de T3.4/T8.2/T9.1, sem teste manual adicional). Seção 5 ("Conformidade") inserida logo após a Seção 4 (id="por-dentro", de T9.3): reaproveita só o invólucro genérico já existente (`.section`/`.section__head`/`.section__kicker`/`.section__title`/`.section__lead`, com `.section__head--center`) — **sem** nenhum componente visual novo, deliberadamente sem repetir o `.glass-card` avulso que o mockup usava para essa seção (decisão desta tarefa, conforme critério de aceite); texto institucional sobre a Resolução CFP nº 001/2022 (guarda do prontuário por 5 anos + fidedignidade do registro) portado do mockup, com o parágrafo de isenção de responsabilidade em `<em>`. Nenhum CSS novo — reaproveitado 100% o que já existia de T8.2/T8.3/T9.1. **Nota de coordenação de concorrência:** como 3 outras instâncias do Executor editavam o mesmo arquivo em paralelo (T9.3/T9.5/T9.6), a primeira versão desta edição acidentalmente duplicou o comentário-marcador de T9.3 dentro do próprio texto de inserção, o que fez a Seção 4 (preenchida pela instância de T9.3 no marcador original) aparecer depois da Seção 5 — ordem invertida em relação ao Fluxo 3 do `UX-SPEC.md` (Seção 4 deve vir antes da Seção 5). Corrigido ainda dentro desta mesma tarefa: removido o comentário duplicado e a Seção 5 foi reposicionada para depois do bloco já implementado da Seção 4, sem tocar em nenhum conteúdo da Seção 4 em si (apenas sua localização no arquivo permaneceu). **Teste automatizado (novo, sem dependências — GUARDRAILS.md G-01):** `dev/html/evolucao-segura.t9-2.check.js` (`node dev/html/evolucao-segura.t9-2.check.js`) cobre a ordem das seções (2→3→4→5), os 3 `.pillar` completos da Seção 3, a ausência de componente visual novo na Seção 5 e a integridade dos marcadores/seções de T9.3-T9.6 — todas as 17 verificações PASS. Contraste revalidado com `node dev/css/a11y-contrast-check.js` — todas as combinações PASS (nenhuma nova, nenhum CSS alterado por esta tarefa). Arquivos alterados: `public/evolucao-segura.html` (aditivo, dentro do escopo de T9.2 + correção de ordenação registrada acima), `dev/html/evolucao-segura.t9-2.check.js` (novo). Nenhuma ambiguidade do `UX-SPEC.md` impediu a implementação; nenhum desvio grande de escopo/estimativa. |
+| T9.3 | `evolucao-segura.html` — Seção 4 ("Como isso aparece na tela"/"Por dentro", `id="por-dentro"`): 4 `.feature` (screenshots S2-S5) + 2 screenshots de apoio (S6-S7) | Frontend | Seção com âncora `#por-dentro` alcançável pelo CTA secundário do hero (T9.1); 4 blocos `.feature` alternando lado da imagem a partir de 768px (Tablet), empilhados abaixo disso; 6 screenshots reais (S2-S7, T11.1) com `alt` descritivo e dado fictício confirmado | 1 dia | **Concluída** — Seção 4 (`id="por-dentro"`) inserida em `public/evolucao-segura.html` no lugar do comentário `<!-- T9.3 adiciona aqui -->`, copy portada sem alteração de sentido do mockup de conceito aprovado (`evolucao-segura-mockup.html`): `.section__head` (kicker "Por dentro" + `<h2>` "Como isso aparece na tela" + lead com a nota de proveniência "Todas as capturas abaixo vêm de um acervo de demonstração... Nenhum dado real de paciente é exibido neste site.") seguido de 4 blocos `.feature` (S2 lista de pacientes, S3 perfil+histórico+contexto clínico, S4 nova evolução com os dois campos de data, S5 retificação vinculada) e um bloco `.grid.grid--2col` final com S6 (configurar acesso/senha mestra) e S7 (backup) lado a lado. Alternância visual via `.feature--reverse` nos blocos S3 e S5 (2 dos 4, conforme pedido), no breakpoint de 900px já fixado pelo bloco de referência de T8.2 (`components.css`) — **não 768px como a redação genérica desta linha sugere**: decisão de detalhe já tomada e documentada em T8.2 (mesmo breakpoint do `.hero--product`, para hero e "Por dentro" trocarem de layout no mesmo ponto), reaproveitada aqui sem reabrir a discussão; abaixo de 900px os 4 blocos empilham em coluna única com texto sempre acima da imagem (ordem natural do documento, sem CSS extra). Screenshots S2-S7 (capturados em T11.1/T11.4) no estado "capturado" do `.shot`, mesmo padrão de `<picture>`/`<source type="image/webp">`/`<img>` fallback do slot S1 (T9.1), com `width`/`height` reais lidos dos arquivos em disco (S2/S5/S6/S7 1280×800, S3 1280×1526, S4 1280×1776) para reservar espaço e evitar CLS, e `alt` descritivo do conteúdo de cada tela; nenhum `alt`/legenda menciona dado real de paciente — todos os nomes/datas nas descrições são fictícios (confirmado em T11.1), e cada screenshot com conteúdo clínico visível traz `.shot__privacy` avisando "Conteúdo clínico visível — usar exclusivamente texto fictício" (S3/S4/S5) ou "Acervo de demonstração — nomes fictícios obrigatórios" (S2); S6/S7 (sem dado de paciente) trazem legenda simples avisando a ausência de dado clínico. Nenhum CSS novo — reaproveita 100% o bloco de referência `.feature`/`.feature--reverse`/`.shot`/`.grid--2col` já implementado em T8.2, contraste revalidado com `node dev/css/a11y-contrast-check.js` sem nenhuma combinação nova (todas PASS). **Teste automatizado (novo, sem dependências — GUARDRAILS.md G-01):** `dev/html/evolucao-segura.t9-3.check.js` (`node dev/html/evolucao-segura.t9-3.check.js`) cobre âncora `#por-dentro` + CTA do hero apontando para ela, exatamente 4 `.feature` com pelo menos 2 `.feature--reverse`, título/texto/`.shot` em cada bloco, os 6 pares `<source webp>`+`<img>` fallback com os 12 arquivos reais em disco e `alt` não vazio, nota de proveniência de dado fictício no lead, `.shot__privacy`/legendas de baixo risco em cada screenshot, e S6/S7 agrupados em `.grid.grid--2col` fora de `.feature` — todas as 32 verificações PASS. Edição restrita ao comentário-marcador de T9.3 (verificado após a edição que nenhuma outra seção/marcador do arquivo foi tocado, apesar de 3 outras instâncias do Executor editarem o mesmo arquivo em paralelo nesta rodada). Arquivos alterados: `public/evolucao-segura.html` (aditivo), `dev/html/evolucao-segura.t9-3.check.js` (novo). Nenhuma ambiguidade do `UX-SPEC.md` impediu a implementação; nenhum desvio grande de escopo/estimativa (o único desvio é o de detalhe do breakpoint, já registrado e coberto pelos guardrails, herdado de T8.2). |
+| T9.4 | **[AJUSTADO nesta rodada]** `evolucao-segura.html` — Seção 6 (Instalação, `id="instalacao"`): `.steps` (4 passos) + `.notice` (aviso do SmartScreen) **sem** screenshot S8 | Frontend | `.steps` com os 4 passos do fluxo real; `.notice` usando os tokens de T8.1, contraste já verificado (não revalidado nesta tarefa); **sem** screenshot S8 nesta entrega — comentário `<!-- TODO: screenshot S8 ... -->` no lugar do slot, decisão explícita do usuário após T11.2 não conseguir capturar a tela real (SmartScreen deste ambiente não bloqueia o instalador, forjar foi descartado — ver Lote 11/T11.2 e Seção 6/Lacuna L-13) | 0,5 dia | **Concluída** — Seção 6 (`id="instalacao"`) inserida em `public/evolucao-segura.html` no lugar do comentário `<!-- T9.4 adiciona aqui -->`, copy portada sem alteração de sentido do mockup de conceito aprovado (`.section`/`.section__head` + `grid grid--2col`): `.glass-card` com `<ol class="steps">` (4 `.steps__item`, reaproveitando `.pillar__num` para a numeração, mesmo padrão de T9.2) e `.notice` (ícone de alerta + título + 2 parágrafos de contexto técnico honesto sobre o instalador não assinado + bloco "O caminho" com `<code class="notice__path">Mais informações › Executar assim mesmo</code>` + lista "O que você pode conferir antes" + link de contato), usando exclusivamente os tokens de T8.1 (`--color-notice-bg/-border/-icon`) e o CSS já implementado em T8.3 (`components.css`), sem nenhuma combinação de cor nova — contraste não revalidado por não haver alteração de CSS. **Ajuste combinado com o usuário:** screenshot S8 (tela real do SmartScreen) fica de fora desta entrega — T11.2 investigou e não conseguiu capturar a tela real (ambiente não bloqueia o instalador) e a decisão explícita foi não forjar a captura; a `<figure class="shot">` do mockup foi omitida e substituída por `<!-- TODO: screenshot S8 (aviso do SmartScreen) pendente — ver TASK.md Lacuna L-13 -->` logo antes do fechamento da seção, para reinserir o slot assim que o print real existir. Nenhum outro trecho do arquivo tocado (edição restrita ao comentário-marcador de T9.4, conforme coordenação de concorrência do Lote 9). Nenhuma ambiguidade do `UX-SPEC.md` impediu a implementação; nenhum desvio de escopo/estimativa além do já registrado em L-13. |
+| T9.5 | **[ATUALIZADO, ajuste pontual]** `evolucao-segura.html` — Seção 7 (Licença de uso, `id="licenca"`): 1 `.pillar` com o conteúdo simplificado (7 dias de teste; ao fim, bloqueia só a escrita, leitura/exportação em PDF seguem disponíveis; frase honesta de fechamento sobre o passo a passo pós-teste ainda estar sendo definido — `UX-SPEC.md` Seção 2/Fluxo 5) + Seção 8 (Requisitos de sistema, `id="requisitos"`, `.specs`) | Frontend | Seção de licença **sem** nenhum campo de formulário funcional (nenhum `<input>`/`<form>` de ativação — G-04) **e sem** o passo a passo de chave/contra-chave em qualquer formato (nem `.steps`, nem prosa) — confirmado contra o Guia do Usuário e o Catálogo de Telas reais do produto que essa tela não existe implementada; **sem** screenshot nesta seção (slot S9 removido, ver Lote 11); `.specs` com os dados reais de requisitos confirmados na fonte (repositório/produto) ou `<span class="badge">A confirmar</span>` explícito quando não disponível (`PRD-TECNICO.md` INT-04) | 0,5 dia | **Concluída** — Seção 7 (`id="licenca"`) e Seção 8 (`id="requisitos"`) inseridas em `public/evolucao-segura.html` no lugar do comentário `<!-- T9.5 adiciona aqui -->`, copy portada sem alteração de sentido do mockup de conceito atualizado (`evolucao-segura-mockup.html`, já sem o passo a passo de chave/contra-chave). Seção 7: `<article class="glass-card pillar">` único (sem `.pillar__list`), com só o que é verificável hoje — 7 dias de teste; ao fim, bloqueia apenas a escrita, leitura/exportação em PDF seguem disponíveis; fecha com a frase honesta "O passo a passo para continuar usando depois do teste ainda está sendo definido — quando estiver pronto, esta seção é atualizada com os detalhes." **Sem** `<input>`/`<form>` de ativação em toda a página (G-04, confirmado por teste), **sem** passo a passo de chave/contra-chave em qualquer formato (nem `.steps`, nem prosa — nenhuma menção às palavras "chave"/"contra-chave" na seção) e **sem** `.shot`/screenshot nesta seção (slot S9 permanece removido). Seção 8: `.specs` (`<table>` semântica com `<caption>` e `scope="row"` em todos os `<th>` de linha) com os 6 dados reais confirmados: SO (Windows 10/11, 64 bits), macOS/Linux não suportados, conexão à internet não necessária para uso (só para baixar/instalar — texto ajustado para não sugerir um mecanismo de licenciamento online que não existe implementado), onde ficam os dados (acervo criptografado local, sem servidor do fornecedor guardando prontuário), perfil de uso (um profissional/um computador/um acervo, não multiusuário) e espaço em disco com `<span class="badge">A confirmar</span>` explícito (nenhum número inventado, por não haver essa informação confirmada em nenhuma fonte disponível). **Teste automatizado (novo, sem dependências — GUARDRAILS.md G-01):** `dev/html/evolucao-segura.t9-5.check.js` (`node dev/html/evolucao-segura.t9-5.check.js`) cobre por asserção todo o critério de aceite acima — as 24 verificações PASS. Edição restrita ao comentário-marcador de T9.5 (removido após a inserção, seguindo o mesmo padrão de T9.4); nenhum outro trecho do arquivo tocado, sem conflito com as demais sub-tarefas paralelas do Lote 9 (T9.2/T9.3/T9.6). Nenhuma ambiguidade do `UX-SPEC.md` impediu a implementação; nenhum desvio de escopo/estimativa. |
+| T9.6 | `evolucao-segura.html` — Seção 9 (Dúvidas, `.faq`, 5 perguntas) + Seção 10 (CTA final, `id="baixar"`) + integração do rodapé (byte-idêntico às demais páginas, G-02) | Frontend | `.faq` com 5 perguntas reais (copy do mockup, revisada); CTA final "Baixar para Windows" **no mesmo estado "indisponível para download nesta fase" do CTA do hero (`UX-SPEC.md` Seção 4, T9.1)** — mesmo tratamento: elemento não-`<a>`, **sem** `href` funcional para `.exe`/GitHub Releases, **sem** `href="#"`/JS simulando destino, cursor `not-allowed`, aparência visualmente distinta, e nota textual visível junto ao botão avisando que o download ainda não está disponível; **decisão do usuário substitui a previsão anterior desta tarefa** de apontar para a Release do GitHub quando RT-08 estivesse resolvido — RT-08/`ADR-006` seguem válidos como pré-requisito técnico, mas a liberação do link real depende agora de uma decisão de negócio futura e distinta, fora do escopo desta entrega; rodapé idêntico ao das demais páginas | 0,5 dia | **Concluída** — Seção 9 ("Dúvidas") inserida no lugar do comentário `<!-- T9.6 adiciona aqui -->`: invólucro genérico `.section`/`.section__head` (T9.1) + `.faq` (T8.3) com exatamente 5 `<details class="glass-card faq__item">`/`<summary class="faq__q">`/`<p class="faq__a">` nativos (sem JS), copy portada do mockup de conceito aprovado revisada sem alteração de sentido. Seção 10 ("CTA final", `id="baixar"`): `.glass-card final-cta` com título/texto + botão "Baixar para Windows" **reaproveitando literalmente** `<button type="button" class="hero__cta hero__cta--primary" disabled aria-disabled="true">` (mesmo elemento/estado/classes do CTA do hero, T9.1 — não um botão novo), sem `href` para `.exe`/GitHub Releases e sem `href="#"`/JS simulando destino, com nota `.final-cta__meta` "Download ainda não disponível nesta fase." visível junto ao botão, metadados do instalador (`.badge` "tamanho e versão a confirmar") e link para reler a Seção 6 (`#instalacao`) antes de baixar. **Gap de CSS encontrado e resolvido nesta tarefa (mesma natureza dos 2 gaps já documentados por T9.1, dentro da autoridade do Executor):** nenhum dos 8 componentes de T8.1-T8.3 cobria o bloco "CTA final" (`UX-SPEC.md` Seção 2/Fluxo 3 item 10, "mesmo `.glass-card`/`final-cta`") — adicionado `.final-cta`/`.final-cta__title`/`.final-cta__text`/`.final-cta__meta`/`.final-cta__link` em `assets/css/components.css` (aditivo ao final do arquivo, nenhuma regra existente tocada), portado do mockup de conceito aprovado, reaproveitando só tokens/pares de contraste já verificados (`--color-text-inverse`/`--color-text-inverse-secondary`/`--color-accent` sobre `--color-bg`, mesmos de `.section__title`/`.section__lead`/`.section__kicker`) — nenhuma combinação de cor nova, `node dev/css/a11y-contrast-check.js` revalidado, todas as combinações PASS. Rodapé: bloco `<footer class="site-footer">` copiado literalmente de `public/apps.html` (byte-idêntico, G-02), inserido no lugar do comentário de rodapé, fechando o `<main>` e a página. **Teste automatizado (novo, sem dependências — GUARDRAILS.md G-01):** `dev/html/evolucao-segura.t9-6.check.js` (`node dev/html/evolucao-segura.t9-6.check.js`) cobre por asserção todo o critério de aceite acima (seção Dúvidas com `.faq` e exatamente 5 perguntas/respostas sem `<script>`, seção CTA final com `.final-cta`, botão de download reaproveitando `.hero__cta--primary` disabled/aria-disabled sem `href` de `.exe`/GitHub/`#`, nota textual de indisponibilidade, ausência de qualquer link real de download em toda a página, rodapé byte-idêntico ao de `public/apps.html`) — todas as 18 verificações PASS. Arquivos alterados: `public/evolucao-segura.html` (aditivo, só dentro do comentário-marcador de T9.6), `assets/css/components.css` (aditivo: 1 bloco novo ao final, nenhuma regra de T8.1-T9.5 tocada), `dev/html/evolucao-segura.t9-6.check.js` (novo). Não tocado: nenhuma outra seção do arquivo (edição restrita ao marcador de T9.6, conforme coordenação de concorrência do Lote 9 — T9.2/T9.3/T9.5 já haviam concluído suas seções nesta mesma execução paralela, sem conflito). **Nota sobre os demais testes do Lote 9:** `node dev/html/evolucao-segura.t9-1.check.js` e `...t9-2.check.js` reportam falhas pré-existentes não relacionadas a esta tarefa (o teste de T9.1 ainda espera os comentários `<!-- T9.2 adiciona aqui -->`...`<!-- T9.6 adiciona aqui -->`, já substituídos pelo conteúdo real das sub-tarefas concluídas; o teste de T9.2 espera a Seção 5 logo após a Seção 3, mas T9.3 inseriu a Seção 4 entre elas, na ordem correta do `UX-SPEC.md`) — sinalizado aqui para o Coordenador/Validador, não corrigido por esta tarefa por serem testes de outras sub-tarefas (T9.1/T9.2), fora do escopo de edição concorrente definido para T9.6. Nenhuma ambiguidade do `UX-SPEC.md` impediu a implementação; nenhum desvio grande de escopo/estimativa. |
+
+**Dependências do Lote 9:** T9.1 e T9.2 dependem de T8.2 (mesmo componente
+`.pillar`/`.problem-card`/`.hero--product`) e de T11.4 (S1 extraído como
+arquivo real). T9.3 depende de T8.2 e de T11.1 (S2-S7). T9.4 depende de
+T8.3 e de T11.2 (S8). T9.5 depende de T8.2 e T8.3 (**[ATUALIZADO, ajuste
+pontual]** deixou de depender de T11.3/screenshot S9 — a tarefa e o slot
+de screenshot foram removidos, ver Lote 11). T9.6 depende
+de T8.3. **Paralelizáveis entre si:** T9.2, T9.4 e T9.5 podem rodar em
+paralelo entre si assim que suas dependências (Lote 8/screenshots) forem
+satisfeitas; T9.1 precisa concluir antes de T9.2-T9.6 (mesmo arquivo,
+header/hero criados primeiro); T9.3 e T9.6 também podem rodar em paralelo
+com T9.2/T9.4/T9.5 uma vez que T9.1 exista (seções não sobrepostas do
+mesmo arquivo, risco de conflito de merge tratado como nos Lotes 2/3 —
+seções delimitadas por comentário, edição cirúrgica).
+
+### Lote 10 — Integração na Vitrine [NOVO, Rodada 3]
+
+> **Origem:** RF-09/RN-03/item 5 do dispatch desta reabertura (card com
+> texto desatualizado, falando como se o produto fosse para o paciente).
+
+| ID | Tarefa | Dono | Critério de aceite | Estimativa | Status |
+|---|---|---|---|---|---|
+| T10.1 | Corrigir texto do card "Evolução Segura" em `apps.html` (T3.4) e `index.html` (T3.2/T6.4): nome mantido, descrição curta e `data-app-summary` reescritos para o público real (psicólogo clínico autônomo), não mais o paciente | Frontend | `.app-card__description` e `data-app-summary` dos 2 arquivos refletem o produto real ("prontuário eletrônico criptografado para o psicólogo clínico", tom consistente com `evolucao-segura.html`); nenhum outro card tocado; nenhuma classe/atributo além do texto alterado | 0,25 dia | Concluída — `.app-card__description` trocada para "Prontuário eletrônico criptografado para o psicólogo clínico autônomo." e `data-app-summary` reescrito ("Feito para o psicólogo clínico autônomo registrar seus pacientes. O Evolução Segura mantém o prontuário criptografado no seu próprio computador, sem depender de nuvem ou servidor de terceiros.") nos 2 arquivos (`apps.html` e `index.html`), alinhado ao tom do hero de `evolucao-segura.html`. Nenhum outro card ou atributo/classe tocado. |
+| T10.2 | Trocar `<span class="badge">Em breve</span>` por `<a class="badge badge--link" href="evolucao-segura.html">Ver app</a>` no card "Evolução Segura" de `apps.html` e `index.html` (RF-09/RN-03: link interno, **sem** `target="_blank"`/`rel="noopener"`, **sem** texto "abre em nova aba" — navegação no mesmo domínio) | Frontend | Badge substituído nos 2 arquivos, mesma estrutura/markup já usada para Destino Ideal/Radar Esportivo (T6.2), exceto a ausência de `target`/`rel`/indicador de nova aba; link navega para `evolucao-segura.html` (Lote 9 concluído); nenhum outro card tocado | 0,25 dia | Concluída — `<span class="badge">Em breve</span>` substituído por `<a class="badge badge--link" href="evolucao-segura.html" data-analytics-event="app-evolucao-segura">Ver app</a>` no card "Evolução Segura" dos 2 arquivos (`apps.html` e `index.html`), mesma estrutura de T6.2 (Destino Ideal/Radar Esportivo), porém sem `target="_blank"`, sem `rel="noopener"` e sem o `<span class="sr-only"> (abre em nova aba)</span>`, já que o destino é página interna do próprio site (RF-09/RN-03). Comentário HTML "Badge isolado (RF-02)..." removido junto com o `<span>` que substituía. Nenhum outro card ou o texto de descrição (T10.1) tocado. |
+
+**Dependências do Lote 10:** T10.1 não depende de nenhuma tarefa desta
+reabertura (correção de texto isolada, pode começar a qualquer momento).
+T10.2 depende do Lote 9 completo (T9.1-T9.6 — a página precisa existir
+antes do link apontar para ela). **Nota [ajuste pontual, decisão do
+usuário]:** o link "Ver app" de T10.2 é interno (`apps.html`/`index.html` →
+`evolucao-segura.html`) e **não** é afetado pela restrição do CTA de
+download — ele continua podendo ser publicado assim que o Lote 9 estiver
+pronto, independente de RT-08. O que muda é que, ao chegar em
+`evolucao-segura.html`, o visitante encontra os 2 CTAs de download no
+estado "indisponível para download nesta fase" (T9.1/T9.6, `UX-SPEC.md`
+Seção 4) — RT-08/`ADR-006` deixam de ser pré-requisito de T10.2 em si
+(publicar o link "Ver app" não depende mais de o repositório estar
+público), mas continuam pré-requisito para uma futura liberação real do
+download dentro da página, que é uma decisão de negócio separada, fora do
+escopo desta reabertura. **Paralelizáveis entre si:** T10.1 e T10.2 não têm
+dependência direta entre si (arquivos/atributos distintos do mesmo card),
+mas T10.2 é bloqueada pelo Lote 9, então na prática T10.1 tende a concluir
+primeiro.
+
+### Lote 11 — Captura de Screenshots (Executor) [NOVO, Rodada 3]
+
+> **Origem:** DI-07 (`PRD-TECNICO.md`), PR-07. Fontes: repositório
+> `https://github.com/leandrosegheto17/EvolucaoSegura` e/ou execução local
+> de `C:\Users\leand\AppData\Local\EvolucaoSegura\evolucao-segura.exe`.
+> **Autocheck de granularidade:** capturar os slots como 1 tarefa única
+> misturaria fontes de screenshot bem diferentes (dado clínico fictício do
+> app, comportamento nativo do Windows) — dividido em tarefas por
+> fonte/natureza do dado, mantendo cada uma pequena e testável
+> isoladamente. **[ATUALIZADO, ajuste pontual]** o lote nasceu com 4
+> tarefas (incl. T11.3, screenshot do fluxo de licenciamento); T11.3 foi
+> removida nesta rodada — não existe tela de licenciamento real para
+> capturar (ver tabela abaixo) — restando 3 tarefas ativas.
+
+| ID | Tarefa | Dono | Critério de aceite | Estimativa | Status |
+|---|---|---|---|---|---|
+| T11.1 | Capturar screenshots S2-S7 (conteúdo clínico do app: lista de pacientes, histórico, evolução, senha mestra/código de recuperação, backup) a partir da execução local do `evolucao-segura.exe`, com **dado 100% fictício** criado especificamente para a captura (nunca prontuário real) | Executor | 6 arquivos de imagem (webp + fallback, G-07) salvos em `assets/img/evolucao-segura/`, nomeados `shot-s2`...`shot-s7`; nenhum dado real de paciente visível; enquadramento seguindo a dica de cada slot (`UX-SPEC.md` Fluxo 5 / mockup); se a fonte não permitir capturar algum slot com qualidade suficiente, reportar como lacuna (PR-07) em vez de publicar imagem de baixa qualidade | 1 dia | **Concluída** — fonte real: 6 telas já existentes (dado fictício, nota de proveniência confirmada) em `EvolucaoSegura-Guia-do-Usuario.pdf`/`EvolucaoSegura-Catalogo-de-Telas.pdf` (2560px), conferidas visualmente 1 a 1 contra a descrição de cada slot (S2 lista de pacientes, S3 perfil+histórico+alerta clínico, S4 nova evolução com contexto aberto, S5 retificação vinculada ao original, S6 Passo 1/4 senha mestra, S7 tela de Backup) e sem nenhum dado com aparência real (nomes/telefones/paths fictícios, ex. "Mariana Albuquerque Rocha", "Dr. Paulo Andrade", `D:\Backups\EvolucaoSegura`); redimensionadas para 1280px de largura (metade do original, nítido em retina 2x) e exportadas via `sharp` em `assets/img/evolucao-segura/shot-s2.{webp,png}` … `shot-s7.{webp,png}` (webp qualidade 82 como formato primário, PNG paletizado como fallback G-07); tamanho final 18-89 KB por arquivo |
+| T11.2 | Capturar screenshot S8 (aviso do SmartScreen do Windows ao executar o instalador sem assinatura de código) | Executor | 1 arquivo de imagem (webp + fallback) salvo em `assets/img/evolucao-segura/shot-s8`; mostra a tela nativa do Windows com "Mais informações" destacado, sem dado do stakeholder identificável além do necessário | 0,25 dia | Pendente — **[investigado, não capturável neste ambiente]** ver L-13: instalador real localizado em clone local (Tauri/NSIS), MOTW aplicado e execução tentada 2x (direto e via `explorer.exe`) de forma honesta, mas o SmartScreen deste PC não bloqueia o arquivo (sem política restritiva configurada); nenhuma imagem simulada foi publicada |
+| T11.3 | ~~Capturar screenshot S9 (telas de licenciamento: campo da chave de instalação e da contra-chave), com a chave exibida ofuscada~~ | Executor | **[REMOVIDA, ajuste pontual]** ao investigar o Guia do Usuário (12 capítulos) e o Catálogo de Telas reais do produto, o usuário confirmou que não existe nenhuma tela de licenciamento (chave/contra-chave) implementada na v0.1.0 — reforça RT-07/L-08 (é só intenção do PRD do app, não tela real). Não há o que capturar; slot S9 removido de `UX-SPEC.md` (Seção 2/Fluxo 5) e de T9.5 (Lote 9) | — | **Removida** |
+| T11.4 | Extrair o screenshot S1 (já capturado, embutido como imagem inline/base64 no mockup de conceito) para um arquivo de imagem real e otimizado (webp + fallback, G-07) em `assets/img/evolucao-segura/shot-s1` | Executor | Arquivo de imagem real criado a partir dos dados já existentes no mockup (nenhuma nova captura necessária); qualidade visual preservada; tamanho de arquivo otimizado sem perda visível | 0,25 dia | **Concluída** — fonte real usada: PNG 1280x800 já existente da tela de entrada (senha mestra) do app rodando localmente. Ao inspecionar as bordas, identifiquei vazamento de uma janela de editor de código atrás da janela do app nos últimos ~16px à direita e uma tira da barra de tarefas do Windows nos últimos ~15px inferiores (nenhum dado de paciente, mas ruído não profissional/fora do enquadramento pretendido) — corrigido com crop para 1264x785 antes de exportar, preservando 100% da UI do app. Exportado via `sharp` (Node, instalado apenas num diretório temporário fora do repositório — nenhuma dependência/build step adicionada ao projeto, G-01 preservado) como `shot-s1.webp` (qualidade 82, ~14,6 KB) + `shot-s1.png` (paleta otimizada, ~12,7 KB) de fallback, mesma convenção de nomenclatura já usada por T11.1 (`shot-s2`...`shot-s7`) na mesma pasta. Nenhum tool novo instalado no ambiente/projeto (não havia `cwebp`/ImageMagick/Python-PIL disponíveis; sharp foi instalado via npm só no scratchpad de trabalho, não em `package.json` do projeto — o projeto continua sem build step). Arquivos ainda não referenciados em nenhum HTML (fora do escopo desta tarefa). |
+
+**Dependências do Lote 11:** **[ATUALIZADO, ajuste pontual]** T11.3 foi
+removida (não há tela de licenciamento real para capturar). As 3 tarefas
+ativas (T11.1, T11.2, T11.4) são independentes entre si e não dependem de
+nenhum outro lote desta reabertura — podem começar a qualquer momento,
+inclusive em paralelo ao Lote 8. **Paralelizáveis entre si:** T11.1, T11.2,
+T11.4 (fontes/artefatos distintos, sem conflito de arquivo).
+
+---
+
 **Nota sobre o autocheck de granularidade (canário de ~300k tokens),
-reexecutado nesta revisão:** todas as 25 tarefas envolvem no máximo 1
-página HTML (ou uma fatia de seções dela) + os componentes compartilhados
-dos Lotes 1-2 já prontos como referência — volume de contexto estimado bem
-abaixo do canário. A única divisão nova desta revisão é a fragmentação de
-T3.1 (original) em T3.1/T3.2/T3.3, motivada pelo estouro de escopo/tempo
-identificado no dispatch da reabertura (6 seções na Home) — não pelo
-canário de tokens em si, mas pela mesma régua de calibração de ~1
-dia-pessoa por tarefa. A decisão de manter T4.1/T4.2/T4.3 como tarefas
-únicas cross-page (L-04, mantida desta revisão) continua válida.
+reexecutado nesta revisão:** todas as 25 tarefas dos Lotes 1-7 envolvem no
+máximo 1 página HTML (ou uma fatia de seções dela) + os componentes
+compartilhados dos Lotes 1-2 já prontos como referência — volume de
+contexto estimado bem abaixo do canário. A única divisão nova daquela
+revisão foi a fragmentação de T3.1 (original) em T3.1/T3.2/T3.3, motivada
+pelo estouro de escopo/tempo identificado no dispatch da reabertura
+anterior (6 seções na Home) — não pelo canário de tokens em si, mas pela
+mesma régua de calibração de ~1 dia-pessoa por tarefa. A decisão de manter
+T4.1/T4.2/T4.3 como tarefas únicas cross-page (L-04, mantida) continua
+válida. **Nesta revisão (Rodada 3, Lotes 8-11):** nenhuma tarefa nova se
+aproxima do canário de 300k tokens — cada uma toca no máximo 1 arquivo CSS
+(seção delimitada por comentário) ou 1 HTML (seção/fatia dele), com os
+componentes/tokens de referência já pequenos e localizados. Duas divisões
+de granularidade foram feitas explicitamente nesta rodada, ambas
+documentadas nas notas de lote acima: (1) Lote 8, 8 componentes em 1 tarefa
+→ 3 tarefas (T8.1/T8.2/T8.3); (2) Lote 9, página inteira em 1 tarefa →
+6 sub-tarefas (T9.1-T9.6), mesmo padrão já usado para a Home no Lote 3.
 
 ## 4. Dependências e Ordem de Execução
 
@@ -409,6 +603,29 @@ flowchart TD
         T61[T6.1 E-mail/LinkedIn real]
         T62[T6.2 Lista de apps real]
         T63[T6.3 CTA secundario real]
+    end
+    subgraph L8[Lote 8 - Componentes pagina produto]
+        T81[T8.1 Tokens notice]
+        T82[T8.2 Componentes prova visual]
+        T83[T8.3 Componentes informativos]
+    end
+    subgraph L9[Lote 9 - Pagina evolucao-segura]
+        T91[T9.1 Hero+Problema]
+        T92[T9.2 Valor+Conformidade]
+        T93[T9.3 Por dentro]
+        T94[T9.4 Instalacao]
+        T95[T9.5 Licenca+Requisitos]
+        T96[T9.6 FAQ+CTA final+rodape]
+    end
+    subgraph L10[Lote 10 - Integracao vitrine]
+        T101[T10.1 Corrigir texto card]
+        T102[T10.2 Badge -> link Ver app]
+    end
+    subgraph L11[Lote 11 - Screenshots]
+        T111[T11.1 S2-S7 dado ficticio]
+        T112[T11.2 S8 SmartScreen]
+        T113[T11.3 REMOVIDA - sem tela real]
+        T114[T11.4 S1 extrair do mockup]
     end
 
     T11 --> T13
@@ -474,6 +691,26 @@ flowchart TD
     T32 --> T62
     T34 --> T62
     T31 --> T63
+    T81 --> T82
+    T81 --> T83
+    T82 --> T91
+    T114 --> T91
+    T82 --> T92
+    T82 --> T93
+    T111 --> T93
+    T83 --> T94
+    T112 --> T94
+    T82 --> T95
+    T83 --> T95
+    T83 --> T96
+    T91 --> T92
+    T91 --> T93
+    T91 --> T94
+    T91 --> T95
+    T91 --> T96
+    T96 --> T102
+    T34 --> T102
+    T32 --> T102
 ```
 
 ### Tabela de paralelismo por lote
@@ -491,6 +728,12 @@ flowchart TD
 | Refatoração Lote-4 | RL4.1, RL4.2 | RL4.2 não depende de RL4.1; sem dependência de outro lote — prazo sugerido antes do deploy de produção (Lote 5) |
 | Refatoração Lote-5 | RL5.1 | Nenhuma dependência interna ao lote; sem dependência de outro lote — prazo sugerido antes do deploy de produção final (após o Lote 6) |
 | Refatoração Lote-7 | RL7.1, RL7.2 | Nenhuma dependência interna ao lote; sem dependência de outro lote — baixo esforço, sem urgência |
+| Refatoração Lote-8 | RL8.1 | Nenhuma dependência interna ao lote; sem dependência de outro lote — baixo esforço, sem urgência |
+| Refatoração Lote-9 | RL9.1 | Nenhuma dependência interna ao lote; sem dependência de outro lote — baixo esforço, sem urgência |
+| 8 **[Novo]** | T8.2 e T8.3 (após T8.1) | T8.1 não depende de nada |
+| 9 **[Novo]** | T9.2, T9.4, T9.5 (após T9.1 + dependências de Lote 8/11); T9.3 e T9.6 também paralelizáveis com esses | T9.1 primeiro (mesmo arquivo, cria header/hero); T9.2-T9.6 dependem de T9.1 |
+| 10 **[Novo]** | T10.1 (sem dependência) | T10.2 depende só do Lote 9 completo — não depende mais de RT-08 (link "Ver app" é interno; os CTAs de download dentro da página nascem "indisponível para download nesta fase", `UX-SPEC.md` Seção 4) |
+| 11 **[Novo]** | T11.1, T11.2, T11.4 (T11.3 removida, ajuste pontual — ver Lote 11) | Nenhuma dependência interna ao lote; sem dependência de outro lote |
 
 O ponto de maior paralelismo real passa a ser o início do Lote 3 (4
 instâncias simultâneas: T3.1, T3.4, T3.5, T3.6), com a Home continuando de
@@ -503,6 +746,8 @@ paralelo.
 |---|---|---|---|
 | RP-01 | T5.2 depende de ação manual do stakeholder no registro.br (migração de NS) — fora do controle do Executor (SDD.md, RT-03) | Pode atrasar a publicação final (T5.3) mesmo com todo o site pronto | Sinalizar a T5.2 como pré-requisito assim que o Lote 5 iniciar; desenvolvimento do site (Lotes 1-4) não é bloqueado por isso |
 | RP-02 | T6.1/T6.2/T6.3 dependem de resposta do stakeholder (e-mail/LinkedIn reais, lista de apps, CTA secundário do hero) | Pode atrasar o fechamento do Lote 6 e o lançamento com conteúdo definitivo | Placeholders definidos no UX-SPEC.md permitem que Lotes 1-5 avancem sem bloqueio; lançamento com conteúdo real fica condicionado só ao Lote 6 |
+| RP-04 | **[ATUALIZADO, ajuste pontual]** RT-08 (`SDD.md`) segue em aberto — o repositório `EvolucaoSegura` retornou `404` a requisição não autenticada, indicando que está privado — mas deixou de ser risco de prazo de T10.2 (link "Ver app" é interno e não depende mais de RT-08). O risco real agora é sobre uma futura liberação do download dentro de `evolucao-segura.html` (fora do escopo desta reabertura, decisão de negócio à parte) | Não atrasa mais a publicação do Lote 9/10 desta reabertura; só afeta uma liberação futura do download, ainda sem prazo definido | RT-08 permanece registrado no `SDD.md` como pré-requisito técnico para quando a distribuição for autorizada; nenhuma tarefa desta reabertura depende dele para ser publicada |
+| RP-05 | **[ATUALIZADO, ajuste pontual]** T11.1 depende de dado fictício suficiente/realista existir dentro do app instalado localmente (não é conteúdo que já existe pronto, precisa ser criado antes de capturar); T11.3 (que também dependia disso) foi removida nesta rodada — não há mais tela de licenciamento real para capturar | Pode atrasar T9.3 (que consome essas capturas) e, em cascata, T9.6/T10.2 | T11.1 não depende de nenhuma outra tarefa desta reabertura — pode começar imediatamente, em paralelo ao Lote 8, reduzindo o risco de virar gargalo tardio |
 | RP-03 | **[ATUALIZADO — risco já concretizado e resolvido]** Produção interna da identidade visual (`ADR-004`) sem designer trazia risco de retrabalho se o resultado não agradasse ao stakeholder — esse risco **se concretizou**: o usuário pediu 5 conceitos visuais alternativos e ajustou o cabeçalho numa segunda rodada, gerando o `ADR-005` (supersede `ADR-004`) e esta revisão do `TASK.md`. Risco residual: nova iteração de identidade visual ainda poderia ocorrer durante a implementação do Lote 1/2 | Retrabalho adicional em T1.1/T1.4/T2.1 se houver novo ajuste visual | Validar rapidamente o resultado do Lote 1 (tokens/favicon) e do header (T2.1) com o stakeholder antes de iniciar o restante do Lote 3, reduzindo retrabalho em cascata sobre páginas já construídas |
 
 ## 6. Lacunas Sinalizadas
@@ -517,11 +762,21 @@ paralelo.
 | L-06 | **[Resolvida em T6.3]** Conteúdo do CTA secundário do hero da Home (`UX-SPEC.md`, Fluxo 1) — stakeholder confirmou o placeholder ("Fale conosco" → `#contato`) como definitivo | Lacuna de conteúdo, não estrutural | Resolvida — nenhuma alteração de código necessária |
 | L-07 | **[NOVA]** Os 3 arquivos de logo (`ADR-005`) são PNG com fundo removido por decontaminação de alfa, não vetores (SVG) reais — limite técnico aceito para o escopo atual (ícone usado a 56px), mas registrado para eventual necessidade futura de escalar a marca em tamanhos grandes | Dívida técnica aceita conscientemente (já registrada no `ADR-005`) | Nenhuma tarefa de vetorização criada nesta fase — sinalizado aqui apenas para rastreabilidade; revisitar com novo ADR se a necessidade surgir |
 
+| L-08 | **[NOVA, Rodada 3]** O fluxo de ativação/licenciamento do Evolução Segura (chave de instalação → validação no site → contra-chave) exige processamento server-side que o site estático não tem hoje — decisão de arquitetura real, não coberta por RF-09 (que cobre só a página de divulgação) | Lacuna estrutural, adiada conscientemente (não decidida em silêncio) | Registrada como risco RT-07 no `SDD.md`; página publicada só com o conteúdo explicativo do fluxo (Seção "Licença de uso", `UX-SPEC.md` Fluxo 5/Seção 7), sem formulário funcional; exigirá novo ADR + sinalização ao Gestor quando essa funcionalidade for priorizada, por poder alterar a garantia "zero backend" (G-01/G-04) |
+| L-09 | **[ATUALIZADA, ajuste pontual]** O repositório `https://github.com/leandrosegheto17/EvolucaoSegura`, decidido em `ADR-006` como destino de hospedagem do instalador (DI-08), retornou `404` a uma requisição não autenticada nesta reabertura — indício de que está privado, divergindo da premissa "repositório público" do `PRD.md` Seção 8.3 | Dependência externa manual, fora do controle do Executor | Registrada como risco RT-08 no `SDD.md`; deixou de ser pré-requisito de T10.2 (ver L-11, abaixo) — permanece pré-requisito só para uma futura liberação real do download dentro de `evolucao-segura.html`, não bloqueia nenhuma tarefa desta reabertura |
+| L-10 | **[NOVA, Rodada 3]** Voz da página (1ª pessoa em trechos específicos de `evolucao-segura.html` vs. voz institucional plural do resto do site) — decisão de copy com potencial impacto de consistência de marca, grande o suficiente para não ser fechada em silêncio pelo Coordenador | Decisão de detalhe sinalizada para confirmação do usuário, não decidida sozinha | Decisão adotada nesta formalização documentada em `UX-SPEC.md` Seção 7 (1ª pessoa restrita a 1-2 trechos de copy persuasiva do produto, nunca no header/rodapé/CTA principal); explicitamente marcada para o usuário confirmar ou reverter na revisão deste pacote, não é definitiva até essa confirmação |
+| L-11 | **[NOVA, ajuste pontual sobre a mesma reabertura]** O usuário confirmou, diretamente e de forma explícita, que os 2 CTAs "Baixar para Windows" de `evolucao-segura.html` (hero e CTA final) não devem ter nenhuma ação nesta entrega — nem link para o `.exe`, nem para o GitHub Releases, nem `href="#"`/JS disfarçado — por ainda não haver decisão de distribuir o produto. Isso é mais forte que a premissa anterior de T9.6/T10.2 (link real assim que RT-08 fosse resolvido) | Decisão de produto do usuário, não uma lacuna a resolver — registrada para rastreabilidade da mudança de critério de aceite | `UX-SPEC.md` Seção 4 (novo quinto estado "Indisponível para download nesta fase") e Seção 7 (trade-off documentado); `TASK.md` T9.1/T9.6 com critério de aceite explícito (elemento não-`<a>`, `aria-disabled`, cursor `not-allowed`, nota textual); RT-08/`ADR-006` continuam válidos, mas desacoplados da liberação real do download, que passa a depender de nova decisão de negócio futura |
+| L-12 | **[NOVA, ajuste pontual sobre a mesma reabertura]** Ao investigar o Guia do Usuário (12 capítulos) e o Catálogo de Telas reais do produto, o usuário confirmou que não existe nenhuma tela de licenciamento (chave/contra-chave) implementada na v0.1.0, e nenhuma menção a trial/licença/chave em todo o Guia do Usuário — reforça (não substitui) L-08/RT-07: o fluxo chave→contra-chave é só intenção do PRD do app, não tela real | Decisão de conteúdo do usuário, mais forte que a decisão anterior de UX (que só desacoplava o CTA da liberação real) — não é uma lacuna a resolver, registrada para rastreabilidade | A seção "Licença de uso" deixou de descrever o passo a passo de chave/contra-chave em qualquer formato (nem prosa, nem `.steps`) — passa a afirmar só o verificável hoje (7 dias de teste, bloqueio só de escrita após expirar) e fecha com frase honesta sobre o passo a passo pós-teste ainda estar sendo definido; slot de screenshot S9 removido (não há tela para capturar); `UX-SPEC.md` Fluxo 3/Seção 2, wireframe e Seção 7 atualizados; `TASK.md` T9.5 (critério de aceite) e Lote 11/T11.3 (tarefa removida) atualizados. L-08/RT-07/`ADR-006` permanecem válidos como estão — isso é só sobre o conteúdo da página, não sobre a arquitetura de ativação futura |
+| L-13 | **[NOVA]** T11.2 (screenshot S8, aviso nativo do SmartScreen "O Windows protegeu o seu computador") não pôde ser capturada com dado real. Investigação: (1) o repositório `EvolucaoSegura` é privado (confirmado via `gh repo view`, `isPrivate: true` — reforça L-09/RT-08), não há Release pública de onde baixar um instalador já "desconhecido" pelo Windows; (2) foi localizado um clone local do projeto (`C:\Users\leand\OneDrive\Projetos\EvolucaoSegura`, Tauri/Rust) com um instalador real gerado em `target\release\bundle\nsis\EvolucaoSegura_0.1.0_x64-setup.exe`, não assinado (`Get-AuthenticodeSignature` → `NotSigned`); (3) o Executor tentou reproduzir o cenário de forma honesta e sem atalhos: copiou o instalador para uma pasta isolada, aplicou manualmente o Mark-of-the-Web (fluxo `Zone.Identifier` ADS com `ZoneId=3` e `ReferrerUrl`/`HostUrl` apontando para o GitHub Releases do produto — exatamente o mesmo mecanismo que um navegador aplicaria a um download real), e executou o instalador de duas formas (`Start-Process` direto e via `explorer.exe`, replicando um duplo-clique real). Em ambas as tentativas o processo `smartscreen.exe` foi de fato acionado pelo Windows, mas resolveu instantaneamente sem exibir a tela de bloqueio "Windows protegeu o seu computador" — o assistente de instalação abriu normalmente. Não há política de SmartScreen configurada via registro neste PC (`HKLM/HKCU ...\Explorer!SmartScreenEnabled` ausente, sem GPO em `HKLM:\SOFTWARE\Policies\Microsoft\Windows\System`), então o comportamento observado é o padrão real do Windows/conta deste equipamento para esse arquivo — não um artefato de configuração alterada pelo Executor | Lacuna de captura — dado real não reproduzível com segurança neste ambiente, não decidida em silêncio | Nenhuma imagem foi publicada (nem simulada/forjada) para não violar o critério de aceite de T11.1/T11.2 ("se a fonte não permitir capturar com qualidade/honestidade suficiente, reportar como lacuna"). O ambiente de teste (arquivos temporários e cópia do instalador) foi removido ao final da investigação. T11.2 permanece `Pendente` — não há bloqueio de terceiro nem decisão de escopo a devolver ao Coordenador (não é UX-SPEC ambíguo, é limitação do próprio ambiente de captura); alternativas para retomar: (a) reproduzir em outra máquina Windows com "Verificação de app e arquivos" do SmartScreen ativa/configurada como "Avisar", (b) capturar no momento em que o repositório for tornado público e o instalador for baixado de fato via navegador a partir do GitHub Releases (RT-08), ou (c) aceitar como dívida documentada e publicar `evolucao-segura.html` (T9.4) inicialmente sem a imagem S8, só com o texto do `.notice`, revisitando quando uma captura real existir |
+
 Nenhuma lacuna estrutural nova do `SDD.md`/`UX-SPEC.md` foi encontrada
-durante esta revisão — o próprio `ADR-005` já é o mecanismo formal que
-tratou a mudança de decisão arquitetural/de UX que motivou esta reabertura;
-o `TASK.md` só precisou refletir esse impacto já resolvido, não abrir uma
-nova lacuna estrutural por conta própria.
+durante a revisão anterior (Rodada 2) — o próprio `ADR-005` já era o
+mecanismo formal que tratou a mudança de decisão arquitetural/de UX daquela
+reabertura. **Nesta revisão (Rodada 3):** uma lacuna estrutural real foi
+identificada (L-08, fluxo de ativação/licenciamento) e tratada conforme os
+guardrails — não decidida em silêncio, registrada com risco correspondente
+no `SDD.md` e será resolvida por novo ADR quando priorizada, com
+sinalização ao Gestor nesse momento.
 
 ---
 
@@ -549,7 +804,18 @@ nova lacuna estrutural por conta própria.
       antes/depois na nota da Seção 3 (Lote 3) e na Seção 6 (contexto)
 - [x] Toda diretriz de implementação relevante está traduzida em regra
       prática (Seção 1, incluindo o fallback de `backdrop-filter`)
-- [x] Toda lacuna estrutural encontrada está sinalizada na Seção 6 — nenhuma
-      lacuna estrutural nova nesta revisão; lacunas de conteúdo/detalhe
-      atualizadas (L-01, L-02, L-05) e novas (L-06, L-07) registradas
+- [x] Toda lacuna estrutural encontrada está sinalizada na Seção 6 — Rodada 2
+      não teve lacuna estrutural nova; Rodada 3 identificou 1 lacuna
+      estrutural real (L-08, fluxo de ativação/licenciamento), registrada
+      sem decisão em silêncio, mais 2 lacunas de dependência externa/
+      decisão de detalhe (L-09, L-10), mais 1 lacuna de captura/ambiente de
+      execução (L-13, T11.2/screenshot S8 — não estrutural, não decidida em
+      silêncio: instalador real testado e reportado como não reproduzível
+      com segurança neste ambiente)
 - [x] Rascunho do `GUARDRAILS.md` produzido/atualizado junto do TASK.md
+- [x] **[Rodada 3]** Lotes 8-11 novos: toda tarefa com critério de aceite
+      testável, lote nomeado, calibrada a ~1 dia-pessoa (autocheck
+      documentado nas notas de Lote 8/9/11), sem mistura de
+      tela/endpoint/regra de negócio/SQL, sem exigir >~300k tokens de
+      contexto (nota final da Seção 3), com Seção 4 explicitando
+      paralelismo e a Seção 6 sem decisão estrutural silenciosa

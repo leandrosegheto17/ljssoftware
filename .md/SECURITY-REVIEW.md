@@ -2185,3 +2185,390 @@ seção "Lote 7" — ressalvas de documentação, sem impacto em critério de
 aceite/segurança), o Lote 7 tem a dupla aprovação (QA + DevSecOps)
 necessária para o chapéu DevOps considerar este build formalmente liberado
 para deploy.
+
+---
+
+## Lote 8 — Fundação de Componentes da Página de Produto (Evolução Segura, Rodada 3)
+
+**Pré-requisito confirmado:** `QA-REPORT.md`, seção "Lote 8", Veredito
+"Aprovado com ressalvas" (1 achado Simples de documentação em T8.2, sem
+impacto em critério de aceite/contraste real) — auditoria de segurança
+liberada para rodar sobre este lote.
+
+**Escopo auditado:** T8.1, T8.2, T8.3. Leitura direta e completa do `git
+diff` de `public/assets/css/tokens.css` e `public/assets/css/
+components.css` (único diff desta rodada, confirmado por `git status`).
+
+**Natureza do lote:** CSS puro (tokens + blocos de referência
+CSS/comentário) — nenhum JS novo, nenhum HTML real novo (blocos de
+referência de markup existem só como comentário, não são renderizados),
+nenhuma lógica de servidor, nenhum endpoint, nenhum formulário. Superfície
+de ataque não muda em relação ao estado já auditado nos Lotes 1-7.
+
+### 1. Dependência externa / CDN não autorizado (G-11/ADR-003/G-01)
+
+**Achado: nenhum.**
+
+- Varredura por `https?://`/`cdn\.`/`@import`/`url(` externo em todo o
+  `git diff` dos 2 arquivos: zero ocorrências — nenhum
+  `background-image`/`@font-face`/fonte/ícone externo introduzido. As
+  formas/gradientes de `.hero--product` usam só `radial-gradient()`/
+  `repeating-linear-gradient()` em CSS puro (o `.shot__frame` "a
+  capturar"), mesmo padrão já aprovado para `.decorative-shape` (Lote 1) e
+  o mesh gradient do `.hero` (Lote 3).
+- Nenhum `package.json`/lockfile/toolchain novo — `git status` confirma
+  que só os 2 arquivos `.css` foram tocados nesta rodada. G-01 (zero
+  build/framework/dependência) respeitado.
+
+### 2. Injeção de conteúdo / XSS — não aplicável a este diff, confirmação de escopo
+
+**Achado: nenhum; N/A por natureza do artefato.**
+
+- O diff inteiro é CSS + comentários; os blocos de HTML "de referência"
+  citados nos comentários (`.hero--product`, `.shot`, `.notice`, `.specs`,
+  `.faq` etc.) **não são markup real renderizado** — são texto dentro de
+  comentário CSS (`/* ... */`), documentação para a tarefa futura (Lote 9)
+  copiar. Confirmado por leitura linha a linha: nenhum desses blocos está
+  fora de um comentário `/* */`, logo não são interpretados pelo
+  navegador. Não há, portanto, superfície de XSS/injeção neste lote —
+  essa auditoria será relevante quando o Lote 9 materializar o HTML real
+  (auditoria própria, quando aquele lote passar pelo chapéu QA).
+- Nenhum `<script>` inline, nenhum atributo de evento, nenhum
+  `javascript:` em nenhum lugar do diff (nem dentro dos comentários de
+  referência).
+
+### 3. Dado sensível / segredo commitado
+
+**Achado: nenhum.**
+
+- Varredura por padrões de segredo (`api[_-]?key`, `secret`, `password`,
+  chave privada, `AKIA`, `Bearer `, `token`) em todo o diff: zero
+  ocorrências.
+- Os textos de exemplo dos blocos de referência (ex.: "Windows 10 e 11",
+  "Baixe o instalador", "E se eu esquecer a senha mestra?") são copy
+  institucional genérico/placeholder de UI, não dado pessoal nem
+  credencial real. Nenhum e-mail, IP, identificador ou caminho local de
+  desenvolvimento (`C:\`, `/home/`) encontrado nos 2 arquivos.
+- Nenhum novo asset binário neste lote (só `.css`) — inspeção de payload
+  embutido em binário não se aplica.
+
+### 4. Tokens de cor novos (T8.1) — superfície e conformidade
+
+**Achado: nenhum.**
+
+- Os 3 tokens novos (`--color-notice-bg`/`-border`/`-icon`) são valores
+  de cor estáticos (`rgba(...)`/hex), sem qualquer implicação de
+  segurança — confirmado que não introduzem nenhuma referência externa
+  nem lógica condicional. Reaproveitados corretamente por T8.3
+  (`.notice`) sem duplicar valor literal, reduzindo risco de
+  divergência futura entre um valor "de verdade" e uma cópia solta.
+
+### 5. Conformidade regulatória (LGPD)
+
+**N/A para este lote.** Nenhum dado pessoal é coletado, processado ou
+armazenado pelos artefatos de T8.1-T8.3 (tokens de cor e CSS de
+componentes/blocos de referência em comentário) — mesma conclusão já
+registrada para os lotes anteriores de fundação (Lote 1).
+
+### 6. Requisitos de segurança operacional para o chapéu DevOps
+
+- Nenhum item novo. CSS puro adicional não introduz superfície
+  operacional nova (sem novo secret, sem nova rota, sem novo domínio a
+  provisionar, sem ajuste de `_headers`/CSP necessário — nenhuma nova
+  URL externa introduzida, confirmado no item 1 acima).
+- Recomendação já registrada nos Lotes 1-4 continua válida e ainda mais
+  relevante quando o Lote 9 existir: o pipeline de deploy deve publicar
+  só as páginas reais (a futura `evolucao-segura.html` incluída) + assets
+  associados, excluindo artefatos de desenvolvimento — sem novidade
+  introduzida por este lote específico.
+
+---
+
+## Achados deste lote (resumo)
+
+| # | Item | Severidade | Status | Ação |
+|---|---|---|---|---|
+| — | Nenhum achado novo de severidade Baixa, Média, Alta ou Crítica neste lote | — | — | — |
+
+Nenhum achado **Alto/Crítico**. Nenhum item de compliance obrigatório em
+aberto. Nenhum dado pessoal exposto. O achado de documentação já
+registrado pelo chapéu QA (T8.2, `QA-REPORT.md`) não tem dimensão de
+segurança adicional — é puramente uma imprecisão de comentário sobre um
+valor de contraste que já passa, confirmado neste chapéu por leitura
+independente do mesmo trecho.
+
+## Fechamento — Lote 8 (chapéu DevSecOps)
+
+- Nenhum achado de severidade alta/crítica.
+- Nenhum item de compliance obrigatório pendente (LGPD: N/A).
+- Nenhum item novo de débito de baixa/média severidade a registrar em
+  `Refatoração Lote-8` por este chapéu (o único achado deste lote é de
+  documentação/QA — já registrado como RL8.1 pelo chapéu QA, ver
+  `QA-REPORT.md`; não há achado adicional de segurança a somar).
+- Nenhum achado de relevância estratégica a sinalizar ao Gestor neste
+  lote.
+
+**Veredito geral do Lote 8 (chapéu DevSecOps): Aprovado, sem ressalvas e
+sem débito registrado.** Nenhum achado bloqueia deploy. Combinado com o
+veredito funcional do chapéu QA ("Aprovado com ressalvas", `QA-REPORT.md`,
+seção "Lote 8" — ressalva de documentação, sem impacto em critério de
+aceite/segurança), o Lote 8 tem a dupla aprovação (QA + DevSecOps)
+necessária para o chapéu DevOps considerar este build formalmente
+liberado para deploy — sujeito ainda ao fechamento estrutural do lote
+(dependências/tarefas `Bloqueada`), já confirmado pelo chapéu QA acima.
+
+---
+
+## Lote 9 — Página `evolucao-segura.html` (Rodada 3)
+
+**Pré-requisito confirmado:** `QA-REPORT.md`, seção "Lote 9", Veredito
+"Aprovado com ressalvas" (1 achado Simples de documentação em T9.6, sem
+impacto em critério de aceite — a nota do `TASK.md` sobre um teste que na
+verdade passa) — auditoria de segurança liberada para rodar sobre este
+lote. Integridade estrutural do arquivo (ordem das 10 seções, tags
+balanceadas, IDs únicos) já reauditada de forma independente pelo chapéu
+QA; este chapéu confirma por leitura própria do artefato final, não
+reaproveita a nota de implementação do Executor como base de aprovação.
+
+**Escopo auditado:** `public/evolucao-segura.html` (novo, ~850 linhas),
+`public/assets/css/components.css` (aditivo — blocos `.hero__cta--primary:
+disabled`, invólucro genérico de seção, `.final-cta`), 7 pares de
+screenshot em `public/assets/img/evolucao-segura/` (`shot-s1` a `shot-s7`,
+`.png`+`.webp`), 5 checkers Node em `dev/html/evolucao-segura.t9-{1,2,3,5,
+6}.check.js` (T9.4 não gerou checker — sem alteração de CSS, ver
+`QA-REPORT.md`).
+
+### 1. Dependência externa nova real no projeto (sharp, imagens)
+
+**Achado: nenhum.**
+
+- Os Executores usaram `sharp` (Node) para converter os screenshots de
+  origem para `.webp`/`.png` otimizados — ferramenta de processo de
+  trabalho, não dependência do produto publicado. Confirmado nesta
+  auditoria: nenhum `package.json`/lockfile em nenhum diretório do
+  repositório referencia `sharp` — busca por `"sharp"` em todo
+  `package.json`/`package-lock.json`/`yarn.lock`/`pnpm-lock.yaml` do
+  repositório encontrou só `.claude/skills/playwright-skill/package-lock.json`
+  (dependência de uma skill do Claude Code, pré-existente, sem relação com
+  este lote nem com o site publicado). `git status`/`git diff --stat`
+  confirmam que só `public/evolucao-segura.html`,
+  `public/assets/css/{components,tokens}.css`, `dev/css/
+  a11y-contrast-check.js`, os 7 pares de imagem e os 5 `dev/html/*.check.js`
+  foram tocados por esta rodada — nenhum arquivo de manifesto de
+  dependências entre eles.
+- Os 5 checkers Node (`dev/html/evolucao-segura.t9-*.check.js`) usam só
+  `fs`/`path` (módulos nativos do Node) — confirmado por leitura de cada
+  `require()` — consistente com G-01 (zero dependência/build/toolchain).
+- Ferramenta de conversão de imagem (`sharp`) não deixou nenhum rastro em
+  código publicado — só nos 14 arquivos finais (`.png`/`.webp`) em
+  `public/assets/img/evolucao-segura/`, que são artefatos estáticos, sem
+  código executável.
+
+### 2. Dado sensível/PII real nos screenshots
+
+**Achado: nenhum.**
+
+- Os 7 arquivos (`shot-s1.png` a `shot-s7.png`) abertos e inspecionados
+  visualmente nesta auditoria (mesma checagem independente já feita pelo
+  chapéu QA, item 7 do `QA-REPORT.md`, reconfirmada aqui sob a ótica de
+  segurança/compliance, não reaproveitada como prova por si só): nomes de
+  pacientes fictícios e claramente genéricos (João Pedro Nascimento,
+  Mariana Albuquerque Rocha, Beatriz Campos Lima, Rafael Moreira Teixeira,
+  Luísa Fernandes Prado, Carlos Eduardo Siqueira, Tânia Regina
+  Vasconcelos), telefone em padrão sequencial óbvio de placeholder ((11)
+  90000-0201, não um número real), nome de prescritor explicitamente
+  rotulado "fictício" na própria tela (Dr. Paulo Andrade), CID/hipótese
+  diagnóstica genérica (F41.1) e datas no ano de 2026 (ambiente de
+  demonstração). Nenhum dado real de paciente identificável (G-14/TASK.md
+  Seção 1.2, "Screenshots reais, nunca dado de paciente real").
+- S1, S6, S7 (tela de login, configuração de senha mestra, backup) não
+  exibem nenhum dado clínico — confirmado, consistente com as legendas
+  `.shot__privacy`/`figcaption` do próprio HTML ("Sem dado de paciente" /
+  "Sem conteúdo clínico na tela").
+- Nenhum metadado incorporado sensível encontrado nos nomes/caminhos dos
+  arquivos (`shot-s1` a `shot-s7`, convenção neutra de slot, sem nome de
+  paciente/usuário no nome do arquivo).
+
+### 3. CSP / headers (`public/_headers`)
+
+**Achado: nenhum ajuste necessário.**
+
+- `public/_headers` aplica a política já existente (`default-src 'self';
+  script-src 'self' https://static.cloudflareinsights.com; style-src
+  'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src
+  'self' https://cloudflareinsights.com; object-src 'none'; base-uri
+  'self'; form-action 'self'; frame-ancestors 'none'`) a `/*` — cobre
+  `evolucao-segura.html` automaticamente, sem entrada dedicada necessária.
+- `evolucao-segura.html` usa vários atributos `style="..."` inline (ex.:
+  `style="align-items: start;"`, `style="padding: 1.75rem;"`,
+  `style="max-width: 44rem;"`, `style="color: var(--color-accent);
+  text-decoration: underline;"`) — já cobertos por `style-src 'self'
+  'unsafe-inline'`, mesma exceção já documentada e justificada desde o
+  Lote 4 (`RL4.1`) para `apps.html`/`sobre.html`/`404.html`; nenhuma
+  diretiva nova necessária.
+- Nenhum `<script>` inline, nenhum atributo `on*=`, nenhum `javascript:`
+  em todo o arquivo (confirmado por regex própria) — `script-src 'self'
+  https://static.cloudflareinsights.com` (o beacon do Web Analytics, já
+  auditado nos lotes anteriores) segue suficiente.
+- Nenhuma imagem/fonte/script externo introduzido (`img-src`/`font-src`/
+  `script-src 'self'` seguem suficientes) — os 7 pares de screenshot são
+  servidos do próprio domínio (`assets/img/evolucao-segura/...`).
+
+### 4. Injeção de conteúdo / XSS estático
+
+**Achado: nenhum.**
+
+- Arquivo é HTML estático puro, sem `<script>` além dos 3 já auditados nas
+  demais páginas (`nav.js`, beacon do Cloudflare, `analytics.js`, todos
+  carregados com `defer`/`type="module"`, nenhum inline). Nenhum campo de
+  formulário/`<input>`/`<form>` em toda a página (confirmado também pelo
+  `t9-5.check.js`) — reforça G-04 (nenhum processamento server-side).
+- Os 5 `<details>`/`<summary>` do FAQ (T9.6) são nativos, sem JS —
+  confirmado, nenhum `onclick`/handler custom.
+
+### 5. Conformidade regulatória (LGPD)
+
+**Achado: nenhum.**
+
+- Nenhum dado pessoal real coletado/exibido (item 2 acima). A página não
+  tem formulário de captação de dado (G-04) — os 2 CTAs de download estão
+  desabilitados (confirmado no `QA-REPORT.md`, item 3) e os links de
+  contato reaproveitam o mesmo `mailto:`/LinkedIn já auditados nos lotes
+  anteriores, sem novo endpoint.
+- A seção "Conformidade" (Seção 5, Resolução CFP nº 001/2022) é conteúdo
+  informativo sobre a obrigação do profissional usuário do app, não uma
+  declaração de conformidade do próprio site — nenhuma reivindicação de
+  compliance do site que precise ser verificada/contestada.
+
+### 6. Requisitos de segurança operacional para o chapéu DevOps
+
+- Nenhum item novo além do já registrado nos Lotes 1-8: o pipeline de
+  deploy deve publicar só as páginas reais (`evolucao-segura.html`
+  incluída) + os assets associados (`assets/img/evolucao-segura/*`),
+  excluindo `dev/html/*.check.js` e qualquer artefato de desenvolvimento —
+  mesma regra já aplicada às demais páginas, sem ajuste específico deste
+  lote.
+- Observação não bloqueante (fora do escopo de segurança, já sinalizada
+  pelo próprio T9.1 no `TASK.md` como fora de escopo desta tarefa):
+  `evolucao-segura.html` ainda não está listada em `public/sitemap.xml`
+  — não é um risco de segurança (a página já está publicamente acessível
+  por link direto, sem controle de acesso a contornar), então não é
+  achado deste chapéu; fica registrado aqui só para o chapéu DevOps
+  considerar ao publicar, sem bloquear o deploy deste lote.
+
+---
+
+## Achados deste lote (resumo)
+
+| # | Item | Severidade | Status | Ação |
+|---|---|---|---|---|
+| — | Nenhum achado novo de severidade Baixa, Média, Alta ou Crítica neste lote | — | — | — |
+
+Nenhum achado **Alto/Crítico**. Nenhum item de compliance obrigatório em
+aberto. Nenhum dado pessoal real exposto. O achado de documentação já
+registrado pelo chapéu QA (T9.6, `QA-REPORT.md`) não tem dimensão de
+segurança adicional — é puramente uma nota desatualizada sobre o
+resultado de um teste que já passa, confirmado neste chapéu por execução
+independente do mesmo checker.
+
+## Fechamento — Lote 9 (chapéu DevSecOps)
+
+- Nenhum achado de severidade alta/crítica.
+- Nenhum item de compliance obrigatório pendente (LGPD: N/A — nenhum dado
+  pessoal real coletado ou exibido).
+- Nenhum item novo de débito de baixa/média severidade a registrar em
+  `Refatoração Lote-9` por este chapéu (o único achado deste lote é de
+  documentação/QA — já registrado como RL9.1 pelo chapéu QA, ver
+  `QA-REPORT.md`; não há achado adicional de segurança a somar).
+- Nenhum achado de relevância estratégica a sinalizar ao Gestor neste
+  lote.
+
+**Veredito geral do Lote 9 (chapéu DevSecOps): Aprovado, sem ressalvas e
+sem débito registrado.** Nenhum achado bloqueia deploy. Combinado com o
+veredito funcional do chapéu QA ("Aprovado com ressalvas",
+`QA-REPORT.md`, seção "Lote 9" — ressalva de documentação, sem impacto em
+critério de aceite/segurança), o Lote 9 tem a dupla aprovação (QA +
+DevSecOps) necessária para o chapéu DevOps considerar este build
+formalmente liberado para deploy — sujeito ainda ao fechamento estrutural
+do lote (dependências/tarefas `Bloqueada`), já confirmado pelo chapéu QA
+acima.
+
+## Lote 10 — Integração na Vitrine (Rodada 3)
+
+**Pré-requisito confirmado:** `QA-REPORT.md`, seção "Lote 10", Veredito
+"Aprovado, sem ressalvas" — build liberado para esta auditoria.
+
+Superfície de ataque desta mudança é mínima por natureza: texto estático
+(2 atributos/parágrafos) e 1 elemento `<a>` apontando para um arquivo do
+mesmo domínio. Auditoria:
+
+- **Injeção/XSS:** o texto novo de `.app-card__description` e
+  `data-app-summary` é conteúdo estático embutido diretamente no HTML
+  fonte (não vem de input de usuário, banco de dados, query string nem
+  API em tempo de execução) — não há vetor de injeção. O JS que lê
+  `data-app-summary` (já existente, não tocado por T10.1/T10.2) segue
+  usando `textContent`/equivalente para popular o modal "Saiba mais" — a
+  mudança de T10.1 é só o valor do atributo, não a lógica que o consome;
+  nenhum uso de `innerHTML` introduzido por este lote.
+- **Destino do link:** `href="evolucao-segura.html"` é um caminho
+  relativo dentro do próprio site — resolvido pelo navegador para o
+  mesmo domínio/origem, sem redirecionamento, sem protocolo `javascript:`
+  ou `data:`, sem parâmetro de query que pudesse ser manipulado. Não há
+  destino externo disfarçado de link interno (nem o inverso).
+  `data-analytics-event="app-evolucao-segura"` é um atributo de dado
+  inerte, consumido só pelo script de analytics já existente (Web
+  Analytics, mesmo padrão de Destino Ideal/Radar Esportivo, T6.2), sem
+  execução de código a partir do valor do atributo.
+- **Ausência correta de `target="_blank"`:** confirma o requisito de
+  segurança operacional do próprio T10.2 — para link externo (Destino
+  Ideal/Radar Esportivo), `rel="noopener"` é obrigatório junto de
+  `target="_blank"` para mitigar `window.opener` tabnabbing; como o link
+  de Evolução Segura é interno e **não** usa `target="_blank"`, essa
+  mitigação simplesmente não se aplica aqui — a ausência de
+  `rel="noopener"` neste caso específico não é uma lacuna, é a
+  configuração correta.
+- **SAST/dependências de terceiros:** não aplicável — nenhum código
+  executável novo, nenhuma dependência de terceiro introduzida (HTML
+  puro, mesmo padrão de marcação já auditado nos lotes anteriores).
+- **Exposição de dado sensível:** nenhum dado pessoal, credencial ou
+  informação sensível no texto novo (é copy de marketing sobre o
+  produto, não dado de paciente/usuário).
+- **Compliance (LGPD):** N/A — nenhum dado pessoal real coletado ou
+  exibido por esta mudança.
+
+Nenhum achado de nenhuma severidade nesta auditoria.
+
+## Fechamento — Lote 10 (chapéu DevSecOps)
+
+- Nenhum achado de severidade alta/crítica.
+- Nenhum item de compliance obrigatório pendente.
+- Nenhum item de débito de baixa/média severidade a registrar em
+  `Refatoração Lote-10`.
+- Nenhum achado de relevância estratégica a sinalizar ao Gestor neste
+  lote.
+- Requisito de segurança operacional para o chapéu DevOps: nenhum novo
+  (a mudança não introduz superfície de rede/secrets/infra — site
+  estático servindo mais um arquivo HTML já existente).
+
+**Veredito geral do Lote 10 (chapéu DevSecOps): Aprovado, sem ressalvas e
+sem débito registrado.** Nenhum achado bloqueia deploy. Combinado com o
+veredito funcional do chapéu QA ("Aprovado, sem ressalvas",
+`QA-REPORT.md`, seção "Lote 10"), o Lote 10 tem a dupla aprovação (QA +
+DevSecOps) necessária para o chapéu DevOps considerar este build
+formalmente liberado para deploy — sujeito ao fechamento estrutural do
+lote (dependências/tarefas `Bloqueada`), já confirmado pelo chapéu QA
+acima.
+
+## Consolidado de Segurança — Reabertura Pontual (Lotes 8-11)
+
+Nenhum achado de severidade alta/crítica em nenhum dos 3 lotes auditados
+(8, 9, 10) desta reabertura. Nenhum débito de segurança de baixa/média
+severidade pendente — os 2 achados registrados na reabertura inteira
+(RL8.1, RL9.1) são de documentação, originados pelo chapéu QA, sem
+correspondente de segurança. Nenhum item de compliance obrigatório em
+aberto (LGPD N/A em toda a reabertura — nenhum dado pessoal real
+processado pela página de divulgação). Requisitos de segurança
+operacional para o chapéu DevOps seguem os mesmos já definidos no
+fechamento do Lote 8/9 (nenhum secret novo, nenhuma superfície de rede
+nova — site estático). Build da reabertura pontual (Lotes 8-10)
+formalmente liberado para deploy do ponto de vista de segurança.

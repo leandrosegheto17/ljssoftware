@@ -24,6 +24,22 @@
  * gradiente de fundo) — fora do escopo desta tarefa, que cobre apenas as
  * cores sólidas acima.
  * -----------------------------------------------------------------------
+ *
+ * TOKENS DE AVISO (T8.1, Rodada 3) — família de cor "aviso" dedicada ao
+ * componente `.notice` (UX-SPEC.md Seção 3.1, tabela de paleta), família
+ * separada de `--color-accent` por decisão registrada (teal já significa
+ * "positivo/destaque"; âmbar sinaliza "atenção" sem usar vermelho de erro,
+ * já que o conteúdo do `.notice` é uma explicação honesta, não um erro).
+ * Verificação de contraste (mesma fórmula acima), crítico de UI (≥3:1):
+ *
+ *   --color-notice-icon (#FFD166) sobre --color-bg (#0B2545) -> 10.67:1 (UI ≥3:1: OK, com folga larga)
+ *
+ * `--color-notice-bg`/`--color-notice-border` são translúcidos (uso apenas
+ * decorativo de fundo/borda do bloco `.notice`, nunca como cor de texto) —
+ * fora do escopo do crítico de contraste texto/UI; o texto do `.notice` usa
+ * `--color-text-inverse` (já verificado acima) sobre `--color-bg` sólido por
+ * trás do fundo quase transparente do bloco.
+ * -----------------------------------------------------------------------
  */
 
 :root {
@@ -53,6 +69,16 @@
   /* Formas geométricas decorativas de fundo */
   --shape-radius: 28px;
   --shape-rotation: 22deg; /* ponto médio da faixa 10°-35° definida no UX-SPEC.md */
+
+  /* Aviso (T8.1, Rodada 3) — família de cor dedicada ao componente `.notice`
+     (UX-SPEC.md Seção 3.1), usada exclusivamente no alerta honesto do
+     SmartScreen do Windows na página de divulgação do Evolução Segura.
+     Única cor fora da paleta navy/glass/teal do site, introduzida
+     deliberadamente para não sobrecarregar `--color-accent` (teal) com um
+     segundo significado ("atenção" além de "positivo/destaque"). */
+  --color-notice-bg: rgba(255, 209, 102, 0.10);
+  --color-notice-border: rgba(255, 209, 102, 0.35);
+  --color-notice-icon: #FFD166;
 }
 
 /**

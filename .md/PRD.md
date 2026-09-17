@@ -1,10 +1,13 @@
 # PRD.md — Site institucional LJSSoftware
 
-**Status:** Rascunho refinado (Loop A, Rodada 2) — todas as 6 Perguntas em
-Aberto da Rodada 1 foram respondidas pelo stakeholder e incorporadas abaixo.
-Nenhuma pergunta em aberto pendente nesta rodada.
-**Gate 1:** Aprovado com ressalvas (ver `CTO-REVIEW.md`).
-**Data:** 2026-09-07 (Rodada 1) — atualizado 2026-09-07 (Rodada 2)
+**Status:** Rascunho refinado (Loop A, Rodada 2), com **Adendo (Rodada 3 —
+reabertura pontual)** para a demanda "página de divulgação de app desktop
+(Evolução Segura)". Rodadas 1-2 permanecem válidas e não foram reescritas;
+ver Seção 8 para o adendo completo.
+**Gate 1:** Aprovado com ressalvas (Rodada 1-2) / **Aprovado** (Adendo Rodada
+3 — ver `CTO-REVIEW.md`, "Gate 1 — Reabertura pontual").
+**Data:** 2026-09-07 (Rodada 1) — atualizado 2026-09-07 (Rodada 2) —
+atualizado 2026-09-17 (Adendo Rodada 3)
 **Autor:** Gestor (chapéu PM)
 
 ---
@@ -147,6 +150,119 @@ Rodada 1 foram respondidas pelo stakeholder e incorporadas nas Seções 2, 3,
    escopo (mesmo que básica: wordmark em texto + paleta de cores).
 
 ---
+
+---
+
+## 8. Adendo (Rodada 3 — reabertura pontual, 2026-09-17)
+
+**Contexto:** demanda pontual do stakeholder após publicação do site e de
+`apps.html`/`index.html` já em produção com os 6 apps do portfólio (Lote 6,
+T6.4/T6.5). O app **Evolução Segura** é uma aplicação **desktop** (executável
+para download local), diferente dos demais apps do portfólio, que são apps
+web publicados com URL própria (Destino Ideal, Radar Esportivo já com link
+real; Minha Jornada, Meu Objetivo, Gestão da Pelada ainda "Em breve").
+**Gate 1 desta rodada: Aprovado** (ver `CTO-REVIEW.md`).
+
+### 8.1 Novo requisito de alto nível
+
+| # | Requisito | Prioridade | Justificativa |
+|---|---|---|---|
+| RA-09 | Página de divulgação própria dentro do site para apps do tipo "desktop/instalável" (ex.: `evolucao-segura.html`), com descrição do app, screenshots reais do produto, proposta de valor e CTA de download do executável | Alta | Sem essa página, o link "Ver app" de um app desktop cairia direto num download de arquivo binário sem contexto — quebra a confiança/experiência de conversão que os demais apps (web) resolvem naturalmente com sua própria página de produto/loja |
+
+### 8.2 Critério de roteamento do link "Ver app" (ajuste a RA-02)
+
+RA-02 (listagem/vitrine dos apps) é ampliado com uma regra explícita de
+produto, aplicável a todo app que hoje ou no futuro tiver seu badge "Em
+breve" substituído por link real:
+
+- **App web publicado** (tem URL própria acessível — ex.: Destino Ideal,
+  Radar Esportivo): o link "Ver app" do card aponta **direto** para essa URL
+  (padrão já em produção, sem mudança).
+- **App desktop/instalável** (distribuído como executável para download
+  local, sem URL de produto própria — ex.: Evolução Segura): o link "Ver
+  app" do card aponta para uma **página de divulgação própria dentro do
+  site** (`[nome-do-app].html`), e é essa página — não o card — que oferece
+  o CTA de download do executável.
+
+Este critério é o que decide, para qualquer app futuro do portfólio, qual
+dos dois padrões de link usar — não é uma decisão pontual só para Evolução
+Segura.
+
+### 8.3 Escopo (adendo)
+
+**Dentro do escopo desta rodada:**
+- Nova página `evolucao-segura.html` (página de divulgação, dentro do site,
+  mesmo domínio/infra já em produção).
+- Troca do badge "Em breve" do card "Evolução Segura" em `apps.html` e
+  `index.html` por link real apontando para `evolucao-segura.html` (mesmo
+  padrão RF-02 já usado para os outros apps, mas com destino interno em vez
+  de externo).
+- Captura de screenshots reais do produto Evolução Segura, a partir de duas
+  fontes possíveis: o repositório público
+  `https://github.com/leandrosegheto17/EvolucaoSegura` e/ou execução local
+  do executável instalado em
+  `C:\Users\leand\AppData\Local\EvolucaoSegura\evolucao-segura.exe` — tarefa
+  de execução (Executor), a detalhar no `TASK.md`.
+- CTA de download do executável **dentro** da nova página (não no card da
+  vitrine) — o destino técnico do download (ex.: GitHub Releases do próprio
+  repositório) é decisão do Coordenador no SDD.md.
+- Requisitos de sistema do app (SO suportado, espaço em disco etc.), se
+  informação estiver disponível no repositório/produto, exibidos na nova
+  página como conteúdo de apoio à decisão de download.
+
+**Fora do escopo desta rodada — justificativa:**
+- **Design visual/layout da nova página:** decisão do Coordenador (UX/UI) no
+  `UX-SPEC.md`/SDD.md, não deste chapéu.
+- **Geração dos prints em si:** tarefa de execução do Executor, não decisão
+  de produto — este adendo só registra a necessidade e a fonte.
+- **Hospedagem/distribuição do binário `.exe`:** decisão técnica do
+  Coordenador (ex.: GitHub Releases vs. asset no próprio repositório do
+  site), respeitando G-01 (zero build/framework) e G-10 (sem serviço pago)
+  do `GUARDRAILS.md`.
+- **Aplicar o mesmo padrão retroativamente a outros apps "Em breve"**
+  (Minha Jornada, Meu Objetivo, Gestão da Pelada): fora de escopo agora —
+  cada um só entra quando for publicado, aplicando o critério da Seção 8.2
+  conforme seu tipo real (web ou desktop) nesse momento.
+
+### 8.4 Objetivo de sucesso (ajuste)
+
+Sem alteração da métrica geral já registrada na Seção 3. Adição pontual: a
+página `evolucao-segura.html`, quando publicada, passa a contar como um dos
+"destinos de saída reais" mencionados na métrica futura de fase 2 (Seção 3)
+— com a particularidade de que, para este app, o "destino de saída real" é
+uma página própria do site (não externa), então a métrica de acompanhamento
+inclui também o CTA de download dentro dessa página como evento a
+instrumentar (decisão de ferramenta/analytics é técnica, cabe ao
+Coordenador).
+
+### 8.5 Premissas e riscos (adendo)
+
+| # | Premissa/Risco | Tipo | Dono | Prazo de validação |
+|---|---|---|---|---|
+| PR-07 | Screenshots reais e suficientes do produto podem ser obtidos a partir do repositório GitHub e/ou da execução local do executável, sem exigir arte/mockup criado do zero | Premissa | Executor | Antes de finalizar o conteúdo da nova página `evolucao-segura.html` |
+| PR-08 | O executável (`evolucao-segura.exe`) pode ser distribuído para download sem custo recorrente (ex.: via GitHub Releases do repositório já existente), compatível com G-10 do `GUARDRAILS.md` | Premissa | Coordenador | Antes de definir a hospedagem do binário no SDD.md |
+| PR-09 | O critério de roteamento (Seção 8.2: web = link direto, desktop = página própria) é suficiente para todos os apps restantes do portfólio (Minha Jornada, Meu Objetivo, Gestão da Pelada), sem exigir um terceiro padrão | Premissa | Gestor (chapéu PM) | Reavaliar quando cada um desses apps for publicado |
+
+### 8.6 Perguntas em aberto (adendo)
+
+Nenhuma pergunta em aberto pendente nesta rodada — o pedido do stakeholder já
+definiu o comportamento desejado (página de divulgação própria, com
+screenshots reais, em vez de link direto de download) com detalhe suficiente
+para o adendo do `PRD-TECNICO.md` (Seção 9, chapéu BA).
+
+---
+
+**Checklist de pronto (chapéu PM) — Adendo Rodada 3:**
+- [x] Problema/ajuste declarado em termos verificáveis (distinção
+      web-publicado vs. desktop-instalável, com razão de UX/negócio
+      explícita)
+- [x] Escopo do adendo com "dentro"/"fora" e justificativa
+- [x] Novo requisito de alto nível com prioridade justificada (RA-09)
+- [x] Premissas/riscos do adendo com dono e prazo (PR-07 a PR-09)
+- [x] `stakeholder-alignment-check`: pedido veio diretamente do stakeholder
+      nesta reabertura, sem conflito com o Gate 1 original (confirmado no
+      Gate 1 desta rodada, `CTO-REVIEW.md`)
+- [x] Nenhuma Pergunta em Aberto pendente nesta rodada
 
 **Checklist de pronto (chapéu PM) — Rodada 2:**
 - [x] Problema declarado em termos verificáveis

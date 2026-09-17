@@ -93,6 +93,7 @@ const HEADER_TEXT = '#0B2545';
 const HEADER_NAV_TEXT = '#264A6E';
 const GLASS_BG_ALPHA = 0.08; // rgba(255,255,255,0.08)
 const GLASS_FG_RGB = [255, 255, 255];
+const COLOR_NOTICE_ICON = '#FFD166'; // T8.1, Rodada 3
 
 let allPass = true;
 function report(name, ratio, minAA) {
@@ -108,6 +109,7 @@ report('--color-text-inverse-secondary (#B9D6D0) sobre --color-bg (#0B2545)', co
 report('--color-accent (#7FE3D2) sobre --color-bg (#0B2545)', contrastRatio(COLOR_ACCENT, '#0B2545'), 3.0);
 report('--color-header-text (#0B2545) sobre --color-header-bg (#FFFFFF)', contrastRatio(HEADER_TEXT, HEADER_BG), 4.5);
 report('--color-header-nav-text (#264A6E) sobre --color-header-bg (#FFFFFF)', contrastRatio(HEADER_NAV_TEXT, HEADER_BG), 4.5);
+report('--color-notice-icon (#FFD166) sobre --color-bg (#0B2545) (T8.1, ícone/título do .notice, UI)', contrastRatio(COLOR_NOTICE_ICON, '#0B2545'), 3.0);
 
 console.log('\n--- 2. Componentes dos Lotes 2/3 (revalidação cross-page) ---');
 report('Botão "Contato" do header: #FFFFFF sobre --color-bg (#0B2545)', contrastRatio('#FFFFFF', '#0B2545'), 4.5);

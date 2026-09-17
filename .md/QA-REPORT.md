@@ -2100,3 +2100,563 @@ de aceite central da tarefa nem em nenhuma combinação de contraste real).
 O lote está liberado para a auditoria de segurança do chapéu DevSecOps.
 
 ---
+
+## Lote 8 — Fundação de Componentes da Página de Produto (Evolução Segura, Rodada 3)
+
+**Escopo validado:** T8.1, T8.2, T8.3, todas com Status `Concluída` no
+`TASK.md` no momento desta validação. Nenhuma das 3 tarefas foi commitada
+ainda — confirmado via `git status` (`public/assets/css/tokens.css` e
+`public/assets/css/components.css` modificados; nenhum outro arquivo
+tocado nesta rodada).
+
+**Natureza do lote:** os 3 componentes são CSS puro (tokens + blocos de
+referência), sem tela renderizada — `evolucao-segura.html` (Lote 9) ainda
+não existe. O critério de aceite de cada tarefa é sobre a
+existência/estrutura/responsividade/contraste do CSS em si, não sobre uma
+página montada — validado exatamente nesses termos, sem antecipar
+julgamento sobre o Lote 9.
+
+**Metodologia:** leitura completa do `git diff` de `public/assets/css/
+tokens.css` e `public/assets/css/components.css` (não a nota de
+implementação do Executor no `TASK.md` como base de aprovação, usada só
+como ponto de partida de onde olhar), comparação linha a linha contra
+`UX-SPEC.md` Seção 3.1 (tokens/paleta), Seção 3.2 (tabela de componentes
+novos da Rodada 3) e Seção 6 (responsivo), e reexecução de
+`node dev/css/a11y-contrast-check.js` (script já existente, reaproveitado
+pelas 3 tarefas conforme documentado — reexecutado de forma independente
+por este Validador, não aceito do relato do Executor).
+
+### T8.1 — Tokens de "aviso"
+
+**Veredito: Aprovado.**
+
+- Os 3 tokens (`--color-notice-bg`, `--color-notice-border`,
+  `--color-notice-icon`) estão declarados no bloco `:root` de
+  `tokens.css`, com os valores exatos da tabela de paleta do `UX-SPEC.md`
+  Seção 3.1 (`rgba(255, 209, 102, 0.10)` / `rgba(255, 209, 102, 0.35)` /
+  `#FFD166`) — confirmado por leitura direta.
+- **Aditivo, confirmado:** `git diff` mostra só acréscimo de comentário +
+  3 linhas de token no bloco `:root`; nenhum token pré-existente teve seu
+  valor alterado (`--color-accent` e os demais 13 tokens de T1.1
+  permanecem byte-idênticos).
+- **Contraste crítico de UI reexecutado por este Validador:**
+  `--color-notice-icon` (#FFD166) sobre `--color-bg` (#0B2545) →
+  **10.67:1** (mínimo exigido para UI/ícone, 3:1) — PASS com folga larga,
+  confere exatamente com o valor documentado no comentário de `tokens.css`
+  e com o relatado pelo Executor.
+- `--color-notice-bg`/`--color-notice-border` são corretamente tratados
+  como decorativos (fundo/borda translúcidos do `.notice`), fora do
+  crítico de contraste texto/UI — avaliação aceita, o texto do `.notice`
+  de fato reaproveita `--color-text-inverse` (T8.3), já validado sobre
+  `--color-bg` sólido.
+- Família de cor "aviso" isolada de `--color-accent`, decisão já registrada
+  no `UX-SPEC.md` (teal = "positivo/destaque", âmbar = "atenção") —
+  coerente, nenhuma redefinição de significado de token existente.
+
+### T8.2 — Componentes de prova visual
+
+**Veredito: Aprovado com ressalva (achado Simples registrado).**
+
+- 4 componentes confirmados em `components.css`, seção própria e
+  aditiva a partir do final do arquivo: `.hero--product` (grid 1 coluna →
+  2 colunas `1.05fr 0.95fr` a partir de `min-width: 900px`, alinhamento à
+  esquerda sobrescrevendo o centralizado herdado de `.hero`), `.shot` (2
+  estados por composição de classe — `.shot__frame` tracejado com
+  `role="img"`/`aria-label` para "a capturar", `.shot__img` direto +
+  `.shot__tag--ready` para "capturado" — nunca imagem quebrada/espaço em
+  branco, conforme `UX-SPEC.md` Seção 4), `.problem-card`/`.pillar`
+  (variantes de conteúdo de `.glass-card`, sem token novo, herdam o
+  fallback `@supports not (backdrop-filter)` por composição de classe,
+  confirmado por não haver nenhuma redeclaração do fallback nesta seção),
+  `.feature`/`.feature--reverse` (grid 2 colunas a partir de 900px,
+  decisão de detalhe documentada — mesmo breakpoint do hero, desvio
+  pequeno e justificado da redação mais genérica "a partir de Tablet" da
+  Seção 6, aceito pelo mesmo raciocínio já usado em outras decisões de
+  detalhe deste projeto).
+- Bloco de referência HTML de `.hero--product` já indica
+  `<button type="button" ... disabled aria-disabled="true">` para o CTA
+  "Baixar para Windows" — elemento semântico correto para o estado
+  "Indisponível para download nesta fase" (`UX-SPEC.md` Seção 4),
+  corretamente sinalizado como fora do escopo desta tarefa (estilo visual
+  do estado disabled é T9.1/T9.6).
+- Nenhum token novo declarado nesta seção (confirmado por leitura
+  completa) — reaproveita só tokens já existentes de `tokens.css`/T1.1.
+- **Achado Simples (novo, identificado por este Validador):** o comentário
+  de verificação de contraste desta seção afirma que
+  `.hero__facts`/`.hero__cta-note` (`--color-text-inverse-secondary` sobre
+  o mesh gradient do `.hero`) é "o mesmo par revalidado em T4.2... **4.65
+  :1** no pior caso composto". Reexecutando
+  `node dev/css/a11y-contrast-check.js` nesta validação, o valor real do
+  pior caso composto (`--color-text-inverse-secondary` sobre `.glass-card`
+  sobre o pior blob do mesh gradient) é **4.82:1**, não 4.65:1 — o número
+  4.65:1 é um valor desatualizado, já citado originalmente no comentário
+  de T3.1 (`.hero`) antes da correção de opacidade aplicada em T4.2 (que
+  elevou o valor real para 4.82:1, conforme já registrado neste mesmo
+  `QA-REPORT.md`, seção "T4.2 — Auditoria e ajuste de acessibilidade WCAG
+  AA"), e agora repetido sem atualização no novo comentário de T8.2.
+  **Não é uma falha de contraste real** — 4.82:1 ainda passa com folga
+  acima do mínimo AA (4.5:1), e o componente `.hero__facts`/`.hero__cta-
+  note` de fato reaplica o mesmo par já validado, sem introduzir
+  composição nova; o único problema é o comentário citar o número antigo,
+  já sinalizado como impreciso desde o Lote 4 mas nunca corrigido no
+  CSS-fonte de onde T8.2 copiou a citação. **Classificação: Simples** —
+  divergência de documentação, não de comportamento real, não compromete
+  o critério de aceite central da tarefa (verificação de contraste existir
+  e passar) nem bloqueia outra tarefa do lote. Tarefa criada em
+  `Refatoração Lote-8` (ver Fechamento Estrutural abaixo); T8.2
+  **permanece `Concluída`**.
+- Verificação de contraste (demais pares da seção): reconfirmados por
+  script — `.shot__tag`/`.pillar__num` (10.13:1), `.shot__tag--ready`
+  (13.91:1 via par simétrico), `.shot__screen`/`.problem-card__title`/
+  `.pillar__title`/`.feature__title` (13.91:1), `.shot__hint`/
+  `.shot__caption`/`.problem-card__text`/`.pillar__text`/`.feature__text`
+  (9.96:1 sobre `--color-bg` sólido, confirmado que essas seções não têm
+  mesh gradient próprio — mesmo raciocínio já aceito em T3.2 para "Home —
+  Seções Apps/Sobre"), `.shot__privacy`/`.hero__eyebrow` (10.13:1) — todos
+  PASS, nenhuma outra imprecisão de documentação encontrada.
+
+### T8.3 — Componentes informativos
+
+**Veredito: Aprovado.**
+
+- 4 componentes confirmados em `components.css`, seção própria e aditiva
+  (nenhuma regra de T8.2/anteriores tocada, confirmado por `git diff`
+  isolado da seção): `.steps` (`<ol>` semântico esperado no HTML
+  consumidor, numeração 100% via `counter-reset`/`counter-increment`/
+  `content: counter(steps)` em `.steps__num::before`, puramente decorativa
+  — a ordem real fica garantida pelo `<ol>` nativo mesmo que o `::before`
+  falhe), `.notice` (reaproveita os 3 tokens de T8.1, nenhum valor
+  `rgba`/hex fixo repetido — confirmado por leitura completa da seção,
+  `--color-notice-bg`/`-border`/`-icon` são as únicas cores não-token
+  usadas), `.specs` (`<table>`/`<caption>`/`scope="row"` esperados no
+  bloco de referência; `@media (max-width: 767.98px)` empilha `th`/`td`
+  como `display: block`, sem nenhuma regra de `overflow-x`/rolagem
+  horizontal introduzida — critério de aceite "sem `<table>` com rolagem
+  horizontal" satisfeito por não introduzir rolagem, não por escondê-la),
+  `.faq` (`<details>`/`<summary>` nativos no bloco de referência,
+  indicador `::after` "+"/"–" reagindo a `[open]` via CSS puro, **zero**
+  `<script>`/JS novo introduzido — confirmado por `grep` de `<script`/
+  `on\w+=` em toda a seção: nenhuma ocorrência, G-01 respeitado).
+- Breakpoint de `.specs` é **767.98px**, não os 480px do mockup de
+  conceito — confirmado que bate exatamente com o critério de aceite do
+  `TASK.md` ("abaixo de 768px") e com o mesmo valor já usado em todo o
+  resto do projeto (T2.2, menu mobile) — decisão de divergir do mockup
+  aceita e correta.
+- Verificação de contraste reexecutada: `.steps__title`/`.notice__title`/
+  `.specs th`/`.faq__q` (`--color-text-inverse` sobre `--color-bg` por
+  trás do `.glass-card` translúcido, 13.91:1 — mesmo par já validado em
+  T1.1, aplicado sobre um fundo quase transparente, sem impacto
+  perceptível, mesmo raciocínio já aceito para `.app-card` em T3.4),
+  `.steps__text`/`.notice__text`/`.specs td`/`.faq__a`
+  (`--color-text-inverse-secondary`, 9.96:1), `.notice__icon`
+  (`--color-notice-icon`, 10.67:1, mesmo valor de T8.1), `.faq__q::after`
+  (`--color-accent`, 10.13:1) — todos PASS, e nesta seção (diferente de
+  T8.2) o comentário de contraste **não** repete nenhum número
+  desatualizado — todos os valores citados batem com o resultado real do
+  script.
+- `.notice__path` (fundo `rgba(0,0,0,0.28)` mais escuro que `--color-bg`
+  sólido) — raciocínio "estritamente mais escuro, logo o contraste só
+  aumenta em relação ao par já verificado" confirmado matematicamente
+  (adicionar uma camada preta translúcida sobre um fundo já escuro só
+  reduz a luminância do fundo, nunca aumenta, o que só favorece o
+  contraste de um texto claro por cima) — aceito.
+
+### Testes de integração cross-platform
+
+**N/A para este lote**, mesmo raciocínio já usado no Lote 1: nenhuma
+página HTML final foi montada ainda (Lote 9, ainda pendente) — não há
+contrato de API nem integração entre chapéis de implementação a testar
+neste momento. Os blocos de referência HTML documentados em comentário
+(não implementados como markup real) foram lidos e conferem com as
+classes/estrutura declaradas no CSS, mas a integração real só será
+testável quando `evolucao-segura.html` existir.
+
+### Requisitos não funcionais
+
+- Contraste WCAG AA: `node dev/css/a11y-contrast-check.js` reexecutado —
+  **todas as combinações PASS** (ver detalhe por tarefa acima; 1 achado
+  de documentação em T8.2, sem falha real).
+- Responsividade: `.hero--product`/`.feature` colapsam para 1 coluna
+  abaixo de 900px (confirmado por leitura da media query); `.specs`
+  empilha abaixo de 767.98px sem rolagem horizontal (confirmado); nenhuma
+  outra media query nova introduzida além dessas 2 (mesmo breakpoint
+  reaproveitado pelos 2 componentes de T8.2).
+- `prefers-reduced-motion: reduce`: nenhuma transição/animação declarada
+  em nenhum dos 8 componentes novos (T8.1 é só token, T8.2/T8.3 não
+  declaram `transition`) — nada a neutralizar, confirmado por leitura
+  completa das 2 seções novas.
+- G-01 (zero framework/build/toolchain): confirmado por `git status` —
+  nenhum `package.json`/lockfile/dependência nova introduzida; os 2
+  arquivos tocados são CSS puro.
+
+### Achados deste lote (resumo)
+
+| # | Tarefa | Achado | Classificação | Ação |
+|---|---|---|---|---|
+| 1 | T8.2 | Comentário de verificação de contraste cita `--color-text-inverse-secondary` sobre o pior caso composto do mesh gradient como "4.65:1", valor desatualizado de antes da correção de T4.2 — o valor real medido pelo script é 4.82:1 (ainda PASS, com mais folga que o citado) | **Simples** | Tarefa criada em `Refatoração Lote-8`; T8.2 permanece `Concluída` |
+
+Nenhum achado **Crítico** neste lote.
+
+## Fechamento Estrutural do Lote 8
+
+- T8.1, T8.2, T8.3: todas `Concluída` no `TASK.md`, todas aprovadas pelo
+  chapéu QA nesta validação (T8.2 com 1 ressalva de documentação, sem
+  impacto no critério de aceite central).
+- Dependências da Seção 4 do `TASK.md` relativas ao Lote 8 ("T8.1 não
+  depende de nada... T8.2 e T8.3 dependem de T8.1") estruturalmente
+  coerentes com os artefatos reais: T8.2/T8.3 de fato só consomem os 3
+  tokens de T8.1 (`--color-notice-*`) via `.notice` (T8.3) — `.hero--
+  product`/`.shot`/`.problem-card`/`.pillar`/`.feature` (T8.2) não usam
+  nenhum dos 3 tokens novos, confirmado por leitura completa da seção
+  (comentário do próprio T8.2 já registra essa não-dependência
+  explicitamente). Diagrama mermaid da Seção 4 (subgraph "Lote 8 -
+  Componentes pagina produto", nós `T81`/`T82`/`T83`) já existe e está
+  coerente com o texto — nenhuma dependência órfã/inconsistente.
+- Nenhuma tarefa `Bloqueada` sem resolução.
+- 1 achado Simples deste lote vira tarefa em `Refatoração Lote-8`:
+
+  **Refatoração Lote-8**
+  | ID | Tarefa | Origem | Prazo sugerido |
+  |---|---|---|---|
+  | RL8.1 | Corrigir o comentário de verificação de contraste em `assets/css/components.css` (seção "Evolução Segura — Prova visual... (T8.2)"): `.hero__facts`/`.hero__cta-note` sobre o pior caso composto do mesh gradient mede 4.82:1 (script `a11y-contrast-check.js`), não 4.65:1 como citado — atualizar também a referência equivalente já existente na seção "Hero (T3.1)", se ainda não corrigida | QA-REPORT.md, T8.2 | Baixo esforço; antes do próximo lote que tocar este CSS, não bloqueia deploy |
+
+  Esta tarefa não exige redesenho de dependência/decomposição — não
+  escala ao `coordenador`.
+
+**Veredito geral do Lote 8: Aprovado com ressalvas** (1 achado Simples, de
+documentação, registrado em `Refatoração Lote-8`, sem impacto em critério
+de aceite/contraste real de nenhuma das 3 tarefas). O lote está liberado
+para a auditoria de segurança do chapéu DevSecOps.
+
+---
+
+## Lote 9 — Página `evolucao-segura.html` (Rodada 3)
+
+**Contexto de execução relevante para esta validação:** as 6 tarefas
+(T9.1-T9.6) foram implementadas por 6 instâncias diferentes do Executor
+editando o mesmo arquivo `public/evolucao-segura.html` em paralelo (T9.1
+primeiro/sozinha, criando o arquivo e os marcadores de continuação; depois
+T9.2/T9.3/T9.4/T9.5/T9.6 em paralelo). Houve um incidente de concorrência
+real durante essa rodada: a instância de T9.2 duplicou por engano o
+comentário-marcador `<!-- T9.3 adiciona aqui -->`, o que fez a instância de
+T9.3 preencher o marcador deslocado, invertendo a ordem das Seções 4 e 5. A
+própria instância de T9.2 detectou isso (rodando seu teste automatizado
+`dev/html/evolucao-segura.t9-2.check.js`) e corrigiu, reordenando sem
+alterar o conteúdo de T9.3 — documentado na nota de Status de T9.2 no
+`TASK.md`. **Este chapéu não aceitou essa correção como dada** — a
+integridade estrutural do arquivo foi reauditada de forma independente
+abaixo (item 1), sem se apoiar na nota de implementação do Executor nem na
+verificação prévia do orquestrador.
+
+### 1. Integridade estrutural do arquivo (reauditoria independente)
+
+- **Ordem das 10 `<section>`:** confirmada por leitura completa e sequencial
+  do arquivo (`public/evolucao-segura.html`) — 1 Hero, 2 O problema, 3
+  Proposta de valor, 4 Por dentro (`id="por-dentro"`), 5 Conformidade
+  (`id="cfp-titulo"`), 6 Instalação (`id="instalacao"`), 7 Licença
+  (`id="licenca"`), 8 Requisitos (`id="requisitos"`), 9 Dúvidas
+  (`aria-labelledby="faq-titulo"`), 10 CTA final (`id="baixar"`) — ordem
+  bate exatamente com o Fluxo 3 do `UX-SPEC.md`. A inversão do incidente
+  (Seção 5 antes da Seção 4) **não está presente** no arquivo publicado.
+- **Balanceamento de tags** (contagem de abertura vs. fechamento por
+  `grep -c`, confirmado nesta validação, não reaproveitado de nenhuma
+  verificação anterior): `<section` 10 / `</section>` 10; `<main` 1 /
+  `</main>` 1; `<header` 1 / `</header>` 1; `<footer` 1 / `</footer>` 1;
+  `<html` 1 / `</html>` 1; `<body` 1 / `</body>` 1 — todos 1:1 ou N:N.
+- **IDs duplicados:** nenhum — todo `id="..."` do documento (16 no total,
+  incl. `id="main"`, `id="site-header-nav"`, os 8 `id` de heading/seção e
+  os 4 `id` de âncora) aparece exatamente 1 vez (`grep`/`sort`/`uniq -c`).
+- **Marcadores de continuação `<!-- T9.X adiciona aqui -->`:** nenhum
+  restante no arquivo — todos os 5 (T9.2-T9.6) foram substituídos pelo
+  conteúdo real, confirmado por busca direta.
+- **Conclusão deste item:** a verificação independente do orquestrador
+  está correta. O incidente de concorrência foi de fato detectado e
+  corrigido dentro da própria rodada, sem deixar resíduo estrutural.
+
+### 2. Reconciliação dos 5 checkers automatizados (`dev/html/evolucao-segura.t9-{1,2,3,5,6}.check.js`)
+
+Rodados nesta validação (`node dev/html/evolucao-segura.t9-N.check.js`),
+não só lidos do relato do Executor:
+
+| Checker | Resultado | Observação |
+|---|---|---|
+| `t9-1.check.js` | 22 PASS, **1 FAIL** | FAIL esperado/único: "comentários de continuação para T9.2-T9.6 presentes" — o teste de T9.1 ainda procura pelos 5 marcadores `<!-- T9.X adiciona aqui -->`, que foram legitimamente substituídos pelo conteúdo real das sub-tarefas seguintes. Confirmado que é **exatamente essa e só essa** falha (staleness de teste, não bug real) — nenhuma das outras 22 asserções (documento, header/`aria-current`, hero/S1, CTAs, `.problem-card`) falhou |
+| `t9-2.check.js` | 17/17 PASS | Inclui a asserção "Seção 5 vem depois da Seção 4 ('Por dentro')" — **PASSA**. Nota de T9.6 no `TASK.md` ("o teste de T9.2 espera a Seção 5 logo após a Seção 3... não corrigido") está **desatualizada**: a própria correção de ordenação de T9.2 já havia atualizado este teste para refletir a ordem correta antes de T9.6 ser escrita; não há falha real remanescente aqui — achado de documentação, não de comportamento (ver Achados abaixo) |
+| `t9-3.check.js` | 32/32 PASS | Âncora `#por-dentro`, 4 `.feature` com 2+ `.feature--reverse`, 6 pares webp/PNG reais em disco, `alt` não vazio, legendas de privacidade |
+| `t9-5.check.js` | 24/24 PASS | Ausência de `<input>`/`<form>`/`.steps`/menção a "chave"/"contra-chave" na seção de licença; `.specs` completo |
+| `t9-6.check.js` | 18/18 PASS | FAQ com 5 perguntas, CTA final sem `href` de `.exe`/GitHub/`#`, rodapé byte-idêntico a `apps.html` |
+| (T9.4 sem checker) | N/A | Esperado — T9.4 não alterou CSS nem introduziu combinação de cor nova (nota da própria tarefa: "contraste não revalidado por não haver alteração de CSS"); a Seção 6 (Instalação) foi coberta por leitura direta neste chapéu (item 4 abaixo) |
+
+### 3. Os 2 CTAs de download — confirmação independente de "sem nenhuma ação"
+
+Busca própria no arquivo (`public/evolucao-segura.html`), não apoiada nos
+testes dos Executores:
+
+- **Hero (T9.1), linha 107:** `<button type="button" class="hero__cta hero__cta--primary" disabled aria-disabled="true">Baixar para Windows</button>` — elemento `<button>`, não `<a>`; `disabled` presente; `aria-disabled="true"` presente; nenhum `href`. Nota textual visível na linha seguinte: `<p class="hero__cta-note">Download ainda não disponível nesta fase.</p>`.
+- **CTA final (T9.6), linha 777:** `<button type="button" class="hero__cta hero__cta--primary" disabled aria-disabled="true">Baixar para Windows</button>` — mesmo elemento/estado, reaproveitado literalmente. Nota textual na linha seguinte: `<p class="final-cta__meta">Download ainda não disponível nesta fase.</p>`.
+- Varredura no arquivo inteiro: nenhum `href="[^"]*\.exe"`, nenhum
+  `github\.com/[^"]*releases`, nenhum `href="#"` em qualquer elemento
+  (confirmado por regex própria, não reaproveitada dos checkers). O único
+  link relacionado à instalação é `<a class="final-cta__link" href="#instalacao">`
+  (âncora interna para a Seção 6, funcional e esperada — não é um destino
+  de download disfarçado).
+- **Conclusão:** os 2 CTAs atendem integralmente L-11/`UX-SPEC.md` Seção 4
+  (5º estado "Indisponível para download nesta fase").
+
+### 4. T9.4 — Seção de Instalação sem screenshot S8 (esperado, não é achado)
+
+Confirmado por leitura direta: a Seção 6 (`id="instalacao"`) contém `.steps`
+(4 passos reais) e `.notice` (aviso honesto sobre o SmartScreen, instalador
+não assinado, caminho "Mais informações › Executar assim mesmo", lista do
+que pode ser conferido antes, link de contato) — sem nenhuma `<figure
+class="shot">` para o slot S8. No lugar do slot, comentário HTML claro:
+`<!-- TODO: screenshot S8 (aviso do SmartScreen) pendente — ver TASK.md
+Lacuna L-13 ... -->`, posicionado corretamente ao final da seção, antes do
+fechamento de `</section>`. Isso é o esperado (decisão do usuário após
+T11.2 não conseguir reproduzir a tela real com segurança, ver L-13) — não é
+reportado como erro.
+
+### 5. T9.5 — Seção de Licença sem mecanismo de ativação (esperado, não é achado)
+
+Confirmado por leitura direta e pelo `t9-5.check.js` (24/24 PASS): a Seção
+7 (`id="licenca"`) não tem nenhum `<input>`/`<form>` em toda a página
+(varredura global), não usa `.steps`, e não menciona as palavras "chave"
+nem "contra-chave" em nenhum formato (nem `.steps`, nem prosa) — conteúdo
+restrito ao que é verificável hoje (7 dias de teste; bloqueio só de
+escrita após expirar; leitura/exportação em PDF continuam disponíveis;
+frase honesta sobre o passo a passo pós-teste ainda estar sendo definido).
+Isso é intencional (G-04 + L-12, ajuste confirmado pelo usuário após
+investigação do Guia do Usuário/Catálogo de Telas real do produto) — não é
+um achado.
+
+### 6. Acessibilidade
+
+- `node dev/css/a11y-contrast-check.js`: **todas as combinações PASS**
+  (rodado nesta validação), incluindo os pares específicos de
+  `evolucao-segura.html` já cobertos pelos tokens/componentes dos Lotes
+  1/8 (nenhuma combinação de cor nova introduzida pelo Lote 9 — confirmado
+  pelas próprias notas de T9.1-T9.6, nenhuma alterou `tokens.css`).
+- **Hierarquia de headings:** confirmada por extração de todos os
+  `<h1>`-`<h6>` do arquivo — 1 único `<h1>` (hero), seguido só por `<h2>`
+  (10 títulos de seção) e `<h3>` (cards/pillars/features/notice), nenhum
+  `<h4>`-`<h6>`, nenhum salto de nível (H1→H2→H3 em todas as ramificações).
+- **`alt` de imagens novas:** os 7 pares `<picture>`/`<img>` (S1-S7) têm
+  `alt` não vazio e descritivo do conteúdo real de cada tela (confirmado
+  por leitura de cada um); os 2 ícones do rodapé/header (decorativos ou de
+  marca) seguem o padrão já estabelecido (`alt=""`/`alt="LJS Software"`),
+  sem imagem nova sem `alt`.
+
+### 7. Verificação visual dos 7 screenshots (nomes/dados fictícios)
+
+Abertos e inspecionados visualmente nesta validação (S1, S2, S3, S4, S5,
+S6, S7 — todos os 7): nomes de pacientes (João Pedro Nascimento, Mariana
+Albuquerque Rocha, Beatriz Campos Lima, Rafael Moreira Teixeira, Luísa
+Fernandes Prado, Carlos Eduardo Siqueira, Tânia Regina Vasconcelos),
+telefone ((11) 90000-0201, padrão claramente fictício), nome de psiquiatra
+fictício ("Dr. Paulo Andrade", explicitamente rotulado como fictício na
+própria captura) e datas em 2026 (compatível com o ambiente de
+demonstração) — nenhum dado real de paciente identificado. Confirma o
+padrão já atestado pelos Executores (T11.1), de forma independente.
+
+### Achados deste lote (resumo)
+
+| # | Tarefa | Achado | Classificação | Ação |
+|---|---|---|---|---|
+| 1 | T9.6 (nota de documentação) | A nota de Status de T9.6 no `TASK.md` afirma que `t9-2.check.js` reporta falha esperando a Seção 5 logo após a Seção 3 — na verdade, ao rodar o teste nesta validação, ele PASSA (17/17), incluindo a checagem explícita de ordem Seção 4 → Seção 5. A nota está desatualizada em relação ao estado real do teste (provavelmente escrita antes da própria correção de T9.2 ter sido consolidada) | **Simples** | Tarefa criada em `Refatoração Lote-9` (ver Fechamento Estrutural abaixo); T9.6 permanece `Concluída` — não há falha de comportamento, só uma imprecisão de nota de implementação |
+
+Nenhum achado **Crítico**. Nenhuma reprovação de tarefa.
+
+### Testes de integração cross-platform
+
+- Header/rodapé de `evolucao-segura.html` comparados byte a byte contra o
+  bloco de `public/apps.html`: idênticos, exceto o `aria-current="page"`
+  esperado em "Apps" (não em "Home"/"Sobre") — confirma RT-02/G-02.
+- Link "Ver por dentro" do hero (T9.1) → âncora `#por-dentro` (T9.3):
+  navegação funcional confirmada por correspondência de `href`/`id`.
+- Link `#instalacao` do CTA final (T9.6) → Seção 6 (T9.4): âncora
+  funcional confirmada.
+- Nenhuma integração com `apps.html`/`index.html` (T10.1/T10.2, ainda
+  `Pendente`) faz parte do escopo do Lote 9 — o link "Ver app" que
+  apontará para esta página é tarefa de outro lote, não bloqueia o
+  fechamento deste.
+
+### Requisitos não funcionais
+
+- Contraste WCAG AA: PASS (item 6 acima).
+- `prefers-reduced-motion`: nenhuma transição/animação nova introduzida
+  pelo Lote 9 (confirmado — nenhuma das 6 tarefas tocou regras de
+  `transition`/`animation` em `components.css`).
+- Sem cookies/tracking além do already-existente beacon do Cloudflare
+  Web Analytics (script já presente nas demais páginas, reaproveitado
+  sem alteração).
+- `width`/`height` reais declarados em todos os 7 `<img>` de screenshot
+  (reserva de espaço, evita CLS) — confirmado por leitura.
+
+## Fechamento Estrutural do Lote 9
+
+- T9.1, T9.2, T9.3, T9.4, T9.5, T9.6: todas `Concluída` no `TASK.md`,
+  todas aprovadas pelo chapéu QA nesta validação (nenhuma reprovação,
+  1 achado Simples de documentação em T9.6).
+- Dependências da Seção 4 do `TASK.md` relativas ao Lote 9 ("T9.1 e T9.2
+  dependem de T8.2... T9.3 depende de T8.2 e de T11.1... T9.4 depende de
+  T8.3 e de T11.2... T9.5 depende de T8.2 e T8.3... T9.6 depende de T8.3")
+  estruturalmente coerentes com os artefatos reais: todos os componentes
+  citados (`.hero--product`/`.problem-card`/`.pillar`/`.feature`/`.shot`
+  de T8.2; `.notice`/`.specs`/`.faq` de T8.3) são de fato consumidos pelas
+  seções correspondentes, confirmado por leitura. Nenhuma dependência
+  órfã/inconsistente. Diagrama mermaid da Seção 4 (subgraph "Lote 9 -
+  Pagina evolucao-segura", nós `T91`-`T96`) existe e é coerente com a
+  tabela de dependências.
+- Nenhuma tarefa `Bloqueada` sem resolução.
+- L-13 (screenshot S8 pendente) confirmada como já rastreada
+  corretamente na Seção 6 do `TASK.md` — não é re-registrada como achado
+  novo deste lote, apenas confirmada como consistente com o que a Seção 6
+  (Instalação) do arquivo real implementa (item 4 acima).
+- 1 achado Simples deste lote vira tarefa em `Refatoração Lote-9`:
+
+  **Refatoração Lote-9**
+  | ID | Tarefa | Origem | Prazo sugerido |
+  |---|---|---|---|
+  | RL9.1 | Atualizar a nota de Status de T9.6 no `TASK.md`: remover/corrigir a afirmação de que `dev/html/evolucao-segura.t9-2.check.js` reporta falha esperando a Seção 5 logo após a Seção 3 — o teste já passa (17/17) e checa explicitamente a ordem correta (Seção 4 antes da Seção 5) | QA-REPORT.md, Lote 9 (item 2 acima) | Baixo esforço; documentação, não bloqueia deploy |
+
+  Esta tarefa não exige redesenho de dependência/decomposição — não
+  escala ao `coordenador`.
+
+**Veredito geral do Lote 9: Aprovado com ressalvas** (1 achado Simples, de
+documentação — nota desatualizada no `TASK.md` sobre o estado de um teste
+que na verdade passa —, sem impacto em nenhum critério de aceite real das
+6 tarefas). Integridade estrutural do arquivo (ordem das seções, tags
+balanceadas, IDs únicos, ausência de marcadores residuais) reauditada de
+forma independente e confirmada correta. O lote está liberado para a
+auditoria de segurança do chapéu DevSecOps.
+
+## Lote 10 — Integração na Vitrine (Rodada 3)
+
+**Pré-requisito confirmado:** as 2 tarefas do lote estão `Concluída` no
+`TASK.md`, e o Lote 9 (dependência de T10.2) já tem veredito "Aprovado com
+ressalvas" acima — build liberado para esta validação.
+
+Validação direta contra o `git diff` de `public/apps.html` e
+`public/index.html` (nota de implementação do Executor usada só como
+referência de onde olhar, não como base de aprovação):
+
+- **T10.1 (correção de texto do card):** confirmado nos 2 arquivos.
+  `.app-card__description` do card "Evolução Segura" mudou de "Prontuário
+  digital simples, com seus dados sempre com você." (texto que falava
+  como se o produto fosse para o paciente) para "Prontuário eletrônico
+  criptografado para o psicólogo clínico autônomo." — idêntico,
+  byte-a-byte, em `apps.html` e `index.html`. `data-app-summary` do botão
+  "Saiba mais" também reescrito nos 2 arquivos, texto idêntico entre si
+  ("Feito para o psicólogo clínico autônomo registrar seus pacientes. O
+  Evolução Segura mantém o prontuário criptografado no seu próprio
+  computador, sem depender de nuvem ou servidor de terceiros."),
+  consistente em tom e conteúdo com o hero de `evolucao-segura.html`
+  (Lote 9, "psicólogo clínico autônomo"). Nome do app ("Evolução Segura")
+  mantido sem alteração. Nenhuma classe/atributo além do texto tocado.
+- **T10.2 (badge → link "Ver app"):** confirmado nos 2 arquivos.
+  `<span class="badge">Em breve</span>` (e o comentário HTML "Badge
+  isolado (RF-02)..." que o acompanhava) foi substituído por `<a
+  class="badge badge--link" href="evolucao-segura.html"
+  data-analytics-event="app-evolucao-segura">Ver app</a>`, idêntico em
+  `apps.html` e `index.html`. Comparação lado a lado com os 2 outros
+  cards que já usam `badge--link` (Destino Ideal e Radar Esportivo, T6.2)
+  no mesmo arquivo: ambos têm `target="_blank"`, `rel="noopener"` e
+  `<span class="sr-only"> (abre em nova aba)</span>` dentro do `<a>` —
+  correto para links externos (Vercel). O link de Evolução Segura
+  **não** tem nenhum dos três, corretamente: é navegação interna, mesmo
+  domínio, sem abrir nova aba — exatamente a diferença exigida pelo
+  critério de aceite de T10.2 (RF-09/RN-03). `evolucao-segura.html`
+  existe de fato em `public/` (Lote 9, já validado e aprovado com
+  ressalvas acima) — link resolve para arquivo real, não quebrado.
+- **Isolamento da mudança:** `git diff -- public/apps.html
+  public/index.html` mostra só os 2 hunks do card "Evolução Segura" em
+  cada arquivo (descrição + `data-app-summary` + badge→link); nenhum
+  outro card, nenhuma outra seção de nenhum dos 2 arquivos foi tocada.
+- Nenhum achado de bug nesta validação — 0 crítico, 0 simples.
+
+**Veredito geral do Lote 10: Aprovado, sem ressalvas.** As 2 tarefas
+cumprem o critério de aceite escrito no `TASK.md` sem desvio. O lote está
+liberado para a auditoria de segurança do chapéu DevSecOps.
+
+## Fechamento Estrutural do Lote 10
+
+- T10.1, T10.2: ambas `Concluída` no `TASK.md`, ambas aprovadas pelo
+  chapéu QA acima (nenhuma reprovação).
+- Dependências da Seção 4 do `TASK.md` relativas ao Lote 10 ("T10.1 não
+  depende de nenhuma tarefa desta reabertura... T10.2 depende do Lote 9
+  completo") estruturalmente coerentes com os artefatos reais: T10.2
+  aponta para `evolucao-segura.html`, que já existe e está completo
+  (Lote 9). Nenhuma dependência órfã/inconsistente. Diagrama mermaid da
+  Seção 4 (subgraph "Lote 10 - Integracao vitrine", nós `T101`/`T102`)
+  existe e é coerente com a tabela de dependências.
+- Nenhuma tarefa `Bloqueada` sem resolução.
+- Nenhum achado simples/débito baixo-médio deste lote — nenhuma tarefa
+  nova a criar em `Refatoração Lote-10`.
+- Este é o último lote de tarefas de conteúdo/frontend desta reabertura
+  (Lote 11 é do Executor, sem chapéus QA/DevSecOps aplicáveis às capturas
+  de screenshot em si, e já está registrado à parte).
+
+**Veredito geral do Lote 10: fechamento estrutural confirmado, sem
+achado a registrar.** Nenhuma inconsistência que exija redesenho de
+dependência/decomposição — não escala ao `coordenador`.
+
+## Checagem de Consistência de Ponta a Ponta — Reabertura Pontual (Lotes 8-11)
+
+Fluxo completo percorrido manualmente contra os arquivos reais, na ordem
+que um visitante real percorreria:
+
+1. `apps.html`/`index.html` → card "Evolução Segura" com descrição
+   correta para o público real (psicólogo, T10.1) e badge "Ver app"
+   (T10.2) apontando para `evolucao-segura.html`.
+2. Clique em "Ver app" → cai em `evolucao-segura.html` (Lote 9), que
+   usa os 8 componentes de CSS do Lote 8 (`.hero--product`,
+   `.problem-card`, `.pillar`, `.feature`, `.shot`, `.notice`, `.specs`,
+   `.faq`) sem nenhuma combinação de cor nova além das já verificadas em
+   T8.1.
+3. Na página, os 2 CTAs "Baixar para Windows" (hero e CTA final) estão
+   no estado "indisponível para download nesta fase" — elemento
+   não-`<a>`, `disabled`/`aria-disabled="true"`, sem `href` para `.exe`
+   nem GitHub Releases, com nota textual visível — decisão explícita do
+   usuário (L-11), não um bug.
+4. 7 dos 8 screenshots reais (S1-S7) estão publicados em
+   `assets/img/evolucao-segura/` e referenciados na página (Lote 11,
+   T11.1/T11.4 `Concluída`); o 8º (S8, SmartScreen) está pendente
+   (T11.2, L-13) e a Seção 6 (Instalação) já reflete essa ausência
+   corretamente com um comentário `TODO` em vez de imagem simulada.
+
+O fluxo é coerente de ponta a ponta: nenhum passo quebra, nenhum link
+morto, nenhuma promessa de download real feita ao usuário além do que
+foi decidido publicar.
+
+**Status final de todas as lacunas abertas nesta reabertura:**
+
+| Lacuna | Status ao final desta validação |
+|---|---|
+| L-08 (ativação/licenciamento server-side) | Fora de escopo desta reabertura, por decisão consciente — registrada como risco RT-07 no `SDD.md`; página publicada só com conteúdo explicativo, sem formulário funcional. Não bloqueia o Lote 10. |
+| L-09/RT-08 (repositório GitHub privado) | Confirmado `404`/`isPrivate: true` — bloqueia só uma futura liberação real de link de download dentro de `evolucao-segura.html`; deixou de ser pré-requisito de T10.2 (link "Ver app" é interno). Não bloqueia o Lote 10. |
+| L-10 (voz da página, 1ª pessoa restrita) | **Resolvida** — decisão adotada e documentada em `UX-SPEC.md` Seção 7, confirmada pelo usuário nesta reabertura. |
+| L-12 (licença simplificada, sem tela de chave/contra-chave) | **Resolvida** — seção "Licença de uso" reescrita para afirmar só o verificável (7 dias de teste), sem passo a passo de chave; slot S9 removido. |
+| L-13 (screenshot S8 do SmartScreen) | **Ainda pendente** — investigação honesta e documentada (T11.2), sem imagem simulada publicada; não bloqueia o deploy do restante do lote (T9.4 já trata a ausência corretamente com comentário `TODO`). |
+
+**Lotes com ressalva registrada nesta reabertura:**
+- **Lote 8 — Validado com ressalvas:** RL8.1 (comentário de contraste
+  desatualizado em `assets/css/tokens.css`, replica um número já
+  desatualizado do `UX-SPEC.md`) — documentação, sem impacto em nenhuma
+  combinação de cor real; virou tarefa em `Refatoração Lote-8`, baixo
+  esforço, sem urgência.
+- **Lote 9 — Validado com ressalvas:** RL9.1 (nota de Status de T9.6 no
+  `TASK.md` cita falha de teste que na verdade já passa) — documentação,
+  sem impacto em critério de aceite; virou tarefa em `Refatoração
+  Lote-9`, baixo esforço, sem urgência.
+- **Lote 10 — Validado, sem ressalvas** (este lote, acima).
+- **Lote 11 — 2/3 tarefas concluídas** (T11.1, T11.4 `Concluída`; T11.2
+  `Pendente`, investigada e documentada como L-13, sem bloquear o resto
+  do fluxo — não é uma tarefa de código/QA/segurança, é uma captura de
+  screenshot que depende de um ambiente onde o SmartScreen realmente
+  bloqueie o instalador).
+
+Nenhuma dessas 2 ressalvas (RL8.1, RL9.1) e nenhuma das 5 lacunas acima
+exige redesenho de dependência/decomposição — nenhuma escala ao
+`coordenador` nesta validação.
+
+---

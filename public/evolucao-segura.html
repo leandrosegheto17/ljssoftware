@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evolução Segura — Prontuário Eletrônico Criptografado | LJS Software</title>
+<meta name="description" content="Evolução Segura: prontuário eletrônico criptografado no seu computador, feito para o psicólogo clínico autônomo. Conheça o app da LJS Software.">
+<link rel="icon" href="assets/img/favicon/favicon.ico" sizes="any">
+<link rel="icon" href="assets/img/favicon/favicon-32x32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="assets/img/favicon/favicon-512x512.png" type="image/png" sizes="512x512">
+<link rel="apple-touch-icon" href="assets/img/favicon/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Evolução Segura — Prontuário Eletrônico Criptografado | LJS Software">
+<meta property="og:description" content="Evolução Segura: prontuário eletrônico criptografado no seu computador, feito para o psicólogo clínico autônomo. Conheça o app da LJS Software.">
+<meta property="og:image" content="https://ljssoftware.com.br/assets/img/logo/logo-ljssoftware-transparente.png">
+<meta property="og:url" content="https://ljssoftware.com.br/evolucao-segura.html">
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+</head>
+<body>
+
+  <!--
+    Header/Nav + skip link — bloco de referência copiado literalmente de
+    public/apps.html (T2.1/T2.2, TASK.md Seção 1.2 / SDD.md RT-02:
+    byte-idêntico entre as páginas, exceto o item de nav com
+    aria-current="page"). Nesta página, "Apps" recebe aria-current (não
+    "Home") porque o visitante chega aqui a partir do card "Ver app" da
+    vitrine de apps (UX-SPEC.md Seção 7 / Fluxo 2), não da Home.
+  -->
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="site-header__brand" href="index.html">
+        <img src="assets/img/logo/logo-ljssoftware-icone.png" alt="LJS Software" class="site-header__icon" width="56" height="56">
+        <span class="site-header__brand-text">LJS Software</span>
+      </a>
+      <button type="button" class="site-header__toggle" aria-expanded="false" aria-controls="site-header-nav" aria-label="Abrir menu">
+        <span class="site-header__toggle-icon" aria-hidden="true"></span>
+      </button>
+      <nav class="site-header__nav" id="site-header-nav" aria-label="Navegação principal">
+        <ul class="site-header__nav-list">
+          <li><a class="site-header__nav-link" href="apps.html" aria-current="page">Apps</a></li>
+          <li><a class="site-header__nav-link" href="sobre.html">Sobre</a></li>
+        </ul>
+        <a class="site-header__cta" href="index.html#contato">Contato</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <!--
+      ========================================================================
+      Seção 1 — Hero de produto (T9.1, UX-SPEC.md Fluxo 3 item 1)
+      ========================================================================
+      `.hero--product`: variante de 2 colunas do `.hero` (T3.1), bloco de
+      referência definido em assets/css/components.css ("Evolução Segura —
+      Prova visual", T8.2). Copy portada do mockup de conceito aprovado
+      (evolucao-segura-mockup.html), adaptada ao markup real dos componentes.
+
+      2 CTAs (UX-SPEC.md Seção 4, 5º estado de tela "Indisponível para
+      download nesta fase"):
+      - "Baixar para Windows": elemento não-<a> (<button disabled>), sem
+        href para .exe/GitHub Releases, sem href="#"/JS simulando destino,
+        cursor not-allowed e opacidade reduzida (assets/css/components.css,
+        seletor `.hero__cta--primary:disabled`) — visualmente distinto do
+        CTA secundário. Nota textual visível junto ao botão
+        (`.hero__cta-note`).
+      - "Ver por dentro": funcional, âncora para a Seção 4 (#por-dentro),
+        que T9.3 cria.
+
+      Screenshot: slot S1, já capturado (T11.4) — estado "capturado" do
+      `.shot` (span `.shot__tag--ready` + <picture> com fallback PNG,
+      sem `.shot__frame`).
+    -->
+    <section class="hero hero--product">
+      <div class="decorative-shape hero__shape hero__shape--1" aria-hidden="true"></div>
+      <div class="decorative-shape hero__shape hero__shape--2" aria-hidden="true"></div>
+
+      <div class="container hero__inner">
+        <div class="hero__col">
+          <p class="hero__eyebrow">Evolução Segura · Prontuário eletrônico</p>
+
+          <h1 class="hero__title">O prontuário do seu consultório, criptografado no seu computador.</h1>
+
+          <p class="hero__subtitle">
+            Feito para o psicólogo clínico autônomo. O acervo fica na sua máquina,
+            protegido por uma chave que só abre com a sua senha mestra — e cada
+            evolução, depois de salva, não muda mais: correção é retificação
+            registrada, não rasura.
+          </p>
+
+          <ul class="hero__facts">
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> 100% local</li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Windows 10 e 11</li>
+            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> 7 dias para testar</li>
+          </ul>
+
+          <div class="hero__ctas">
+            <!--
+              Estado "Indisponível para download nesta fase" (UX-SPEC.md
+              Seção 4): botão real, mas não-clicável, sem destino de
+              download — decisão do usuário, ainda não quer distribuir o
+              produto (ver TASK.md, Lote 9/10).
+            -->
+            <button type="button" class="hero__cta hero__cta--primary" disabled aria-disabled="true">Baixar para Windows</button>
+            <a class="hero__cta hero__cta--secondary" href="#por-dentro">Ver por dentro</a>
+          </div>
+
+          <p class="hero__cta-note">Download ainda não disponível nesta fase.</p>
+        </div>
+
+        <div class="hero__col">
+          <figure class="shot">
+            <span class="shot__tag shot__tag--ready">SLOT S1 · print real capturado</span>
+            <picture>
+              <source srcset="assets/img/evolucao-segura/shot-s1.webp" type="image/webp">
+              <img
+                class="shot__img"
+                src="assets/img/evolucao-segura/shot-s1.png"
+                alt="Tela de entrada do Evolução Segura pedindo a senha mestra para abrir o acervo, com o aviso 'Acervo protegido localmente — sem conexão necessária'."
+                width="1264"
+                height="785"
+                loading="eager"
+              >
+            </picture>
+            <figcaption class="shot__caption">
+              <span class="shot__privacy">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0"/></svg>
+                Acervo de demonstração — nomes fictícios obrigatórios
+              </span>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!--
+      ========================================================================
+      Seção 2 — O problema (T9.1, UX-SPEC.md Fluxo 3 item 2)
+      ========================================================================
+      3 `.problem-card` (variante de conteúdo do `.glass-card`, bloco de
+      referência em assets/css/components.css, T8.2) dentro do invólucro
+      genérico de seção (`.section`/`.section__head`/..., T9.1 — ver
+      comentário de referência em assets/css/components.css). Fallback
+      `@supports not (backdrop-filter)` herdado automaticamente de
+      `.glass-card` por composição de classe, sem necessidade de teste
+      manual adicional (mesmo raciocínio já validado em T3.4/T8.2).
+    -->
+    <section class="section section--alt" aria-labelledby="problema-titulo">
+      <div class="container">
+        <div class="section__head">
+          <p class="section__kicker">O ponto de partida</p>
+          <h2 class="section__title" id="problema-titulo">O concorrente não é outro software. É o arquivo de texto na pasta Documentos.</h2>
+          <p class="section__lead">
+            A maior parte do registro clínico autônomo vive num editor de texto ou num
+            caderno. Funciona — até o dia em que não funciona. Três coisas costumam
+            passar despercebidas:
+          </p>
+        </div>
+
+        <div class="grid grid--3col">
+          <article class="glass-card problem-card">
+            <svg class="problem-card__icon" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0"/><path d="M15 15l4-4"/>
+            </svg>
+            <h3 class="problem-card__title">Abre com dois cliques</h3>
+            <p class="problem-card__text">
+              Qualquer pessoa que sentar naquele computador — em casa, no consultório
+              compartilhado, ou quem ficar com o notebook depois de um furto — abre o
+              arquivo e lê tudo. Não há senha entre o visitante e o prontuário.
+            </p>
+          </article>
+
+          <article class="glass-card problem-card">
+            <svg class="problem-card__icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M18 17h-11a4 4 0 0 1 0-8 6 6 0 0 1 11.5 1.5A3.5 3.5 0 0 1 18 17z"/><path d="M12 21v-6"/><path d="M9.5 17.5L12 15l2.5 2.5"/>
+            </svg>
+            <h3 class="problem-card__title">Já está na nuvem — sem ninguém ter decidido isso</h3>
+            <p class="problem-card__text">
+              No Windows, a pasta Documentos é sincronizada com o OneDrive por padrão.
+              Na prática, é altíssima a chance de o prontuário já estar numa nuvem que o
+              profissional nunca escolheu, sob termos que ele nunca leu.
+            </p>
+          </article>
+
+          <article class="glass-card problem-card">
+            <svg class="problem-card__icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>
+            </svg>
+            <h3 class="problem-card__title">Pode ser reescrito sem deixar rastro</h3>
+            <p class="problem-card__text">
+              Um registro de meses atrás pode ser editado hoje, e o arquivo não guarda
+              nenhuma marca disso. Num eventual questionamento ético ou judicial, um
+              registro sem rastro de alteração é um registro difícil de sustentar.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!--
+      ========================================================================
+      Seção 3 — Proposta de valor (T9.2, UX-SPEC.md Fluxo 3 item 3)
+      ========================================================================
+      3 `.pillar` (variante de conteúdo do `.glass-card`, bloco de referência
+      em assets/css/components.css, T8.2/T8.3) dentro do invólucro genérico
+      de seção (T9.1). Fallback `@supports not (backdrop-filter)` herdado
+      automaticamente de `.glass-card` por composição de classe, mesmo
+      raciocínio já validado em T3.4/T8.2/T9.1 — sem necessidade de teste
+      manual adicional. Copy portada literalmente do mockup de conceito
+      aprovado (evolucao-segura-mockup.html).
+    -->
+    <section class="section" aria-labelledby="valor-titulo">
+      <div class="container">
+        <div class="section__head section__head--center">
+          <p class="section__kicker">O que o Evolução Segura faz</p>
+          <h2 class="section__title" id="valor-titulo">Três coisas, bem feitas</h2>
+          <p class="section__lead">
+            Não é um sistema de clínica. Não tem recepção, agenda de várias salas,
+            convênio nem faturamento. É um profissional, um computador, um acervo.
+          </p>
+        </div>
+
+        <div class="grid grid--3col">
+          <article class="glass-card pillar">
+            <span class="pillar__num" aria-hidden="true">1</span>
+            <h3 class="pillar__title">Proteção de verdade, e verificável</h3>
+            <p class="pillar__text">
+              O acervo inteiro é criptografado. A chave só se abre com a sua senha
+              mestra ou com o código de recuperação que você guarda fisicamente.
+            </p>
+            <ul class="pillar__list">
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Notebook furtado não vira prontuário vazado</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Bloqueio automático de tela configurável</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Backup e restauração do acervo</li>
+            </ul>
+          </article>
+
+          <article class="glass-card pillar">
+            <span class="pillar__num" aria-hidden="true">2</span>
+            <h3 class="pillar__title">Registro que se sustenta em auditoria</h3>
+            <p class="pillar__text">
+              Evolução salva é evolução imutável. Errou? A correção entra como
+              retificação vinculada — original e correção ficam visíveis e datados.
+            </p>
+            <ul class="pillar__list">
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Sem rasura e sem reescrita silenciosa</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Data da sessão e data do registro, separadas</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Histórico em ordem cronológica</li>
+            </ul>
+          </article>
+
+          <article class="glass-card pillar">
+            <span class="pillar__num" aria-hidden="true">3</span>
+            <h3 class="pillar__title">Achar o que você precisa, quando precisa</h3>
+            <p class="pillar__text">
+              Lista de pacientes, busca por nome e o histórico completo de cada um
+              em ordem — sem caçar arquivo em pasta.
+            </p>
+            <ul class="pillar__list">
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Busca por nome do paciente</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Painel de contexto clínico no perfil</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Exportação do prontuário em PDF</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!--
+      ========================================================================
+      Seção 4 — "Como isso aparece na tela" / "Por dentro" (T9.3,
+      UX-SPEC.md Fluxo 3 item 4 / Seção 1 item 4)
+      ========================================================================
+      Âncora `#por-dentro`, alvo do CTA secundário "Ver por dentro" do hero
+      (T9.1). 4 blocos `.feature` (texto + `.shot`, bloco de referência em
+      assets/css/components.css, T8.2) alternando lado da imagem a partir de
+      900px via `.feature--reverse` em 2 dos 4 blocos (S3 e S5) — abaixo do
+      breakpoint, `.feature` empilha em coluna única (texto sempre acima da
+      imagem, ordem de documento natural). Copy e slots portados
+      literalmente do mockup de conceito aprovado
+      (evolucao-segura-mockup.html), com `<picture>`/`source[type=image/webp]`
+      + `<img>` PNG fallback no mesmo padrão do slot S1 (T9.1), screenshots
+      reais capturados em T11.1/T11.4 (public/assets/img/evolucao-segura/).
+      S6/S7 (apoio: configurar acesso e backup) ficam lado a lado em
+      `.grid.grid--2col`, sem `.feature`, por serem screenshots de apoio sem
+      par de texto longo (mesma estrutura do mockup).
+    -->
+    <section class="section section--alt" id="por-dentro" aria-labelledby="pordentro-titulo">
+      <div class="container">
+        <div class="section__head">
+          <p class="section__kicker">Por dentro</p>
+          <h2 class="section__title" id="pordentro-titulo">Como isso aparece na tela</h2>
+          <p class="section__lead">
+            Todas as capturas abaixo vêm de um acervo de demonstração, com pacientes
+            e evoluções fictícios. Nenhum dado real de paciente é exibido neste site.
+          </p>
+        </div>
+
+        <!-- SLOT S2 -->
+        <div class="feature">
+          <div class="feature__body">
+            <h3 class="feature__title">Seus pacientes, numa lista só</h3>
+            <p class="feature__text">
+              A tela inicial depois de entrar: todos os pacientes em uma lista, com busca
+              por nome. Um clique abre o histórico completo daquela pessoa.
+            </p>
+          </div>
+          <div class="feature__media">
+            <figure class="shot">
+              <span class="shot__tag shot__tag--ready">SLOT S2 · print real capturado</span>
+              <picture>
+                <source srcset="assets/img/evolucao-segura/shot-s2.webp" type="image/webp">
+                <img
+                  class="shot__img"
+                  src="assets/img/evolucao-segura/shot-s2.png"
+                  alt="Lista de pacientes do Evolução Segura, com campo de busca por nome e vários pacientes de demonstração com status Ativo, Alta ou Desistência."
+                  width="1280"
+                  height="800"
+                  loading="lazy"
+                >
+              </picture>
+              <figcaption class="shot__caption">
+                <span class="shot__privacy">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0"/></svg>
+                  Acervo de demonstração — nomes fictícios obrigatórios
+                </span>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <!-- SLOT S3 — a captura mais importante da seção -->
+        <div class="feature feature--reverse">
+          <div class="feature__body">
+            <h3 class="feature__title">O histórico de um paciente, em ordem</h3>
+            <p class="feature__text">
+              O perfil reúne as evoluções em ordem cronológica e o painel de contexto
+              clínico. É a tela onde você passa a maior parte do tempo — e é por isso
+              que ela precisa aparecer inteira aqui.
+            </p>
+          </div>
+          <div class="feature__media">
+            <figure class="shot">
+              <span class="shot__tag shot__tag--ready">SLOT S3 · print real capturado</span>
+              <picture>
+                <source srcset="assets/img/evolucao-segura/shot-s3.webp" type="image/webp">
+                <img
+                  class="shot__img"
+                  src="assets/img/evolucao-segura/shot-s3.png"
+                  alt="Perfil do paciente João Pedro Nascimento (dado fictício) no Evolução Segura, com histórico de evoluções em ordem cronológica e o painel de contexto clínico com alerta clínico marcado."
+                  width="1280"
+                  height="1526"
+                  loading="lazy"
+                >
+              </picture>
+              <figcaption class="shot__caption">
+                <span class="shot__privacy">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0"/></svg>
+                  Conteúdo clínico visível — usar exclusivamente texto fictício
+                </span>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <!-- SLOT S4 -->
+        <div class="feature">
+          <div class="feature__body">
+            <h3 class="feature__title">Quando a sessão aconteceu ≠ quando você registrou</h3>
+            <p class="feature__text">
+              Ao lançar uma evolução, o app guarda os dois momentos separadamente.
+              Registrar no dia seguinte deixa de ser um problema de fidedignidade:
+              fica documentado exatamente como foi.
+            </p>
+          </div>
+          <div class="feature__media">
+            <figure class="shot">
+              <span class="shot__tag shot__tag--ready">SLOT S4 · print real capturado</span>
+              <picture>
+                <source srcset="assets/img/evolucao-segura/shot-s4.webp" type="image/webp">
+                <img
+                  class="shot__img"
+                  src="assets/img/evolucao-segura/shot-s4.png"
+                  alt="Tela de nova evolução do Evolução Segura, com texto formatado (negrito e marcadores), painel de contexto clínico e alerta clínico abertos, e o campo de data da sessão."
+                  width="1280"
+                  height="1776"
+                  loading="lazy"
+                >
+              </picture>
+              <figcaption class="shot__caption">
+                <span class="shot__privacy">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0"/></svg>
+                  Conteúdo clínico visível — usar exclusivamente texto fictício
+                </span>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <!-- SLOT S5 -->
+        <div class="feature feature--reverse">
+          <div class="feature__body">
+            <h3 class="feature__title">Correção sem apagar nada</h3>
+            <p class="feature__text">
+              Uma evolução salva não é editada. A correção entra como retificação
+              vinculada, e o prontuário passa a mostrar as duas versões, datadas.
+              É o oposto da rasura no papel e da edição invisível no editor de texto.
+            </p>
+          </div>
+          <div class="feature__media">
+            <figure class="shot">
+              <span class="shot__tag shot__tag--ready">SLOT S5 · print real capturado</span>
+              <picture>
+                <source srcset="assets/img/evolucao-segura/shot-s5.webp" type="image/webp">
+                <img
+                  class="shot__img"
+                  src="assets/img/evolucao-segura/shot-s5.png"
+                  alt="Tela Retificação salva do Evolução Segura, mostrando o registro original de 15 de setembro (dado fictício) e a retificação vinculada de 17 de setembro, ambos visíveis e datados."
+                  width="1280"
+                  height="800"
+                  loading="lazy"
+                >
+              </picture>
+              <figcaption class="shot__caption">
+                <span class="shot__privacy">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0"/></svg>
+                  Conteúdo clínico visível — usar exclusivamente texto fictício
+                </span>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <!-- SLOTS S6 / S7 — capturas de apoio, sem dado clínico, lado a lado -->
+        <div class="grid grid--2col" style="margin-top: 3.5rem;">
+          <figure class="shot">
+            <span class="shot__tag shot__tag--ready">SLOT S6 · print real capturado</span>
+            <picture>
+              <source srcset="assets/img/evolucao-segura/shot-s6.webp" type="image/webp">
+              <img
+                class="shot__img"
+                src="assets/img/evolucao-segura/shot-s6.png"
+                alt="Passo 1 de 4 da configuração de acesso do Evolução Segura: tela Proteja seu prontuário, com os campos de senha mestra e confirmação."
+                width="1280"
+                height="800"
+                loading="lazy"
+              >
+            </picture>
+            <figcaption class="shot__caption">
+              Sem dado de paciente — captura segura.
+            </figcaption>
+          </figure>
+
+          <figure class="shot">
+            <span class="shot__tag shot__tag--ready">SLOT S7 · print real capturado</span>
+            <picture>
+              <source srcset="assets/img/evolucao-segura/shot-s7.webp" type="image/webp">
+              <img
+                class="shot__img"
+                src="assets/img/evolucao-segura/shot-s7.png"
+                alt="Tela de Backup do Evolução Segura, com a pasta de backup configurada, a data do último backup e o botão Fazer backup agora."
+                width="1280"
+                height="800"
+                loading="lazy"
+              >
+            </picture>
+            <figcaption class="shot__caption">
+              Sem conteúdo clínico na tela — captura de baixo risco.
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!--
+      ========================================================================
+      Seção 5 — Conformidade (T9.2, UX-SPEC.md Fluxo 3 item 5)
+      ========================================================================
+      Texto institucional curto, sem componente visual novo: reaproveita só
+      o invólucro genérico de seção (`.section`/`.section__head`/
+      `.section__kicker`/`.section__title`/`.section__lead`, T9.1) com
+      `.section__head--center` (opcional, já documentado em
+      assets/css/components.css para seções sem grid de cards ao lado — este
+      é justamente o exemplo citado no comentário de referência). Copy
+      portada literalmente do mockup de conceito aprovado
+      (evolucao-segura-mockup.html), que envolvia o texto num `.glass-card`
+      solto — decisão desta tarefa de não repetir esse wrapper, conforme
+      TASK.md.
+    -->
+    <section class="section" aria-labelledby="cfp-titulo">
+      <div class="container">
+        <div class="section__head section__head--center">
+          <p class="section__kicker">Resolução CFP nº 001/2022</p>
+          <h2 class="section__title" id="cfp-titulo">Guardar por 5 anos é obrigação sua. O formato do registro também é.</h2>
+          <p class="section__lead">
+            A resolução do Conselho Federal de Psicologia exige a guarda do prontuário
+            por no mínimo cinco anos e o registro fidedigno do atendimento. O Evolução
+            Segura foi desenhado em cima dessas duas exigências: o acervo é seu e fica
+            com você pelo tempo que precisar, e o registro é imutável com retificação
+            rastreável, em vez de um arquivo que qualquer um reescreve.
+          </p>
+          <p class="section__lead">
+            <em>O app é uma ferramenta de apoio ao cumprimento dessas obrigações — a
+            responsabilidade profissional pelo prontuário permanece integralmente do
+            psicólogo.</em>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--alt" id="instalacao" aria-labelledby="instalacao-titulo">
+      <div class="container">
+        <div class="section__head">
+          <p class="section__kicker">Instalação</p>
+          <h2 class="section__title" id="instalacao-titulo">Como instalar, e o que o Windows vai te mostrar</h2>
+          <p class="section__lead">
+            Prefiro te contar antes: a instalação exibe um aviso de segurança do Windows.
+            Explico exatamente por quê — e o que você pode conferir antes de decidir.
+          </p>
+        </div>
+
+        <div class="grid grid--2col" style="align-items: start;">
+          <div class="glass-card" style="padding: 1.75rem;">
+            <ol class="steps">
+              <li class="steps__item">
+                <span class="pillar__num" aria-hidden="true">1</span>
+                <span class="steps__body">
+                  <span class="steps__title">Baixe o instalador</span>
+                  <span class="steps__text">Um único arquivo, sempre a partir desta página. Não distribuímos o instalador por nenhum outro canal.</span>
+                </span>
+              </li>
+              <li class="steps__item">
+                <span class="pillar__num" aria-hidden="true">2</span>
+                <span class="steps__body">
+                  <span class="steps__title">Passe pelo aviso do Windows</span>
+                  <span class="steps__text">Clique em "Mais informações" e depois em "Executar assim mesmo". O passo a passo está no bloco ao lado.</span>
+                </span>
+              </li>
+              <li class="steps__item">
+                <span class="pillar__num" aria-hidden="true">3</span>
+                <span class="steps__body">
+                  <span class="steps__title">Crie sua senha mestra</span>
+                  <span class="steps__text">Na primeira abertura, o app conduz 4 passos e gera o seu código de recuperação. Imprima e guarde em lugar seguro: sem ele e sem a senha, ninguém abre o acervo — nem eu.</span>
+                </span>
+              </li>
+              <li class="steps__item">
+                <span class="pillar__num" aria-hidden="true">4</span>
+                <span class="steps__body">
+                  <span class="steps__title">Use por 7 dias e decida</span>
+                  <span class="steps__text">O período de teste começa na instalação. Para seguir usando depois, é só licenciar (veja abaixo).</span>
+                </span>
+              </li>
+            </ol>
+          </div>
+
+          <!-- Bloco de honestidade sobre o SmartScreen — RI-21 -->
+          <div class="notice">
+            <div class="notice__head">
+              <svg class="notice__icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3l9 16H3l9-16z"/><path d="M12 10v4"/><path d="M12 17.5v.01"/>
+              </svg>
+              <h3 class="notice__title">Sim, o Windows vai exibir um aviso. Ele está certo em avisar.</h3>
+            </div>
+
+            <p class="notice__text">
+              O instalador do Evolução Segura ainda <strong>não é assinado com certificado
+              digital</strong>. Certificado de assinatura é um item pago e renovável — e, nesta
+              fase, o produto optou por não repassar esse custo. A consequência é que o
+              <strong>SmartScreen do Windows mostra a tela "O Windows protegeu o seu
+              computador"</strong>, e antivírus podem marcar o arquivo como suspeito
+              (falso positivo).
+            </p>
+
+            <p class="notice__text">
+              Não vou te pedir para ignorar um alerta de segurança sem explicar. O aviso não
+              significa que o arquivo é malicioso — significa que o Windows <em>ainda não
+              reconhece quem o assinou</em>. É a mesma tela que aparece para qualquer
+              software novo de desenvolvedor independente.
+            </p>
+
+            <p class="notice__text"><strong>O caminho, se você decidir instalar:</strong></p>
+            <code class="notice__path">Mais informações  ›  Executar assim mesmo</code>
+
+            <p class="notice__text"><strong>O que você pode conferir antes:</strong></p>
+            <ul class="pillar__list">
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> A origem: o download sai deste domínio, nunca de link encaminhado</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> A impressão digital (SHA-256) do arquivo, publicada junto ao download</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg> Uma segunda opinião automática, se quiser: enviar o arquivo ao VirusTotal antes de executar</li>
+            </ul>
+
+            <p class="notice__text" style="font-size: 0.9375rem;">
+              Se mesmo assim você não se sentir confortável, não instale.
+              <a href="index.html#contato" style="color: var(--color-accent); text-decoration: underline;">Fale comigo</a>
+              — prefiro responder sua dúvida a ter você clicando em algo que não entendeu.
+            </p>
+          </div>
+        </div>
+
+        <!-- TODO: screenshot S8 (aviso do SmartScreen) pendente — ver TASK.md Lacuna L-13.
+             T11.2 não conseguiu capturar a tela real: o SmartScreen deste ambiente não
+             bloqueia o instalador, e forjar a captura foi descartado. Decisão do usuário:
+             seguir sem o screenshot por ora; inserir aqui a figure .shot (slot S8) assim
+             que o print real existir. -->
+      </div>
+    </section>
+    <!--
+      ========================================================================
+      Seção 7 — Licença de uso (T9.5, UX-SPEC.md Fluxo 3 item 7,
+      "[ATUALIZADO, ajuste pontual]")
+      ========================================================================
+      1 único `.pillar` (variante de conteúdo do `.glass-card`, mesmo bloco
+      de referência de T8.2/T9.2), sem `.pillar__list`. Conteúdo simplificado
+      para o que é verificável hoje: 7 dias de teste; ao fim, o app bloqueia
+      só a escrita (leitura e exportação em PDF seguem disponíveis); fecha
+      com a frase honesta sobre o passo a passo pós-teste ainda estar sendo
+      definido.
+
+      Deliberadamente ausente (GUARDRAILS.md G-04 + UX-SPEC.md Seção 7,
+      trade-off "Fluxo de ativação/licenciamento sem funcionalidade real"):
+      nenhum <input>/<form> de ativação, nenhum passo a passo de chave/
+      contra-chave (nem em `.steps`, nem em prosa) — investigação do Guia do
+      Usuário e do Catálogo de Telas reais do produto confirmou que essa tela
+      não existe implementada hoje. Também sem screenshot nesta seção (slot
+      S9 removido — não há tela de licenciamento real para capturar).
+    -->
+    <section class="section" id="licenca" aria-labelledby="licenca-titulo">
+      <div class="container">
+        <div class="section__head">
+          <p class="section__kicker">Licença de uso</p>
+          <h2 class="section__title" id="licenca-titulo">7 dias para testar. Depois disso, o que já está escrito continua seu.</h2>
+        </div>
+
+        <article class="glass-card pillar" style="max-width: 44rem;">
+          <h3 class="pillar__title">O que acontece ao fim do teste</h3>
+          <p class="pillar__text">
+            Passados os 7 dias, o app bloqueia apenas a escrita: não dá para
+            registrar evolução nova. A leitura de tudo o que você já gravou
+            continua disponível — e a exportação em PDF também.
+          </p>
+          <p class="pillar__text">
+            O passo a passo para continuar usando depois do teste ainda está
+            sendo definido — quando estiver pronto, esta seção é atualizada
+            com os detalhes.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <!--
+      ========================================================================
+      Seção 8 — Requisitos de sistema (T9.5, UX-SPEC.md Fluxo 3 item 8)
+      ========================================================================
+      `.specs`: tabela semântica (`<caption>`/`scope="row"`), bloco de
+      referência em assets/css/components.css (T8.3). Dados reais
+      confirmados na fonte do produto; "Espaço em disco" usa `.badge`
+      explícito ("A confirmar") por não haver valor confirmado disponível —
+      nenhum número inventado.
+    -->
+    <section class="section section--alt" id="requisitos" aria-labelledby="requisitos-titulo">
+      <div class="container">
+        <div class="section__head">
+          <p class="section__kicker">Antes de baixar</p>
+          <h2 class="section__title" id="requisitos-titulo">Requisitos de sistema</h2>
+        </div>
+
+        <div class="glass-card" style="padding: 1.5rem; max-width: 46rem;">
+          <table class="specs">
+            <caption>Requisitos de instalação do Evolução Segura.</caption>
+            <tbody>
+              <tr><th scope="row">Sistema operacional</th><td>Windows 10 ou Windows 11 (64 bits)</td></tr>
+              <tr><th scope="row">macOS / Linux</th><td>Não suportados nesta versão</td></tr>
+              <tr><th scope="row">Conexão com a internet</th><td>Não é necessária para usar o app. Só para baixar e instalar o programa.</td></tr>
+              <tr><th scope="row">Onde ficam os dados</th><td>No seu computador, em acervo criptografado. Não há servidor nosso guardando prontuário.</td></tr>
+              <tr><th scope="row">Perfil de uso</th><td>Um profissional, um computador, um acervo. Não é multiusuário.</td></tr>
+              <tr><th scope="row">Espaço em disco</th><td><span class="badge">A confirmar</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!--
+      ========================================================================
+      Seção 9 — Dúvidas / FAQ (T9.6, UX-SPEC.md Fluxo 3 item 9)
+      ========================================================================
+      `.faq` (T8.3, components.css): 5 `<details class="glass-card
+      faq__item">`/`<summary class="faq__q">` nativos, sem JS — abre/fecha
+      por teclado nativamente (Enter/Espaço com foco no `<summary>`).
+      Copy portada do mockup de conceito aprovado
+      (evolucao-segura-mockup.html), revisada.
+    -->
+    <section class="section" aria-labelledby="faq-titulo">
+      <div class="container">
+        <div class="section__head">
+          <p class="section__kicker">Dúvidas</p>
+          <h2 class="section__title" id="faq-titulo">O que costuma ficar em aberto</h2>
+        </div>
+
+        <div class="faq">
+          <details class="glass-card faq__item">
+            <summary class="faq__q">E se eu esquecer a senha mestra?</summary>
+            <p class="faq__a">
+              Você usa o código de recuperação gerado na configuração inicial — aquele
+              que o app pede para você imprimir e guardar fisicamente. Sem a senha e sem
+              o código, o acervo não abre, por ninguém. Isso é consequência direta da
+              criptografia ser real: não existe porta dos fundos.
+            </p>
+          </details>
+
+          <details class="glass-card faq__item">
+            <summary class="faq__q">Meus dados vão para algum servidor?</summary>
+            <p class="faq__a">
+              Não. O acervo fica no seu computador e o app funciona sem conexão. Não há
+              telemetria contínua nem envio silencioso de nada. A única comunicação com a
+              internet é o licenciamento, e nela trafega só a chave da instalação.
+            </p>
+          </details>
+
+          <details class="glass-card faq__item">
+            <summary class="faq__q">Serve para a minha clínica com mais psicólogos?</summary>
+            <p class="faq__a">
+              Não nesta versão. O Evolução Segura foi feito para o psicólogo clínico
+              autônomo: um profissional, um computador, um acervo. Não tem recepção,
+              múltiplos usuários, convênio nem faturamento.
+            </p>
+          </details>
+
+          <details class="glass-card faq__item">
+            <summary class="faq__q">Tem versão para Mac?</summary>
+            <p class="faq__a">
+              Hoje não. A versão atual é só para Windows 10 e 11. macOS está no horizonte,
+              mas não tem data — e prefiro não prometer.
+            </p>
+          </details>
+
+          <details class="glass-card faq__item">
+            <summary class="faq__q">E se meu computador quebrar?</summary>
+            <p class="faq__a">
+              O app tem backup e restauração do acervo. O backup também é criptografado —
+              guardá-lo num HD externo ou pendrive não desfaz a proteção.
+            </p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!--
+      ========================================================================
+      Seção 10 — CTA final (T9.6, UX-SPEC.md Fluxo 3 item 10)
+      ========================================================================
+      `.final-cta` (gap encontrado e resolvido nesta tarefa, ver comentário
+      de referência em assets/css/components.css — nenhum dos 8 componentes
+      de T8.1-T8.3 cobria este bloco). Botão "Baixar para Windows" no MESMO
+      estado "Indisponível para download nesta fase" do CTA do hero (T9.1,
+      UX-SPEC.md Seção 4, 5º estado de tela) — mesmas classes
+      `.hero__cta`/`.hero__cta--primary`, `disabled`/`aria-disabled="true"`,
+      sem `href` para `.exe`/GitHub Releases, sem `href="#"`/JS simulando
+      destino. Nota textual visível (`.final-cta__meta`) avisando que o
+      download ainda não está disponível — decisão do usuário (UX-SPEC.md
+      Seção 7) substitui a previsão anterior desta tarefa de apontar para a
+      Release do GitHub: RT-08/ADR-006 seguem válidos como pré-requisito
+      técnico, mas a liberação do link real é decisão de negócio futura e
+      distinta, fora do escopo desta entrega.
+    -->
+    <section class="section section--alt" id="baixar" aria-labelledby="baixar-titulo">
+      <div class="container">
+        <div class="glass-card final-cta">
+          <h2 class="final-cta__title" id="baixar-titulo">Tire o prontuário da nuvem para onde ele foi parar sem ninguém decidir.</h2>
+          <p class="final-cta__text">
+            Instale, crie sua senha mestra e use por 7 dias. Se não for para você,
+            o que já foi escrito continua legível e exportável.
+          </p>
+
+          <button type="button" class="hero__cta hero__cta--primary" disabled aria-disabled="true">Baixar para Windows</button>
+          <p class="final-cta__meta">Download ainda não disponível nesta fase.</p>
+
+          <p class="final-cta__meta">
+            Instalador .exe · Windows 10/11 (64 bits) ·
+            <span class="badge">tamanho e versão a confirmar</span>
+          </p>
+          <p class="final-cta__meta">
+            <a class="final-cta__link" href="#instalacao">Leia antes sobre o aviso de segurança do Windows na instalação</a>
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!--
+    Footer/Contato — bloco de referência copiado literalmente de
+    public/apps.html (TASK.md Seção 1.2 / SDD.md RT-02, byte-idêntico entre
+    as páginas, G-02).
+  -->
+  <footer class="site-footer">
+    <div class="container stack stack--row-tablet-up">
+      <div class="site-footer__brand">
+        <img
+          src="assets/img/logo/logo-ljssoftware-icone.png"
+          alt=""
+          class="site-footer__icon"
+          width="32"
+          height="32"
+        >
+        <span class="site-footer__brand-text">LJS Software</span>
+      </div>
+
+      <nav class="footer-contact" aria-label="Contato">
+        <a class="footer-link" href="mailto:contato@ljssoftware.com.br" data-analytics-event="contato-email">
+          <svg class="footer-link__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 5h18v14H3z" />
+            <path d="M3 6l9 7 9-7" />
+          </svg>
+          <span class="footer-link__label">contato@ljssoftware.com.br</span>
+        </a>
+
+        <a
+          class="footer-link"
+          href="https://www.linkedin.com/in/leandro-segheto-moraes-90879b138"
+          target="_blank"
+          rel="noopener"
+          data-analytics-event="contato-linkedin"
+        >
+          <svg class="footer-link__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <line x1="7" y1="10" x2="7" y2="17" />
+            <circle cx="7" cy="7" r="0.6" />
+            <path d="M11 17v-4.5c0-1.5 1-2.5 2.3-2.5S16 11 16 12.5V17" />
+            <line x1="11" y1="10" x2="11" y2="17" />
+          </svg>
+          <span class="footer-link__label">LinkedIn</span>
+          <svg
+            class="footer-link__icon footer-link__icon--external"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path d="M14 4h6v6" />
+            <path d="M20 4L10 14" />
+            <path d="M18 14v6H4V6h6" />
+          </svg>
+          <span class="footer-link__external-text">(abre em nova aba)</span>
+        </a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="assets/js/nav.js" defer></script>
+  <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "bc3ce694258f45c393941b292ba37ac9"}'></script><!-- End Cloudflare Web Analytics -->
+  <script src="assets/js/analytics.js" defer></script>
+</body>
+</html>

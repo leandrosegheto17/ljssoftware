@@ -194,6 +194,92 @@ Nenhuma ação adicional exigida deste chapéu neste momento.
 
 ---
 
+## Governança de GUARDRAILS.md — Rodada 3 (G-02 estendida; G-15 a G-17 novas)
+
+**Data:** 2026-09-17
+**Skill aplicada:** `guardrails-governance`
+**Artefato de entrada:** `.md/GUARDRAILS.md` (rascunho atualizado pelo
+Coordenador, Log de Alterações linha 2026-09-17, "pendente de aprovação do
+usuário"), com base em `PRD.md` Seção 8, `PRD-TECNICO.md` Seção 9,
+`CTO-REVIEW.md` ("Gate 1 — Reabertura pontual", Aprovado), `ADR-006`,
+`SDD.md` e `TASK.md` desta rodada (reabertura pontual RF-09, página de
+divulgação "Evolução Segura").
+
+### Análise
+
+Uma proposta pendente no Log de Alterações, classificada como mudança
+estrutural (G-02 estendida) + adição de regras novas (G-15 a G-17), ambas
+decorrentes da mesma reabertura pontual já aprovada no Gate 1 desta rodada:
+
+1. **G-02 reescrita** ("4 páginas" → "todas as páginas", com regra
+   explícita de `aria-current`, referenciando a lista viva de
+   `TASK.md` Seção 1.1 — hoje 5 páginas, incluindo a nova
+   `evolucao-segura.html`). Verificado: a lista em `TASK.md` Seção 1.1
+   inclui de fato as 5 páginas citadas e a regra de `aria-current` no item
+   "Apps" para páginas de produto sem item de nav próprio está descrita em
+   `TASK.md` linha ~140 e amparada por `UX-SPEC.md` Seção 7. Esta mudança
+   **estende a cobertura, não a enfraquece** — o guardrail original (4
+   páginas) já exigia byte-identidade de Header/Nav e Footer/Contato; a
+   nova redação apenas generaliza a regra para cobrir automaticamente
+   qualquer página futura (incluindo `404.html`, já presente, e a nova
+   `evolucao-segura.html`), fechando uma lacuna que existiria se a regra
+   ficasse hardcoded em "4 páginas". Sem contradição com G-12 (design
+   system) nem com o restante do documento.
+
+2. **G-15 (roteamento de app desktop, RN-03).** Origem confirmada em
+   `PRD-TECNICO.md` Seção 9.3 (RN-03) e Seção 9.2 (ajuste a RF-02), e em
+   `PRD.md` Seção 8.2 (critério de roteamento). Não introduz decisão
+   técnica nova — apenas formaliza como guardrail um critério de produto já
+   registrado e aprovado no Gate 1 desta rodada. Sem conflito com G-01
+   (nenhuma menção a backend/build) nem com G-04 (formulário/contato,
+   assunto não relacionado).
+
+3. **G-16 (proibição de funcionalidade server-side sem novo ADR).** Origem
+   confirmada em `ADR-001` (G-01 original), `ADR-006` (que explicitamente
+   deixa "fora desta decisão" o fluxo de ativação/licenciamento por exigir
+   processamento server-side inexistente hoje) e `SDD.md` RT-07 (risco
+   registrado sobre essa mesma lacuna). Esta regra **reforça** G-01 e G-04
+   em vez de contradizê-los — nomeia explicitamente o caso mais provável de
+   pressão futura (licenciamento do app desktop) e garante que qualquer
+   tentativa de implementá-lo passe por novo ADR + sinalização ao Gestor,
+   preservando a garantia "zero backend" já validada no Gate 1 original.
+   Nenhum enfraquecimento de G-10 (custo) identificado.
+
+4. **G-17 (proibição de dado real de paciente em screenshot).** Origem
+   confirmada em `TASK.md` Seção 1.2 (linhas ~147-149, "Screenshots reais,
+   nunca dado de paciente real") e em `PRD-TECNICO.md` RF-09 (Seção 9.1,
+   critério de aceite exige screenshot real do produto). Regra
+   coerente com o caráter clínico do produto Evolução Segura (dado
+   sensível de terceiro) e com o objetivo de RF-09 (mostrar tela real sem
+   expor dado de paciente real) — risco de compliance de nível estratégico
+   corretamente antecipado pelo Coordenador, dentro do escopo deste chapéu
+   (complementar, não substitui a análise tática do Validador). Sem
+   conflito com nenhuma regra existente.
+
+Nenhuma das quatro mudanças contradiz ou enfraquece G-01 (zero
+build/framework/backend) ou G-10 (custo mínimo/gratuito) — pelo contrário,
+G-16 reforça ambas nomeando o cenário de risco mais concreto (licenciamento
+server-side) e ADR-006 (hospedagem via GitHub Releases) confirma que a
+decisão de distribuição do binário não introduziu serviço pago, preservando
+G-10. Formato da tabela do Log de Alterações está completo (todas as
+colunas exigidas por `PIPELINE-CONVENTIONS.md` §5 presentes).
+
+### Veredito
+
+**Aprovado.**
+
+G-02 (estendida) e G-15 a G-17 (novas) são rastreáveis à origem declarada
+(`PRD.md` Seção 8, `PRD-TECNICO.md` Seção 9, `ADR-006`, `SDD.md`, `TASK.md`
+desta rodada), sem contradição interna nem enfraquecimento de nenhum
+guardrail já vigente (G-01, G-04, G-10 em especial, verificados
+nominalmente). Atualiza-se `GUARDRAILS.md` (autoria própria do Gestor sobre
+o Log de Alterações e o cabeçalho de status), preenchendo `Aprovado por:
+gestor (chapéu CTO)` na linha pendente. `GUARDRAILS.md` está liberado como
+guardrail vigente do projeto a partir desta data, com as quatro mudanças em
+vigor.
+
+---
+
 ## Gate 4 — Registro de fechamento (deploy em produção, Lote 6)
 
 **Data:** 2026-09-08
@@ -233,6 +319,97 @@ seção "T6.4" (dupla aprovação, sem achado bloqueante).
 **Aprovado — registro de fechamento, sem veto.** O deploy em produção do
 Lote 6 (com destaque para T6.4) está formalmente encerrado no ciclo do
 Gestor. Nenhuma ação adicional exigida deste chapéu neste momento.
+
+---
+
+## Gate 1 — Reabertura pontual (página de divulgação "Evolução Segura")
+
+**Data:** 2026-09-17
+**Skill aplicada:** `tech-strategy-review`
+**Artefato de entrada:** Briefing direto do stakeholder (reabertura pontual,
+não projeto novo) — pedido para que o card "Evolução Segura" na vitrine
+(`apps.html`)/prévia da Home (`index.html`), ao trocar o badge "Em breve" por
+link real (RF-02), aponte para uma nova página de divulgação própria dentro
+do site (ex.: `evolucao-segura.html`), com screenshots reais do produto,
+proposta de valor e CTA de download do executável — em vez de apontar direto
+para um link de download, padrão diferente do usado para Destino Ideal e
+Radar Esportivo (RF-02, apps web publicados com link de saída direto).
+
+### Briefing recebido
+
+> "O projeto Evolução Segura é uma aplicação desktop que terá um executável
+> para download. Porém aqui no nosso projeto, ao trocar o botão para 'Ver
+> app' assim como fizemos com outros módulos prontos, gostaria de cair em
+> uma página publicada de divulgação do app, e não direto no download."
+
+### Achados
+
+1. **Objetivo de negócio declarado explicitamente:** sim. Não é um pedido
+   vago de "melhorar a vitrine" — é uma diferenciação concreta de jornada de
+   conversão para um tipo específico de app (desktop com instalador local,
+   sem loja/URL própria de produto), justificada por uma razão de UX/negócio
+   clara: um executável não tem página própria onde o usuário entenda o que
+   está baixando antes de baixar; apontar direto para o `.exe` pula essa
+   etapa de contexto/confiança. Isso atende ao critério do Gate 1.
+2. **Alinhamento com o que já foi validado estrategicamente (Gate 1
+   original, `SDD.md`, `GUARDRAILS.md`):** compatível, sem conflito. A
+   demanda não introduz backend, build step, framework, CMS nem custo
+   recorrente novo — continua sendo conteúdo estático adicional dentro do
+   mesmo site (G-01, G-10 preservados). O executável em si é um asset
+   estático (binário) a ser hospedado/servido como download direto, mesma
+   natureza de custo/infra já aprovada (RNF-06/G-10) — a decisão concreta de
+   onde hospedar o arquivo (`.exe` pode ser pesado; repositório Git público
+   do GitHub já disponibiliza Releases como opção sem custo) é decisão
+   técnica do Coordenador no SDD.md, não deste parecer.
+3. **Escopo incremental, não mudança de objetivo do site:** o site continua
+   sendo institucional/vitrine (PRD.md Seção 1); esta demanda adiciona uma
+   página de detalhe por app quando o app for do tipo "desktop/instalável",
+   sem alterar o objetivo de sucesso já registrado (PRD.md Seção 3) nem o
+   público-alvo (Seção 2).
+4. **Padrão reutilizável identificado:** a distinção "app web publicado →
+   link direto" vs. "app desktop/instalável → página de divulgação própria"
+   é um critério de produto que deve ser registrado formalmente (não decidido
+   caso a caso), pois **Minha Jornada**, **Meu Objetivo** e **Gestão da
+   Pelada** ainda estão com badge "Em breve" e podem, no futuro, recair em
+   qualquer um dos dois padrões — o requisito precisa cobrir o critério
+   geral, não só o caso "Evolução Segura". Ver RF-02 atualizado no
+   `PRD-TECNICO.md`.
+5. **Captura de screenshots reais como parte do escopo de execução:** o
+   pedido explicitamente pede prints reais do produto, com duas fontes
+   possíveis — repositório GitHub
+   (`https://github.com/leandrosegheto17/EvolucaoSegura`) e/ou execução
+   local do instalado em
+   `C:\Users\leand\AppData\Local\EvolucaoSegura\evolucao-segura.exe`. Isso é
+   uma tarefa de execução (Executor), não uma decisão deste chapéu — este
+   parecer apenas confirma que é viável e deve entrar no escopo do
+   `PRD-TECNICO.md`/`TASK.md`, sem gerar risco técnico ou de compliance
+   identificável (são capturas de tela do próprio produto do stakeholder).
+6. **Nenhum gap de capacidade identificado:** é uma página HTML adicional
+   dentro do mesmo site estático já publicado, seguindo o mesmo modelo
+   (design system, GUARDRAILS.md, deploy contínuo via Cloudflare Pages) já
+   em produção — não exige nova infraestrutura, squad ou ferramenta.
+7. **Papel de marketing (chapéu PM), separado da decisão de arquitetura:** a
+   proposta de valor/mensagem de alto nível da página de divulgação
+   (descrição do app, benefícios, CTA de download, requisitos de sistema se
+   aplicável) é responsabilidade do chapéu PM/BA a definir no adendo do
+   `PRD.md`/`PRD-TECNICO.md` abaixo — layout/design visual da página fica com
+   o Coordenador (UX/UI) e Executor nas fases seguintes, fora do escopo
+   deste parecer.
+
+### Veredito
+
+**Aprovado.**
+
+Sem ressalva bloqueante. Uma observação para as próximas etapas: o
+Coordenador deve avaliar no SDD.md onde hospedar o binário `.exe` (ex.:
+GitHub Releases do próprio repositório `EvolucaoSegura`, servido como link de
+download externo a partir da nova página `evolucao-segura.html`) de forma
+compatível com G-01 (zero build/framework) e G-10 (sem serviço pago) — este
+parecer não decide a hospedagem, só confirma que a demanda de produto é
+viável e coerente com o que já foi validado estrategicamente.
+
+Libera-se o adendo do `PRD.md`/`PRD-TECNICO.md` (chapéus PM/BA) e,
+posteriormente, a reabertura do `SDD.md`/`TASK.md` pelo Coordenador.
 
 ---
 

@@ -1,12 +1,13 @@
 # SDD.md — Site institucional LJSSoftware
 
-**Status:** Pronto para revisão do usuário (Loop B do `/definir_organizar`) —
-**sincronização factual pontual** nesta data (Seção 3 e índice de ADRs) para
-refletir `ADR-005` (identidade visual final, supersede `ADR-004`), decorrente
-de reabertura do `UX-SPEC.md`; nenhuma nova decisão arquitetural foi tomada
-aqui, só a atualização dos nomes de fonte/identidade já decididos alhures
-**Base:** `PRD.md` + `PRD-TECNICO.md` (Rodada 2, aprovados)
-**Data:** 2026-09-07
+**Status:** Aprovado e implementado (Lotes 1-7). **Reaberto pontualmente
+(Rodada 3, 2026-09-17)** para a demanda "página de divulgação de app desktop
+(Evolução Segura)" — adiciona a decisão de hospedagem do instalador (`ADR-006`)
+e registra os riscos/lacunas associados (RT-07, RT-08). Não altera nenhuma
+decisão anterior (ADR-001 a ADR-005 permanecem válidas e inalteradas).
+**Base:** `PRD.md` + `PRD-TECNICO.md` (Rodada 2, aprovados) — adendo Rodada 3
+(`PRD.md` Seção 8, `PRD-TECNICO.md` Seção 9)
+**Data original:** 2026-09-07 · **Data desta revisão:** 2026-09-17
 **Autor:** Coordenador (chapéu Software Architect)
 
 ---
@@ -58,10 +59,11 @@ Componentes de página (todos estáticos, sem estado de servidor):
 
 | Componente | Página(s) onde aparece | Responsabilidade |
 |---|---|---|
-| Header/Nav | `index.html`, `apps.html`, `sobre.html` | Wordmark + navegação entre páginas; colapsa em menu mobile |
-| Hero | `index.html` | Apresentação da marca + tagline + CTA para vitrine (RF-01) |
-| Vitrine de apps (grid de cards) | `apps.html` | Lista de apps com nome, descrição curta, badge "Em breve" (RF-02) |
+| Header/Nav | `index.html`, `apps.html`, `sobre.html`, `evolucao-segura.html` | Wordmark + navegação entre páginas; colapsa em menu mobile |
+| Hero | `index.html`, `evolucao-segura.html` (variante `.hero--product`) | Apresentação da marca + tagline + CTA para vitrine (RF-01); na página de produto, apresentação do app + CTA de download (RF-09) |
+| Vitrine de apps (grid de cards) | `apps.html` | Lista de apps com nome, descrição curta, badge "Em breve" ou link "Ver app" — direto (app web) ou para página própria (app desktop, RF-09/RN-03) |
 | Seção Sobre | `sobre.html` | Texto institucional (RF-03) |
+| Página de divulgação de app desktop | `evolucao-segura.html` (padrão reutilizável para futuros apps desktop) | Descrição, screenshots reais, requisitos de sistema e CTA de download do executável (RF-09) — nunca é o card da vitrine que aponta direto para o binário (RN-03) |
 | Rodapé/Contato | Todas as páginas | Link `mailto:` e/ou LinkedIn (RF-04), replicado de forma idêntica |
 | Página 404 | `404.html` | Fallback para rota inexistente, com link de volta à home |
 
@@ -81,6 +83,8 @@ evento custom de analytics no clique do link de contato.
 | Identidade visual | Direção "Geométrico/Glass" com ícone de marca real + paleta navy/glass/teal, produzida internamente a partir de arte-fonte fornecida pelo usuário | ADR-005 (supersede ADR-004) — resolve PR-06, sem custo de designer externo; decisão final tomada diretamente pelo usuário após comparação de 5 conceitos visuais |
 | Fontes | Google Fonts (Unbounded para títulos/headings, Outfit para corpo), auto-hospedadas nos arquivos estáticos do site | Evita requisição externa a CDN de terceiro (performance/RNF-01 e privacidade), sem custo de licença — nomes de fontes atualizados pelo ADR-005 (política de self-hosting mantida) |
 | Controle de versão/deploy | Git (repositório conectado ao Cloudflare Pages) | Cobre RNF-05 (atualização via nova build/deploy) |
+| Distribuição do instalador (`evolucao-segura.exe`) | GitHub Releases do repositório `EvolucaoSegura` | ADR-006 (novo) — custo zero, sem novo serviço na arquitetura (G-10), versionamento de binário atrelado ao versionamento do produto; pré-requisito: repositório/Release tornado público pelo stakeholder (RT-08) |
+| Ativação/licenciamento (chave → contra-chave) do app Evolução Segura | **Fora de escopo desta reabertura — não decidido** | RF-09 cobre só a página de divulgação, não a validação server-side descrita no fluxo de licenciamento do produto; decisão de arquitetura (ex.: Cloudflare Pages Functions serverless vs. processo manual) fica pendente para quando essa funcionalidade for de fato priorizada — ver Riscos Técnicos (RT-07) e `TASK.md` Seção 6 (Lacuna L-08) |
 
 ## 4. Decisões Arquiteturais (Índice de ADRs)
 
@@ -91,6 +95,7 @@ evento custom de analytics no clique do link de contato.
 | [ADR-003](adr/003-analytics-cloudflare-web-analytics.md) | Analytics via Cloudflare Web Analytics | Aceito |
 | [ADR-004](adr/004-identidade-visual-produzida-internamente.md) | Identidade visual básica produzida internamente (wordmark tipográfico) | Superseded by ADR-005 |
 | [ADR-005](adr/005-identidade-visual-geometrico-glass-com-icone.md) | Identidade visual final: direção "Geométrico/Glass" com ícone de marca | Aceito |
+| [ADR-006](adr/006-hospedagem-instalador-github-releases.md) | Hospedagem/distribuição do instalador via GitHub Releases | Aceito |
 
 ## 5. Modelo de Dados de Alto Nível
 
@@ -103,11 +108,17 @@ consistente:
 App (representado como <article class="app-card"> em apps.html)
 ├── nome: string (obrigatório)
 ├── descricao_curta: string (obrigatório)
-├── status: enum ["em-breve", "publicado"]  (fase 1: sempre "em-breve")
+├── status: enum ["em-breve", "publicado"]
+├── tipo: enum ["web", "desktop"]  (novo, Rodada 3 — RF-09/RN-03; decide o
+│   destino do link "Ver app" quando status = "publicado")
 └── link_destino: string | null
-    (null na fase 1 para todos; quando "publicado", preenchido e o
-     badge "Em breve" é substituído pelo link real — RF-02 exige que essa
-     troca não exija redesenho da seção, só edição do atributo/bloco)
+    (null enquanto status = "em-breve"; quando "publicado":
+       - tipo = "web"  -> URL externa direta do produto (já em produção:
+         Destino Ideal, Radar Esportivo)
+       - tipo = "desktop" -> URL interna da página de divulgação própria
+         do app dentro do site (ex.: evolucao-segura.html), nunca uma URL
+         de arquivo/binário direto — RF-02 exige que essa troca não exija
+         redesenho da seção, só edição do atributo/bloco)
 
 PaginaEstatica (cada .html)
 ├── title: string (único por página — RF-07)
@@ -131,6 +142,8 @@ a estrutura esperada por RF-02/RF-07/RF-08.
 | RT-04 | Ausência de build pipeline significa que otimização de imagem (compressão, WebP) é manual | Baixa | Diretriz de implementação: todo asset de imagem deve ser exportado já otimizado (WebP com fallback) antes de ser versionado — checklist no `TASK.md` |
 | RT-05 | Identidade visual produzida internamente (ADR-004) pode não atingir o nível de polimento de um designer profissional | Baixa (aceita conscientemente) | Escopo já delimitado pelo PRD-TECNICO.md (INT-03): wordmark tipográfico simples é o piso de aceite, não exige mais que isso |
 | RT-06 | Cloudflare Web Analytics tem funcionalidade mais limitada que ferramentas dedicadas de produto | Baixa | Suficiente para a métrica declarada no `PRD.md` (contagem de cliques em contato); revisitar em fase 2 se necessário |
+| RT-07 | **[Novo, Rodada 3]** O fluxo de licenciamento do Evolução Segura (chave de instalação → validação no site → contra-chave) exige processamento server-side que o site estático atual não tem (ADR-001/G-01/G-04) | Média (não bloqueia esta reabertura, mas é uma lacuna real de produto se o app depender de licenciar via site) | Explicitamente fora do escopo de RF-09 (só a página de divulgação); decisão de arquitetura (Cloudflare Pages Functions serverless dentro do free tier vs. processo manual por e-mail vs. outra solução) fica pendente para quando essa funcionalidade for priorizada — exigirá novo ADR nesse momento, sinalizado ao Gestor antes de implementar por poder alterar a garantia de "zero backend" (G-01/G-04) |
+| RT-08 | **[Novo, Rodada 3]** O repositório `https://github.com/leandrosegheto17/EvolucaoSegura` retornou `404` a uma requisição não autenticada nesta reabertura — indício de que está privado, divergindo da premissa "repositório público" do `PRD.md` Seção 8.3 | Média (bloqueia só a publicação do link real, não o desenvolvimento) | Registrado como pré-requisito de publicação em `ADR-006`: repositório (ou a Release específica com o instalador) precisa ser tornado público pelo stakeholder antes de `TASK.md` T10.2 substituir o badge "Em breve" por link real — mesmo padrão de dependência manual externa já usado para RT-03 |
 
 ## 7. Requisitos de Segurança
 
@@ -175,11 +188,11 @@ Validador (chapéu DevSecOps) aprofundar depois via SAST/DAST/hardening.
 ## Checklist de Pronto — SDD.md
 
 - [x] Toda decisão arquitetural relevante tem ADR correspondente em `.md/adr/`
-      (ADR-001 a ADR-004)
+      (ADR-001 a ADR-006)
 - [x] Toda escolha de stack tem justificativa e trade-off/alternativa
       considerados (Seção 3 + ADRs)
 - [x] Todo risco técnico/gargalo tem severidade; toda dívida técnica aceita
-      tem o motivo registrado (Seção 6: RT-01 a RT-06)
+      tem o motivo registrado (Seção 6: RT-01 a RT-08)
 - [x] Requisitos de segurança cobrem autenticação, autorização, criptografia
       e isolamento (quando aplicável), sem item genérico sem detalhe
       concreto — Seção 7 trata cada item explicitamente, incluindo os "não

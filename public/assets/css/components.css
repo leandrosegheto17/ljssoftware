@@ -1197,3 +1197,1102 @@ body.app-modal-open {
   gap: 1rem;
   margin-top: 0.5rem;
 }
+
+/* ====================================================================== */
+/* Evolução Segura — Prova visual: hero de produto/shot/problem-card/      */
+/* pillar/feature (T8.2, Rodada 3)                                        */
+/* ====================================================================== */
+
+/**
+ * >>> ESTA SEÇÃO É DE PROPRIEDADE DO EXECUTOR RESPONSÁVEL POR T8.2. A tarefa
+ * paralela T8.3 (mesmo Lote 8, mesmo arquivo) adiciona, de forma aditiva, sua
+ * própria seção logo após esta (`.steps`/`.notice`/`.specs`/`.faq`) — nenhuma
+ * regra deste bloco foi tocada por T8.2 fora deste escopo. <<<
+ *
+ * Fonte: `.md/UX-SPEC.md` Seção 1 (Fluxo 3), Seção 2 (wireframe "Evolução
+ * Segura — Desktop"), Seção 3.2 (tabela de componentes novos da Rodada 3) e
+ * Seção 6 (responsivo). Componentes desta tarefa: `.hero--product` (variante
+ * 2 colunas do `.hero` de T3.1), `.shot` (moldura de screenshot, estados "a
+ * capturar"/"capturado"), `.problem-card`/`.pillar` (variantes de conteúdo do
+ * `.glass-card` de T1.1) e `.feature` (bloco texto+imagem alternado). Portado
+ * do mockup de conceito já aprovado pelo stakeholder
+ * (`evolucao-segura-mockup.html`), adaptado à convenção BEM/organização já
+ * usada neste arquivo (nomenclatura `.bloco__elemento--modificador`,
+ * reaproveitamento estrito de tokens já existentes — nenhum token novo
+ * declarado aqui, incl. os 3 tokens de aviso de T8.1 que ficam reservados ao
+ * `.notice` de T8.3, não usados nesta seção).
+ *
+ * Escopo desta tarefa: só o CSS reutilizável dos 4 componentes acima — a
+ * montagem completa de `evolucao-segura.html` (10 blocos de conteúdo) é do
+ * Lote 9 (ainda não implementado). Os blocos de referência HTML abaixo estão
+ * prontos para serem copiados literalmente por essa tarefa futura.
+ *
+ * -----------------------------------------------------------------------
+ * VERIFICAÇÃO DE CONTRASTE WCAG AA — todas as combinações de cor introduzidas
+ * por esta seção REAPROVEITAM pares já verificados em `tokens.css`/`.hero`
+ * (T3.1)/App Card (T3.4), aplicados aos mesmos fundos (`--color-bg` sólido do
+ * `.hero`/seções de conteúdo, ou o mesh gradient do `.hero` já revalidado por
+ * script em T4.2 — ver comentário de "Hero (T3.1)" acima):
+ *
+ *   `.hero__eyebrow` (--color-accent sobre o mesh gradient do .hero) -> par
+ *     idêntico ao já revalidado por `a11y-contrast-check.js` em T4.2 para
+ *     `--color-accent` sobre --color-bg (10.13:1) — o eyebrow fica na coluna
+ *     de texto do hero, mesma área já coberta pela pior-caso do mesh.
+ *   `.hero__facts` / `.hero__cta-note` (--color-text-inverse-secondary sobre
+ *     o mesh gradient) -> mesmo par revalidado em T4.2 para
+ *     `--color-text-inverse-secondary` (4.65:1 no pior caso composto, ver
+ *     nota de T3.1 acima) — já é o pior caso de contraste do site, aqui
+ *     reaplicado sem introduzir composição nova.
+ *   `.hero__cta-note a` (--color-accent) -> já verificado em tokens.css.
+ *   `.shot__tag` (texto --color-bg sobre fundo --color-accent) -> par
+ *     idêntico ao `.badge` (T3.4), 10.13:1.
+ *   `.shot__tag--ready` (texto --color-bg sobre fundo --color-text-inverse)
+ *     -> mesma luminância do par --color-text-inverse/--color-bg já
+ *     verificado em tokens.css (13.91:1), com fundo/texto invertidos —
+ *     fórmula simétrica, resultado idêntico.
+ *   `.shot__screen` (--color-text-inverse) / `.shot__hint` / `.shot__caption`
+ *     (--color-text-inverse-secondary) sobre --color-bg sólido (o fundo real
+ *     de `.shot__frame`, que não herda o mesh do `.hero` — as seções
+ *     "O problema"/"Por dentro" não têm mesh gradient próprio, mesmo
+ *     raciocínio já registrado em "Home — Seções Apps/Sobre", T3.2) -> pares
+ *     já verificados em tokens.css (13.91:1 / 9.96:1).
+ *   `.shot__privacy` (--color-accent) -> já verificado em tokens.css.
+ *   `.problem-card__title` / `.pillar__title` (--color-text-inverse) e
+ *   `.problem-card__text` / `.pillar__text` (--color-text-inverse-secondary)
+ *     sobre `--glass-bg` translúcido sobre --color-bg sólido -> mesmo
+ *     raciocínio já registrado em "Vitrine de Apps / App Card (T3.4)": o
+ *     glass é quase transparente (8% branco), sem impacto perceptível no
+ *     contraste sobre os pares já verificados em tokens.css.
+ *   `.pillar__num` (texto --color-bg sobre fundo --color-accent) -> par
+ *     idêntico ao `.badge`, 10.13:1.
+ *   `.feature__title` (--color-text-inverse) / `.feature__text`
+ *     (--color-text-inverse-secondary) sobre --color-bg sólido -> pares já
+ *     verificados em tokens.css.
+ *
+ * Nenhuma combinação nova de cor foi introduzida; nenhum ajuste de tom foi
+ * necessário.
+ * -----------------------------------------------------------------------
+ */
+
+/**
+ * `.hero--product` — bloco de referência (HTML esperado em
+ * `evolucao-segura.html`, seção 1 "Hero de produto", Lote 9):
+ *
+ *   <section class="hero hero--product">
+ *     <div class="decorative-shape hero__shape--1" aria-hidden="true"></div>
+ *     <div class="decorative-shape hero__shape--2" aria-hidden="true"></div>
+ *     <div class="container hero__inner">
+ *       <div class="hero__col">
+ *         <p class="hero__eyebrow">Evolução Segura · Prontuário eletrônico</p>
+ *         <h1 class="hero__title">...</h1>
+ *         <p class="hero__subtitle">...</p>
+ *         <ul class="hero__facts">
+ *           <li><svg aria-hidden="true">...</svg> Windows 10 e 11</li>
+ *           <li><svg aria-hidden="true">...</svg> Funciona sem conexão</li>
+ *           <li><svg aria-hidden="true">...</svg> 7 dias para testar</li>
+ *         </ul>
+ *         <div class="hero__ctas">
+ *           <!-- CTA primário: elemento não-<a> no estado "Indisponível para
+ *                download nesta fase" (UX-SPEC.md Seção 4/7) — resolvido por
+ *                T9.1/T9.6 (Lote 9), fora do escopo desta tarefa (T8.2). -->
+ *           <button type="button" class="hero__cta hero__cta--primary" disabled aria-disabled="true">Baixar para Windows</button>
+ *           <a class="hero__cta hero__cta--secondary" href="#por-dentro">Ver por dentro</a>
+ *         </div>
+ *         <p class="hero__cta-note">Download ainda não disponível nesta fase.</p>
+ *       </div>
+ *       <div class="hero__col">
+ *         <!-- .shot no estado "capturado" (slot S1, já capturado) -->
+ *       </div>
+ *     </div>
+ *   </section>
+ *
+ * Reutiliza `.hero`/`.hero__shape--1/2`/`.hero__inner`/`.hero__title`/
+ * `.hero__subtitle`/`.hero__ctas`/`.hero__cta`/`.hero__cta--primary`/
+ * `.hero__cta--secondary` de T3.1 sem redeclaração — `.hero--product` só
+ * sobrescreve o que muda de 1 para 2 colunas (abaixo). O estado "disabled"
+ * visual do CTA primário (opacidade reduzida, `cursor: not-allowed`) é
+ * responsabilidade de T9.1/T9.6 (Lote 9), não desta tarefa — o bloco de
+ * referência acima já aponta o elemento correto (`<button disabled>`) para
+ * quem implementar aquela tarefa não precisar redecidir o elemento semântico.
+ */
+
+.hero--product .hero__inner {
+  text-align: left;
+  max-width: none;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+/* Breakpoint próprio (900px, "entre Tablet e Desktop"), igual ao mockup de
+   conceito — UX-SPEC.md Seção 6. */
+@media (min-width: 900px) {
+  .hero--product .hero__inner {
+    grid-template-columns: 1.05fr 0.95fr;
+    gap: 3rem;
+  }
+}
+
+.hero--product .hero__col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+/* Dentro de `.hero--product`, os CTAs/título/subtítulo herdados de T3.1 não
+   devem ficar centralizados (esse era o comportamento do `.hero__inner` de 1
+   coluna da Home) — sobrescrito para alinhamento à esquerda. */
+.hero--product .hero__title,
+.hero--product .hero__subtitle,
+.hero--product .hero__ctas {
+  text-align: left;
+  margin-inline: 0;
+  justify-content: flex-start;
+}
+
+.hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.hero__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  font-size: 0.9375rem;
+  color: var(--color-text-inverse-secondary);
+}
+
+.hero__facts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.hero__facts svg {
+  width: 16px;
+  height: 16px;
+  stroke: var(--color-accent);
+  fill: none;
+  stroke-width: 2;
+  flex-shrink: 0;
+}
+
+.hero__cta-note {
+  font-size: 0.875rem;
+  color: var(--color-text-inverse-secondary);
+  max-width: 46ch;
+}
+
+.hero__cta-note a {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+/**
+ * `.shot` — moldura de screenshot com legenda (UX-SPEC.md Seção 3.2/4/5).
+ * Bloco de referência — 2 estados:
+ *
+ *   <!-- Estado "capturado" (slot já resolvido): sem `.shot__frame`, a
+ *        imagem real ocupa o lugar direto dentro de `<figure>`. -->
+ *   <figure class="shot">
+ *     <span class="shot__tag shot__tag--ready">SLOT S1 · print real capturado</span>
+ *     <img class="shot__img" src="..." alt="Descrição real do conteúdo da tela, com dado fictício.">
+ *     <figcaption class="shot__caption">
+ *       <span class="shot__privacy"><svg aria-hidden="true">...</svg> Acervo de demonstração — nomes fictícios obrigatórios</span>
+ *     </figcaption>
+ *   </figure>
+ *
+ *   <!-- Estado "a capturar" (placeholder, UX-SPEC.md Seção 4 — nunca uma
+ *        imagem quebrada/espaço em branco): `.shot__frame` com
+ *        `role="img"` + `aria-label` descrevendo o que a captura final vai
+ *        mostrar, para leitor de tela não anunciar um vazio sem contexto. -->
+ *   <figure class="shot">
+ *     <div class="shot__frame" role="img" aria-label="Espaço reservado para a captura de [descrição da tela final].">
+ *       <span class="shot__tag">SLOT S8 · a capturar</span>
+ *       <span class="shot__screen">Nome da tela</span>
+ *       <span class="shot__hint">Dica textual de enquadramento para quem for capturar.</span>
+ *     </div>
+ *     <figcaption class="shot__caption">Legenda opcional.</figcaption>
+ *   </figure>
+ *
+ * `.shot__frame--tall`/`.shot__frame--wide` (modificadores opcionais de
+ * proporção do placeholder, quando o enquadramento final é conhecido de
+ * antemão) e `.shot__caption b` (destaque de trecho da legenda) completam o
+ * conjunto, herdados do mockup sem alteração de valor.
+ */
+
+.shot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.shot__frame {
+  position: relative;
+  width: 100%;
+  border: 2px dashed var(--color-accent);
+  border-radius: 14px;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(127, 227, 210, 0.07) 0px,
+      rgba(127, 227, 210, 0.07) 10px,
+      transparent 10px,
+      transparent 20px
+    ),
+    rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+  min-height: 210px;
+}
+
+.shot__frame--tall {
+  min-height: 300px;
+}
+
+.shot__frame--wide {
+  min-height: 260px;
+}
+
+.shot__img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+.shot__tag {
+  display: inline-block;
+  padding: 0.2em 0.7em;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* Estado "capturado" — tag visualmente distinta da tag "a capturar" (não
+   depende só do texto da tag para diferenciar os 2 estados, ainda que o
+   texto em si já seja explícito). */
+.shot__tag--ready {
+  background: var(--color-text-inverse);
+}
+
+.shot__screen {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 1rem;
+  color: var(--color-text-inverse);
+}
+
+.shot__hint {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--color-text-inverse-secondary);
+  max-width: 44ch;
+}
+
+.shot__caption {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--color-text-inverse-secondary);
+  border-left: 2px solid var(--glass-border);
+  padding-left: 0.75rem;
+}
+
+.shot__caption b {
+  color: var(--color-text-inverse);
+  font-weight: 600;
+}
+
+.shot__privacy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+.shot__privacy svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+/**
+ * `.problem-card` / `.pillar` — variantes de conteúdo do `.glass-card`
+ * (UX-SPEC.md Seção 3.2: "sem novo token visual, só variação de conteúdo/
+ * ícone interno"). `.problem-card` (seção "O problema", ícone de alerta por
+ * card) e `.pillar` (seção "Proposta de valor"/"Licença de uso", numeração
+ * `.pillar__num` em vez de ícone) compartilham a mesma estrutura de
+ * título/texto — herdam o fallback `@supports not (backdrop-filter)` de
+ * `.glass-card` (tokens.css) automaticamente, por composição de classe, sem
+ * precisar repeti-lo aqui.
+ *
+ * Bloco de referência — "O problema" (3 `.problem-card`):
+ *
+ *   <div class="grid grid--3col">
+ *     <article class="glass-card problem-card">
+ *       <svg class="problem-card__icon" viewBox="0 0 24 24" aria-hidden="true">...</svg>
+ *       <h3 class="problem-card__title">Abre com dois cliques</h3>
+ *       <p class="problem-card__text">...</p>
+ *     </article>
+ *     ...
+ *   </div>
+ *
+ * Bloco de referência — "Proposta de valor" (3 `.pillar` numerados) e
+ * "Licença de uso" (1 `.pillar`, sem `.pillar__list`, ver UX-SPEC.md Seção 1,
+ * item 7 "[ATUALIZADO, ajuste pontual]"):
+ *
+ *   <div class="grid grid--3col">
+ *     <article class="glass-card pillar">
+ *       <span class="pillar__num" aria-hidden="true">1</span>
+ *       <h3 class="pillar__title">Proteção de verdade, e verificável</h3>
+ *       <p class="pillar__text">...</p>
+ *       <ul class="pillar__list">
+ *         <li><svg aria-hidden="true">...</svg> Item verificável...</li>
+ *       </ul>
+ *     </article>
+ *     ...
+ *   </div>
+ */
+
+.problem-card,
+.pillar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1.75rem;
+  height: 100%;
+}
+
+.problem-card__icon {
+  width: 40px;
+  height: 40px;
+  stroke: var(--color-accent);
+  fill: none;
+  stroke-width: 1.6;
+}
+
+.problem-card__title,
+.pillar__title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--color-text-inverse);
+}
+
+.problem-card__text,
+.pillar__text {
+  font-family: var(--font-body);
+  color: var(--color-text-inverse-secondary);
+}
+
+.pillar__num {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--color-bg);
+  background: var(--color-accent);
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pillar__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.pillar__list li {
+  display: flex;
+  gap: 0.5rem;
+  font-family: var(--font-body);
+  color: var(--color-text-inverse-secondary);
+  font-size: 0.9375rem;
+}
+
+.pillar__list svg {
+  width: 16px;
+  height: 16px;
+  margin-top: 0.3rem;
+  flex-shrink: 0;
+  stroke: var(--color-accent);
+  fill: none;
+  stroke-width: 2.2;
+}
+
+/**
+ * `.feature` — bloco de texto + `.shot` alternados (seção "Como isso aparece
+ * na tela", 4 blocos, slots S2-S5 — UX-SPEC.md Seção 1, item 4). Modificador
+ * `.feature--reverse` alterna o lado da imagem (mídia à esquerda, texto à
+ * direita) a partir do breakpoint de 2 colunas.
+ *
+ * Decisão de detalhe tomada em silêncio (desvio pequeno, permitido pelos
+ * guardrails): breakpoint de 2 colunas fixado em 900px, o mesmo de
+ * `.hero--product` acima e o mesmo já usado no mockup de conceito aprovado —
+ * não 768px ("a partir de Tablet", redação mais genérica da UX-SPEC.md Seção
+ * 6). Escolhido para manter as 2 áreas de prova visual mais densas da página
+ * (hero e "Por dentro") trocando de layout no mesmo ponto, evitando uma
+ * página onde o hero ainda está em 1 coluna mas a seção seguinte já abriu em
+ * 2 colunas (ou vice-versa) numa largura intermediária de ~800-899px.
+ *
+ * Bloco de referência:
+ *
+ *   <div class="feature"> <!-- ou "feature feature--reverse" -->
+ *     <div class="feature__body">
+ *       <h3 class="feature__title">...</h3>
+ *       <p class="feature__text">...</p>
+ *     </div>
+ *     <div class="feature__media">
+ *       <figure class="shot">...</figure>
+ *     </div>
+ *   </div>
+ *   <div class="feature feature--reverse">...</div> <!-- alterna a cada item -->
+ */
+
+.feature {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .feature {
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+  }
+
+  .feature--reverse .feature__media {
+    order: -1;
+  }
+}
+
+.feature + .feature {
+  margin-top: 3.5rem;
+}
+
+.feature__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.feature__title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.375rem;
+  color: var(--color-text-inverse);
+}
+
+.feature__text {
+  font-family: var(--font-body);
+  color: var(--color-text-inverse-secondary);
+  max-width: 52ch;
+}
+
+/* ====================================================================== */
+/* Página de Produto — Componentes informativos (T8.3, Rodada 3)          */
+/* ====================================================================== */
+
+/**
+ * Escopo desta seção: os 4 componentes "informativos" atribuídos a T8.3
+ * (`.steps`, `.notice`, `.specs`, `.faq`), reutilizados por
+ * `evolucao-segura.html` (Lote 9, ainda não implementado — esta tarefa só
+ * cria o CSS reutilizável). T8.2 (outra instância do Executor, rodando em
+ * paralelo sobre este mesmo arquivo) adiciona `.hero--product`/`.shot`/
+ * `.problem-card`/`.pillar`/`.feature` em seção própria, sem sobreposição
+ * de seletor com a seção abaixo — nenhuma regra já existente neste arquivo
+ * foi tocada para acrescentar este bloco.
+ *
+ * Reutiliza `.glass-card` (`tokens.css`, T1.1, com fallback `@supports` já
+ * embutido) como moldura de `.steps`/`.notice`/`.specs` (aplicada no HTML
+ * consumidor, não redeclarada aqui) e os 3 tokens de aviso `--color-notice-
+ * bg`/`--color-notice-border`/`--color-notice-icon` (`tokens.css`, T8.1) no
+ * `.notice` — nenhum token novo é declarado nesta seção.
+ *
+ * Referência de conceito: mockup aprovado pelo stakeholder
+ * (`.steps`/`.steps__item`/`.steps__body`, `.notice`/`.notice__head`/
+ * `.notice__icon`/`.notice__title`/`.notice__text`/`.notice__path`,
+ * `.specs`/`.specs th`/`.specs td`, `.faq`/`.faq__item`/`.faq__q`/
+ * `.faq__a`), adaptado à convenção BEM/organização já usada neste arquivo —
+ * não copiado literalmente. Duas adaptações deliberadas em relação ao
+ * mockup: (1) `.notice` usa os tokens `--color-notice-bg/-border/-icon`
+ * (T8.1) em vez dos valores `rgba(...)`/`#FFD166` fixos no mockup — mesma
+ * cor final, mas sem duplicar a fonte da verdade; (2) `.specs` empilha
+ * abaixo de 768px (breakpoint padrão do projeto, `UX-SPEC.md` Seção 6),
+ * não abaixo de 480px como no mockup — critério de aceite desta tarefa
+ * (T8.3, `TASK.md`) exige explicitamente o breakpoint de 768px.
+ *
+ * Bloco de referência — HTML esperado (a copiar em `evolucao-segura.html`,
+ * Lote 9):
+ *
+ *   <!-- .steps — Seção "Instalação" (id="instalacao"), 4 passos reais -->
+ *   <ol class="steps">
+ *     <li class="steps__item">
+ *       <span class="steps__num" aria-hidden="true"></span>
+ *       <span class="steps__body">
+ *         <span class="steps__title">Baixe o instalador</span>
+ *         <span class="steps__text">Texto do passo...</span>
+ *       </span>
+ *     </li>
+ *     <!-- ...demais passos, mesma estrutura -->
+ *   </ol>
+ *
+ *   <!-- .notice — mesma seção, aviso honesto do SmartScreen -->
+ *   <div class="notice">
+ *     <div class="notice__head">
+ *       <svg class="notice__icon" viewBox="0 0 24 24" aria-hidden="true">...</svg>
+ *       <h3 class="notice__title">Sim, o Windows vai exibir um aviso...</h3>
+ *     </div>
+ *     <p class="notice__text">Texto explicando o SmartScreen...</p>
+ *     <p class="notice__text"><strong>O caminho, se você decidir instalar:</strong></p>
+ *     <code class="notice__path">Mais informações  ›  Executar assim mesmo</code>
+ *   </div>
+ *
+ *   <!-- .specs — Seção "Requisitos de sistema" (id="requisitos") -->
+ *   <table class="specs">
+ *     <caption>Requisitos de instalação do Evolução Segura.</caption>
+ *     <tbody>
+ *       <tr><th scope="row">Sistema operacional</th><td>Windows 10 ou Windows 11 (64 bits)</td></tr>
+ *       <!-- ...demais linhas -->
+ *     </tbody>
+ *   </table>
+ *
+ *   <!-- .faq — Seção "Dúvidas", <details>/<summary> nativos, sem JS -->
+ *   <div class="faq">
+ *     <details class="glass-card faq__item">
+ *       <summary class="faq__q">E se eu esquecer a senha mestra?</summary>
+ *       <p class="faq__a">Resposta...</p>
+ *     </details>
+ *     <!-- ...demais perguntas -->
+ *   </div>
+ *
+ * Acessibilidade (`UX-SPEC.md` Seção 5, item "[Novo, Rodada 3]
+ * evolucao-segura.html"):
+ *   - `.steps`: é um `<ol>` semântico — mesmo se o `::before` gerado por
+ *     CSS counter falhar/for removido, o leitor de tela já anuncia "item X
+ *     de N" pela própria lista ordenada nativa; o número visual
+ *     (`.steps__num`) é puramente decorativo (`aria-hidden="true"`, sem
+ *     texto duplicado no HTML) e nunca a única fonte da ordem.
+ *   - `.notice`: título explícito ("Sim, o Windows vai exibir um
+ *     aviso...") + ícone `aria-hidden="true"` — a cor âmbar nunca é a única
+ *     pista de "atenção".
+ *   - `.specs`: `<table>` semântica com `<caption>` e `scope="row"` nos
+ *     cabeçalhos de linha (a copiar no HTML consumidor) — nunca uma grade
+ *     visual sem marcação de tabela.
+ *   - `.faq`: `<details>`/`<summary>` nativos — abre/fecha por teclado
+ *     (Enter/Espaço com foco no `<summary>`) e é anunciado por leitor de
+ *     tela como controle expansível, sem nenhum JavaScript novo
+ *     (`GUARDRAILS.md` G-01: sem dependência/toolchain nova).
+ *
+ * -----------------------------------------------------------------------
+ * VERIFICAÇÃO DE CONTRASTE WCAG AA — combinações introduzidas por esta
+ * seção (fórmula de luminância relativa do WCAG 2.x, mesma usada em
+ * `tokens.css`/`a11y-contrast-check.js`). Alvo: >=4.5:1 texto normal,
+ * >=3:1 texto grande/UI.
+ *
+ *   .steps__title/.notice__title (--color-text-inverse) sobre --color-bg
+ *     (por trás do `.glass-card`, translúcido) -> par já verificado em
+ *     `tokens.css` (13.91:1) — reaproveitado aqui sem alteração.
+ *   .steps__text/.notice__text/.specs td (--color-text-inverse-secondary)
+ *     sobre --color-bg (idem, por trás do `.glass-card`) -> par já
+ *     verificado em `tokens.css` (9.96:1) — reaproveitado aqui.
+ *   .notice__icon (stroke: --color-notice-icon, #FFD166) sobre --color-bg
+ *     -> 10.67:1 (crítico de UI ≥3:1: OK, com folga larga) — já verificado
+ *     em T8.1/`tokens.css`, reaproveitado aqui sem recálculo.
+ *   .specs th (--color-text-inverse) sobre --color-bg -> mesmo par de
+ *     `.steps__title` acima, 13.91:1 (OK).
+ *   .faq__q (--color-text-inverse) sobre --glass-bg -> mesmo par já
+ *     verificado em `.app-card`/`.faq__item` usa `.glass-card`, sem
+ *     impacto perceptível de contraste (glass é quase transparente sobre
+ *     --color-bg sólido). .faq__a (--color-text-inverse-secondary) sobre
+ *     --glass-bg -> mesmo raciocínio, par já verificado (9.96:1).
+ *   .faq__q::after / .notice__path (ícone "+"/"–", texto do caminho) —
+ *     .faq__q::after usa --color-accent sobre --glass-bg -> par já
+ *     verificado em `tokens.css` (10.13:1). `.notice__path` usa
+ *     --color-text-inverse sobre um fundo preto translúcido mais escuro
+ *     que --color-bg (`rgba(0,0,0,.28)` compondo sobre o já translúcido
+ *     `.notice`) — estritamente mais escuro que --color-bg sólido, logo o
+ *     contraste de --color-text-inverse só aumenta em relação ao par já
+ *     verificado (13.91:1); nunca diminui.
+ *
+ * Nenhuma combinação nova de cor foi introduzida além das já verificadas em
+ * `tokens.css` (T1.1/T8.1) e reaproveitadas em componentes anteriores deste
+ * arquivo. Nenhum ajuste de tom foi necessário.
+ * -----------------------------------------------------------------------
+ */
+
+/* --- .steps — lista numerada de instalação ----------------------------- */
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  counter-reset: steps;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.steps__item {
+  counter-increment: steps;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+/* Numeração puramente visual/decorativa (`aria-hidden="true"` no HTML
+   consumidor) — gerada via CSS counter, nunca digitada como texto no
+   HTML, para nunca ficar dessincronizada da ordem real dos `<li>`. Se o
+   `::before` falhar por qualquer motivo, o `<ol>` nativo já garante que a
+   ordem/posição seja anunciada por leitor de tela (ver nota de
+   acessibilidade acima). */
+.steps__num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--color-accent);
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+.steps__num::before {
+  content: counter(steps);
+}
+
+.steps__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.steps__title {
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--color-text-inverse);
+}
+
+.steps__text {
+  font-family: var(--font-body);
+  color: var(--color-text-inverse-secondary);
+  font-size: 0.9375rem;
+}
+
+/* --- .notice — bloco de aviso honesto (SmartScreen do Windows) --------- */
+
+.notice {
+  padding: 1.75rem;
+  border-radius: var(--glass-radius);
+  background: var(--color-notice-bg);
+  border: 1px solid var(--color-notice-border);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.notice__head {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.notice__icon {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  stroke: var(--color-notice-icon);
+  fill: none;
+  stroke-width: 1.8;
+}
+
+.notice__title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--color-text-inverse);
+}
+
+.notice__text {
+  font-family: var(--font-body);
+  color: var(--color-text-inverse-secondary);
+}
+
+.notice__text strong {
+  color: var(--color-text-inverse);
+  font-weight: 600;
+}
+
+.notice__path {
+  font-family: ui-monospace, 'Cascadia Mono', 'Consolas', monospace;
+  font-size: 0.9375rem;
+  color: var(--color-text-inverse);
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  display: block;
+}
+
+/* --- .specs — tabela de requisitos de sistema, responsiva --------------- */
+
+.specs {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.specs caption {
+  text-align: left;
+  color: var(--color-text-inverse-secondary);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  padding-bottom: 0.75rem;
+}
+
+.specs th,
+.specs td {
+  text-align: left;
+  padding: 0.85rem 1rem;
+  vertical-align: top;
+  border-bottom: 1px solid var(--glass-border);
+  font-family: var(--font-body);
+}
+
+.specs th {
+  color: var(--color-text-inverse);
+  font-weight: 600;
+  width: 42%;
+}
+
+.specs td {
+  color: var(--color-text-inverse-secondary);
+}
+
+/* Empilha em 1 coluna abaixo de 768px (critério de aceite T8.3 /
+   `UX-SPEC.md` Seção 6: "`.specs` vira lista de pares rótulo/valor
+   empilhados abaixo de 768px, sem `<table>` com rolagem horizontal") —
+   mesmo breakpoint/valor (767.98px) já usado em todo o resto do projeto
+   (ex.: menu mobile, T2.2), não o de 480px do mockup de conceito. A
+   marcação `<table>`/`<th scope="row">`/`<td>` permanece intacta no HTML
+   (nada de grade `<div>` substituindo a tabela) — só a apresentação visual
+   muda para bloco empilhado, preservando a semântica de tabela para
+   leitor de tela em qualquer largura. */
+@media (max-width: 767.98px) {
+  .specs th,
+  .specs td {
+    display: block;
+    width: 100%;
+    padding-inline: 0;
+  }
+
+  .specs th {
+    border-bottom: none;
+    padding-bottom: 0.15rem;
+  }
+}
+
+/* --- .faq — perguntas frequentes via <details>/<summary> nativos ------- */
+
+.faq {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* `.faq__item` é aplicado em conjunto com `.glass-card` no HTML consumidor
+   (ex.: `<details class="glass-card faq__item">`) — reaproveita o fundo/
+   borda/blur já definidos em `tokens.css`, com fallback `@supports`
+   herdado automaticamente. */
+.faq__item {
+  padding-inline: 1.25rem;
+}
+
+.faq__q {
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--color-text-inverse);
+  padding-block: 1.1rem;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* Remove o marcador nativo (triângulo) do `<summary>` — substituído pelo
+   indicador "+"/"–" abaixo, que já muda junto com o atributo `[open]`
+   controlado nativamente pelo navegador (sem JS). */
+.faq__q::-webkit-details-marker {
+  display: none;
+}
+
+.faq__q::after {
+  content: '+';
+  font-family: var(--font-heading);
+  color: var(--color-accent);
+  font-size: 1.25rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.faq__item[open] .faq__q::after {
+  content: '–';
+}
+
+.faq__a {
+  font-family: var(--font-body);
+  color: var(--color-text-inverse-secondary);
+  padding-bottom: 1.25rem;
+  max-width: 66ch;
+}
+
+/* `prefers-reduced-motion` (`UX-SPEC.md` Seção 5): nenhuma transição/
+   animação é declarada em `.steps`/`.notice`/`.specs`/`.faq` — a expansão
+   nativa de `<details>` já é instantânea por padrão do navegador (sem
+   `transition` customizada aqui que precisasse ser desligada). */
+
+/* ====================================================================== */
+/* Página de Produto — Estrutura genérica de seção de conteúdo (T9.1)      */
+/* ====================================================================== */
+
+/**
+ * Gap encontrado ao iniciar T9.1: os 8 componentes de T8.1-T8.3 cobrem só
+ * o conteúdo interno de cada bloco (`.hero--product`, `.problem-card`,
+ * `.pillar`, `.feature`, `.steps`, `.notice`, `.specs`, `.faq`) — nenhum
+ * cobria o "invólucro" (heading/kicker/texto de introdução + espaçamento)
+ * comum às Seções 2-10 de `evolucao-segura.html` (`UX-SPEC.md` Fluxo 3).
+ * Como as 6 sub-tarefas do Lote 9 (T9.1-T9.6) vão precisar exatamente do
+ * mesmo invólucro, resolvido aqui uma única vez (desvio pequeno de
+ * implementação, dentro da autoridade do Executor) em vez de cada
+ * sub-tarefa reinventar o próprio wrapper de seção — portado do mockup de
+ * conceito aprovado (`evolucao-segura-mockup.html`, classes `.section`/
+ * `.section__head`/`.section__kicker`/`.section__title`/`.section__lead`),
+ * sem nenhum token novo.
+ *
+ * Bloco de referência (usado por T9.1 na Seção 2 "O problema" e reaproveitado
+ * por T9.2-T9.6 nas seções seguintes):
+ *
+ *   <section class="section section--alt" aria-labelledby="problema-titulo">
+ *     <div class="container">
+ *       <div class="section__head">
+ *         <p class="section__kicker">O ponto de partida</p>
+ *         <h2 class="section__title" id="problema-titulo">...</h2>
+ *         <p class="section__lead">...</p>
+ *       </div>
+ *       <div class="grid grid--3col">...</div>
+ *     </div>
+ *   </section>
+ *
+ * `.section--alt` é só um modificador visual (leve gradiente decorativo,
+ * mesmos tokens `--color-bg-gradient-1/2` já usados no `.hero`) para
+ * alternar a percepção de fim/início de seção ao longo da rolagem —
+ * decisão de detalhe (uso opcional por seção, a critério de cada
+ * sub-tarefa). `.section__head--center` (opcional) centraliza o cabeçalho
+ * quando a seção não tem um grid de cards ao lado (ex.: Seção 5
+ * "Conformidade", texto institucional).
+ *
+ * -----------------------------------------------------------------------
+ * VERIFICAÇÃO DE CONTRASTE WCAG AA — nenhuma combinação nova: `.section__
+ * kicker` (--color-accent sobre --color-bg) e `.section__title` (--color-
+ * text-inverse sobre --color-bg) são os mesmos pares já verificados em
+ * `tokens.css`/`.hero__eyebrow`/`.home-apps__title` (T3.1/T3.2/T8.2);
+ * `.section__lead` reaproveita --color-text-inverse-secondary sobre
+ * --color-bg, também já verificado.
+ * -----------------------------------------------------------------------
+ */
+
+.section {
+  padding-block: 3.5rem;
+  background-color: var(--color-bg);
+}
+
+.section--alt {
+  background-image:
+    radial-gradient(
+      ellipse 80% 60% at 85% 0%,
+      color-mix(in srgb, var(--color-bg-gradient-1) 32%, transparent),
+      transparent 70%
+    );
+}
+
+.section__head {
+  max-width: 62ch;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.section__head--center {
+  margin-inline: auto;
+  text-align: center;
+  align-items: center;
+}
+
+.section__kicker {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.section__title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 1.2rem + 1.3vw, 2.125rem);
+  color: var(--color-text-inverse);
+}
+
+.section__lead {
+  font-size: 1.0625rem;
+  color: var(--color-text-inverse-secondary);
+}
+
+/**
+ * `.hero__cta--primary:disabled` — estado visual "Indisponível para
+ * download nesta fase" (`UX-SPEC.md` Seção 4, 5º estado de tela) do CTA
+ * "Baixar para Windows" no hero (T9.1) e no CTA final (T9.6). T8.2 já
+ * apontava o elemento semântico correto (`<button disabled>`) mas deixava
+ * o estilo visual explicitamente para esta tarefa. Opacidade reduzida (já
+ * torna o botão visualmente distinto do `.hero__cta--secondary`, que não é
+ * afetado por este seletor) + `cursor: not-allowed`; a regra `:hover`
+ * também é sobrescrita para não usar a opacidade de hover do estado normal
+ * (`.hero__cta--primary:hover`, acima) num botão que não reage a clique.
+ * Nenhuma combinação de cor nova: mesmo par --color-bg sobre --color-accent
+ * já verificado, apenas com opacidade do bloco inteiro reduzida.
+ */
+.hero__cta--primary:disabled,
+.hero__cta--primary:disabled:hover {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ====================================================================== */
+/* Página de Produto — CTA final (T9.6)                                    */
+/* ====================================================================== */
+
+/**
+ * Gap encontrado ao iniciar T9.6: nenhum dos 8 componentes de T8.1-T8.3
+ * cobria o bloco "CTA final" (Seção 10, `UX-SPEC.md` Seção 2/Fluxo 3, item
+ * 10 — "mesmo `.glass-card`/`final-cta`") — mesma natureza dos 2 gaps já
+ * documentados em T9.1 (estado `:disabled` do botão e invólucro genérico
+ * de seção). Resolvido aqui (desvio pequeno de implementação, dentro da
+ * autoridade do Executor), portado do mockup de conceito aprovado
+ * (`evolucao-segura-mockup.html`, classes `.final-cta`/`.final-cta__title`/
+ * `.final-cta__text`/`.final-cta__meta`), sem nenhum token novo. O botão
+ * "Baixar para Windows" desta seção reaproveita as classes `.hero__cta`/
+ * `.hero__cta--primary` já existentes (com `disabled`, ver seletor
+ * `.hero__cta--primary:disabled` acima) — não é um botão novo, mesmo
+ * elemento/estado do hero (T9.1), só em outro contêiner visual.
+ *
+ * Bloco de referência — HTML esperado (usado por T9.6 na Seção 10 "CTA
+ * final"):
+ *
+ *   <section class="section section--alt" id="baixar" aria-labelledby="baixar-titulo">
+ *     <div class="container">
+ *       <div class="glass-card final-cta">
+ *         <h2 class="final-cta__title" id="baixar-titulo">...</h2>
+ *         <p class="final-cta__text">...</p>
+ *         <button type="button" class="hero__cta hero__cta--primary" disabled aria-disabled="true">Baixar para Windows</button>
+ *         <p class="final-cta__meta">Download ainda não disponível nesta fase.</p>
+ *         <p class="final-cta__meta">Instalador .exe · Windows 10/11 (64 bits) · <span class="badge">tamanho e versão a confirmar</span></p>
+ *         <p class="final-cta__meta"><a class="final-cta__link" href="#instalacao">Leia antes sobre o aviso de segurança do Windows na instalação</a></p>
+ *       </div>
+ *     </div>
+ *   </section>
+ *
+ * `.final-cta` reaproveita `.glass-card` (aplicada no HTML consumidor, não
+ * redeclarada aqui) como moldura — mesmo fundo/borda/blur com fallback
+ * `@supports` já embutido, mesmo raciocínio de `.problem-card`/`.pillar`.
+ *
+ * -----------------------------------------------------------------------
+ * VERIFICAÇÃO DE CONTRASTE WCAG AA — nenhuma combinação nova:
+ * `.final-cta__title` (--color-text-inverse sobre --color-bg, por trás do
+ * `.glass-card`) e `.final-cta__text`/`.final-cta__meta` (--color-text-
+ * inverse-secondary sobre --color-bg) são os mesmos pares já verificados em
+ * `tokens.css`/`.section__title`/`.section__lead` (T3.1/T9.1), reaproveitados
+ * aqui sem recálculo. `.final-cta__link` (--color-accent sobre --color-bg)
+ * -> mesmo par já verificado em `.section__kicker`/`.footer-link`.
+ * -----------------------------------------------------------------------
+ */
+
+.final-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: left;
+}
+
+@media (min-width: 768px) {
+  .final-cta {
+    padding: 3rem;
+  }
+}
+
+.final-cta__title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 1.2rem + 1.3vw, 2.125rem);
+  color: var(--color-text-inverse);
+  max-width: 32ch;
+}
+
+.final-cta__text {
+  font-family: var(--font-body);
+  color: var(--color-text-inverse-secondary);
+  max-width: 52ch;
+}
+
+.final-cta__meta {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--color-text-inverse-secondary);
+}
+
+.final-cta__link {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
