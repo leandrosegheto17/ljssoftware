@@ -19,13 +19,13 @@ const PUBLIC = path.join(__dirname, '..', '..', 'public');
 const ORIGIN = 'https://ljssoftware.com.br/';
 // URL publica sem extensao (Cloudflare Pages redireciona 308 de /x.html para /x): index = "/"
 const clean = (f) => (f === 'index.html' ? '/' : '/' + f.replace(/.html$/, ''));
-const APP_PAGES = ['evolucao-segura.html', 'destino-ideal.html', 'radar-esportivo.html'];
+const APP_PAGES = ['evolucao-segura.html', 'destino-ideal.html', 'radar-esportivo.html', 'minha-jornada.html'];
 // aria-current permitido por pagina: href do item de nav (null = nenhum)
 const ALLOWED_CURRENT = {
   'index.html': [], 'apps.html': ['/apps'], 'sobre.html': ['/sobre'], '404.html': [],
 };
 APP_PAGES.forEach((p) => { ALLOWED_CURRENT[p] = ['/apps']; });
-const APP_SLUGS = { 'app-destino-ideal': '/destino-ideal', 'app-radar-esportivo': '/radar-esportivo', 'app-evolucao-segura': '/evolucao-segura' };
+const APP_SLUGS = { 'app-destino-ideal': '/destino-ideal', 'app-radar-esportivo': '/radar-esportivo', 'app-evolucao-segura': '/evolucao-segura', 'app-minha-jornada': '/minha-jornada' };
 
 const failures = [];
 const fail = (f, msg) => failures.push(`${f}: ${msg}`);

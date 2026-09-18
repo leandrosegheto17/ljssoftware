@@ -18,6 +18,9 @@ Estrutura planejada nova em `public/`: `destino-ideal.html`,
 `assets/img/radar-esportivo/`; em `dev/`: `templates/app-page.template.html`,
 `html/site-consistency.check.js`. Lista de páginas de G-02 (Seção 1.1) passa
 a 7 (+`destino-ideal.html`, +`radar-esportivo.html`; `aria-current="page"` em "Apps" nas páginas de app) quando o lote concluir — revisão de G-15/G-02 **aprovada** pelo Gestor em 2026-09-18 (L-17 desbloqueado).
+**Adição pontual (2026-09-18, decisão do usuário, resolve L-14):** anexado o
+**Lote 13** (Minha Jornada — página de detalhe, 4 tarefas) sem redecompor o
+pacote; Lotes 1-12 e Refatorações inalterados.
 **Base:** `PRD-TECNICO.md` (+ adendo Rodada 3) + `SDD.md` (+ `ADR-006`) +
 `UX-SPEC.md` (+ Fluxo 5/Rodada 3) + `GUARDRAILS.md` (revisado)
 **Data original:** 2026-09-07 · **Revisão anterior:** 2026-09-07 (`ADR-005`)
@@ -74,6 +77,13 @@ Traduzidas das restrições/ADRs do `SDD.md` e dos padrões do `UX-SPEC.md`
     ├── css/                 # smoke-tests visuais + scripts de verificação (Node, sem dependências)
     └── fonts/               # smoke-test de fontes + script de verificação
 ```
+
+> **Nota Lote 13 (2026-09-18):** ao concluir o Lote 13, a lista de páginas de
+> G-02/consistência passa de 7 para **8** (+`minha-jornada.html`, URL pública
+> `/minha-jornada` sem `.html`, RL5.1; `aria-current="page"` em "Apps"), e
+> surge `public/assets/img/minha-jornada/` (WebP + PNG, G-07). `GUARDRAILS.md`
+> **não** foi editado: a menção a "7 páginas" em G-02 fica divergente até o
+> Gestor atualizar (ver relatório).
 
 > **Mudança nesta revisão:** pasta `assets/img/logo/` adicionada para os 3
 > PNGs de logo já existentes em `.md/assets/` (ver `ADR-005`); `assets/img/
@@ -622,6 +632,31 @@ T11.4 (fontes/artefatos distintos, sem conflito de arquivo).
 
 **Dependências do Lote 12:** ver Seção 4. **Paralelizáveis:** ver tabela.
 
+### Lote 13 — Minha Jornada: página de detalhe (RA-10) [NOVO, 2026-09-18]
+
+> **Origem:** decisão do usuário de 2026-09-18 (resolve L-14). Modelo: Lote 12
+> (T12.5/T12.6/T12.9/T12.11-13/T12.12). Fonte de conteúdo: PDF
+> `C:\Users\leand\OneDrive\Projetos\EstudoBiblico\docs\manual-de-utilizacao.pdf`
+> (já fornecido, sem bloqueio DI-10). Reusa template `dev/templates/app-page.template.html`
+> e `dev/html/site-consistency.check.js` (T12.2/T12.3), sem alterá-los.
+> **Regras:** URL pública `/minha-jornada` sem `.html` (RL5.1); G-17 revisado
+> (dado público/nome do produto ok; dado sensível de terceiro não); G-07 WebP+PNG;
+> sem GIF/demo (não fornecido, L-16); seções sem fonte real omitidas (RN-04).
+> CTA "Abrir app" -> `https://minha-jornada-ljs.pages.dev/` (nova aba, copiar literal
+> do card atual), `data-analytics-event="app-minha-jornada-abrir"`.
+> **Lote com 4 tarefas** (dentro de ~5-6). Sem efeito cascata nos lotes fechados.
+
+| ID | Tarefa | Dono | Critério de aceite | Estimativa | Status |
+|---|---|---|---|---|---|
+| T13.1 | Extrair prints do PDF do manual para `public/assets/img/minha-jornada/` | Executor | >= 1 print (RN-04), WebP + fallback PNG (G-07), `width`/`height` definidos, otimizado; nomeação `shot-01...`; **G-17 verificado print a print** (dado público/nome do produto ok; dado sensível de terceiro é descartado/recortado e reportado, registro por print no status); sem GIF; sem referência em HTML ainda | 0,5 dia | Concluída |
+| T13.2 | Criar `public/minha-jornada.html` a partir do template com texto do PDF: proposta de valor, FAQ (>= 3 perguntas reais do manual), changelog só se houver fonte real (senão omitido), sem demo | Frontend | Critérios de RF-10.2/10.3/10.5-10.10 iguais a T12.6; title/description/canonical (`https://ljssoftware.com.br/minha-jornada`)/OG únicos; seções sem conteúdo omitidas do DOM; imagens fora da dobra `lazy`; sem `[[...]]` remanescente; Header/Footer byte-idênticos; `site-consistency.check.js` passa nesta página (falha esperada só em sitemap/card até T13.3) | 1 dia | Concluída |
+| T13.3 | Cards de Minha Jornada em `apps.html` e `index.html` -> `/minha-jornada` (remover `target`/`rel`/sr-only "abre em nova aba", padrão T12.9); `sitemap.xml` com `<loc>` absoluto `https://ljssoftware.com.br/minha-jornada`; confirmar canonical; Seção 1.1 nota (já feita) | Frontend | Só o `<a class="badge badge--link">` desse card muda nos 2 arquivos; `data-analytics-event` mantido; botão "Saiba mais"/modal e demais cards intactos; sitemap XML válido sem página inexistente; `site-consistency.check.js` sem falha (8 páginas: canonical, sitemap, card interno); `robots.txt` inalterado | 0,5 dia | Concluída |
+| T13.4 | Auditoria de fechamento (padrão T12.12) | Frontend | `site-consistency.check.js` sem falhas nas 8 páginas; `a11y-contrast-check.js` sem pendência crítica; WCAG AA (foco, `h1` único, headings sem salto, `alt`), `lazy`, sem script/iframe de terceiro (CSP); link do card funcionando; checklist RNF-07/08/09 no status; achado simples vira tarefa em `Refatoração Lote-13` | 0,5 dia | Concluída |
+
+**Autocheck de granularidade do Lote 13 (antes -> depois):** (1) "página de app" único -> extração de prints (T13.1) separada da montagem (T13.2), pelo canário de ~300k tokens (ler PDF com imagens + escrever HTML) e pela verificação G-17 própria; (2) cards + sitemap agrupados em T13.3 (2 cards no mesmo padrão + 1 linha de sitemap, ~0,5 dia, todos "roteamento" da mesma página; inseparáveis para o check passar) — não mistura tela/endpoint/SQL; (3) auditoria isolada em T13.4. Nenhuma tarefa prevê > ~300k tokens.
+
+**Dependências do Lote 13:** T13.2 <- T13.1; T13.3 <- T13.2; T13.4 <- T13.3. Depende apenas de artefatos já entregues (template, check, Lote 12 fechado).
+
 ---
 
 **Nota sobre o autocheck de granularidade (canário de ~300k tokens),
@@ -833,6 +868,8 @@ flowchart TD
 
 Lote 12 (novo): T12.1, T12.3, T12.5 e T12.7 sem dependência interna (T12.5/T12.7 aguardam o PDF externo, DI-10).
 
+Lote 13 (novo, 2026-09-18): cadeia linear T13.1 --> T13.2 --> T13.3 --> T13.4 (sem dependência de outro lote além de artefatos já entregues).
+
 ### Tabela de paralelismo por lote
 
 | Lote | Tarefas paralelizáveis entre si | Tarefas com dependência direta (ordem obrigatória) |
@@ -855,6 +892,7 @@ Lote 12 (novo): T12.1, T12.3, T12.5 e T12.7 sem dependência interna (T12.5/T12.
 | 10 **[Novo]** | T10.1 (sem dependência) | T10.2 depende só do Lote 9 completo — não depende mais de RT-08 (link "Ver app" é interno; os CTAs de download dentro da página nascem "indisponível para download nesta fase", `UX-SPEC.md` Seção 4) |
 | 11 **[Novo]** | T11.1, T11.2, T11.4 (T11.3 removida, ajuste pontual — ver Lote 11) | Nenhuma dependência interna ao lote; sem dependência de outro lote |
 | 12 **[Novo, Rodada 4]** | **Rodada 1:** T12.1, T12.3, T12.5, T12.7 (4 instâncias; T12.5/T12.7 só iniciam com o PDF, DI-10). **Rodada 2 (após T12.1):** T12.2. **Rodada 3 (após T12.2 + prints):** T12.4, T12.6, T12.8 (3 instâncias; T12.6/T12.8 exigem seus prints). **Rodada 4:** T12.9 (após T12.6), T12.10 (após T12.8), T12.11 (após T12.4/6/8) — 3 instâncias (T12.9/T12.10 editam os mesmos 2 arquivos em cards distintos: edição cirúrgica por card, como Lotes 2/3) | T12.2 <- T12.1; T12.4 <- T12.2; T12.6 <- T12.2 + T12.5; T12.8 <- T12.2 + T12.7; T12.9 <- T12.6; T12.10 <- T12.8; T12.11 <- T12.4, T12.6, T12.8; T12.12 (gate final) <- T12.4, T12.9, T12.10, T12.11 (usa T12.3). Sem dependência de nenhum lote 1-11 além de artefatos já entregues |
+| 13 **[Novo, 2026-09-18]** | Nenhuma dentro do lote (cadeia estritamente sequencial: um único arquivo-fonte por etapa). Pode rodar em paralelo com qualquer outro lote aberto (sem conflito de arquivo, exceto `sitemap.xml`/cards se houver refatoração simultânea) | T13.2 <- T13.1; T13.3 <- T13.2; T13.4 <- T13.3 |
 
 O ponto de maior paralelismo real passa a ser o início do Lote 3 (4
 instâncias simultâneas: T3.1, T3.4, T3.5, T3.6), com a Home continuando de
@@ -890,7 +928,7 @@ paralelo.
 | L-11 | **[NOVA, ajuste pontual sobre a mesma reabertura]** O usuário confirmou, diretamente e de forma explícita, que os 2 CTAs "Baixar para Windows" de `evolucao-segura.html` (hero e CTA final) não devem ter nenhuma ação nesta entrega — nem link para o `.exe`, nem para o GitHub Releases, nem `href="#"`/JS disfarçado — por ainda não haver decisão de distribuir o produto. Isso é mais forte que a premissa anterior de T9.6/T10.2 (link real assim que RT-08 fosse resolvido) | Decisão de produto do usuário, não uma lacuna a resolver — registrada para rastreabilidade da mudança de critério de aceite | `UX-SPEC.md` Seção 4 (novo quinto estado "Indisponível para download nesta fase") e Seção 7 (trade-off documentado); `TASK.md` T9.1/T9.6 com critério de aceite explícito (elemento não-`<a>`, `aria-disabled`, cursor `not-allowed`, nota textual); RT-08/`ADR-006` continuam válidos, mas desacoplados da liberação real do download, que passa a depender de nova decisão de negócio futura |
 | L-12 | **[NOVA, ajuste pontual sobre a mesma reabertura]** Ao investigar o Guia do Usuário (12 capítulos) e o Catálogo de Telas reais do produto, o usuário confirmou que não existe nenhuma tela de licenciamento (chave/contra-chave) implementada na v0.1.0, e nenhuma menção a trial/licença/chave em todo o Guia do Usuário — reforça (não substitui) L-08/RT-07: o fluxo chave→contra-chave é só intenção do PRD do app, não tela real | Decisão de conteúdo do usuário, mais forte que a decisão anterior de UX (que só desacoplava o CTA da liberação real) — não é uma lacuna a resolver, registrada para rastreabilidade | A seção "Licença de uso" deixou de descrever o passo a passo de chave/contra-chave em qualquer formato (nem prosa, nem `.steps`) — passa a afirmar só o verificável hoje (7 dias de teste, bloqueio só de escrita após expirar) e fecha com frase honesta sobre o passo a passo pós-teste ainda estar sendo definido; slot de screenshot S9 removido (não há tela para capturar); `UX-SPEC.md` Fluxo 3/Seção 2, wireframe e Seção 7 atualizados; `TASK.md` T9.5 (critério de aceite) e Lote 11/T11.3 (tarefa removida) atualizados. L-08/RT-07/`ADR-006` permanecem válidos como estão — isso é só sobre o conteúdo da página, não sobre a arquitetura de ativação futura |
 | L-13 | **[NOVA]** T11.2 (screenshot S8, aviso nativo do SmartScreen "O Windows protegeu o seu computador") não pôde ser capturada com dado real. Investigação: (1) o repositório `EvolucaoSegura` é privado (confirmado via `gh repo view`, `isPrivate: true` — reforça L-09/RT-08), não há Release pública de onde baixar um instalador já "desconhecido" pelo Windows; (2) foi localizado um clone local do projeto (`C:\Users\leand\OneDrive\Projetos\EvolucaoSegura`, Tauri/Rust) com um instalador real gerado em `target\release\bundle\nsis\EvolucaoSegura_0.1.0_x64-setup.exe`, não assinado (`Get-AuthenticodeSignature` → `NotSigned`); (3) o Executor tentou reproduzir o cenário de forma honesta e sem atalhos: copiou o instalador para uma pasta isolada, aplicou manualmente o Mark-of-the-Web (fluxo `Zone.Identifier` ADS com `ZoneId=3` e `ReferrerUrl`/`HostUrl` apontando para o GitHub Releases do produto — exatamente o mesmo mecanismo que um navegador aplicaria a um download real), e executou o instalador de duas formas (`Start-Process` direto e via `explorer.exe`, replicando um duplo-clique real). Em ambas as tentativas o processo `smartscreen.exe` foi de fato acionado pelo Windows, mas resolveu instantaneamente sem exibir a tela de bloqueio "Windows protegeu o seu computador" — o assistente de instalação abriu normalmente. Não há política de SmartScreen configurada via registro neste PC (`HKLM/HKCU ...\Explorer!SmartScreenEnabled` ausente, sem GPO em `HKLM:\SOFTWARE\Policies\Microsoft\Windows\System`), então o comportamento observado é o padrão real do Windows/conta deste equipamento para esse arquivo — não um artefato de configuração alterada pelo Executor | Lacuna de captura — dado real não reproduzível com segurança neste ambiente, não decidida em silêncio | Nenhuma imagem foi publicada (nem simulada/forjada) para não violar o critério de aceite de T11.1/T11.2 ("se a fonte não permitir capturar com qualidade/honestidade suficiente, reportar como lacuna"). O ambiente de teste (arquivos temporários e cópia do instalador) foi removido ao final da investigação. T11.2 permanece `Pendente` — não há bloqueio de terceiro nem decisão de escopo a devolver ao Coordenador (não é UX-SPEC ambíguo, é limitação do próprio ambiente de captura); alternativas para retomar: (a) reproduzir em outra máquina Windows com "Verificação de app e arquivos" do SmartScreen ativa/configurada como "Avisar", (b) capturar no momento em que o repositório for tornado público e o instalador for baixado de fato via navegador a partir do GitHub Releases (RT-08), ou (c) aceitar como dívida documentada e publicar `evolucao-segura.html` (T9.4) inicialmente sem a imagem S8, só com o texto do `.notice`, revisitando quando uma captura real existir |
-| L-14 | **[NOVA, Rodada 4]** Minha Jornada: `PRD.md` 9.3 trata como "Em breve/sem produto publicado" (sem página), mas o card em `index.html` (e provavelmente `apps.html`) já tem link externo real (`minha-jornada-ljs.pages.dev`, commit 314d614). Sob a revisão proposta de G-15 ("todo app publicado = página interna"), esse card ficaria fora de conformidade | Divergência de escopo, decisão de negócio — não decidida em silêncio | Fora do Lote 12 (RF-10.11/RN-04 e o recorte do usuário citam só Destino Ideal e Radar Esportivo). Sinalizado ao Gestor/usuário: incluir Minha Jornada (nova página com PDF do manual, mesmo padrão T12.5-T12.10) ou aceitar como exceção documentada na revisão de G-15 |
+| L-14 | **[RESOLVIDA, decisão do usuário 2026-09-18 -> Lote 13]** Minha Jornada entra no padrão de página interna (RA-10/G-15 revisado): T13.1-T13.4. Divergência remanescente com `PRD.md` 9.3 ("Em breve") e G-02 ("7 páginas") reportada ao Gestor, sem edição. Texto original: Minha Jornada: `PRD.md` 9.3 trata como "Em breve/sem produto publicado" (sem página), mas o card em `index.html` (e provavelmente `apps.html`) já tem link externo real (`minha-jornada-ljs.pages.dev`, commit 314d614). Sob a revisão proposta de G-15 ("todo app publicado = página interna"), esse card ficaria fora de conformidade | Divergência de escopo, decisão de negócio — não decidida em silêncio | Fora do Lote 12 (RF-10.11/RN-04 e o recorte do usuário citam só Destino Ideal e Radar Esportivo). Sinalizado ao Gestor/usuário: incluir Minha Jornada (nova página com PDF do manual, mesmo padrão T12.5-T12.10) ou aceitar como exceção documentada na revisão de G-15 |
 | L-15 | **[NOVA, Rodada 4]** RF-10.10 (CTA principal mensurável) x L-11 (CTA de download do Evolução Segura desabilitado, sem clique) | Conflito de requisitos, decisão de detalhe | Interpretação adotada: RF-10.10 vale para CTAs ativos (apps web); o CTA desabilitado do ES não é instrumentado (`UX-SPEC.md` Seção 7). Confirmar com o usuário |
 | L-16 | **[NOVA, Rodada 4]** "Demo = GIF" (INT-06): um PDF de manual não contém GIF; a demo exige arquivo próprio gravado pelo usuário | Dependência externa, decisão de detalhe | GIF/vídeo é opcional por página (RN-04 exige só >= 1 print); T12.5/T12.7 só o tratam se o usuário entregar o arquivo; nenhum GIF é simulado |
 | L-17 | **[NOVA, Rodada 4]** Revisão de G-15/G-02 (roteamento interno de todo app publicado, PRD 8.2/RN-05, lista de páginas de G-02 em 1.1) segue **pendente do Gestor** e não foi aplicada em `GUARDRAILS.md` | Dependência de governança | Rascunho de proposta entregue ao usuário na resposta desta rodada; `GUARDRAILS.md` não alterado. T12.9/T12.10 contradizem o texto vigente de G-15 (que manda link direto para app web) até a aprovação — o Executor só deve iniciá-las após a revisão de G-15 aprovada |

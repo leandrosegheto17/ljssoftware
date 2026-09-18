@@ -286,7 +286,7 @@ flowchart TD
 |---|---|---|---|
 | DI-07 | Screenshots reais do produto Evolução Segura | A capturar (Executor) | Fontes: repositório GitHub `https://github.com/leandrosegheto17/EvolucaoSegura` e/ou execução local do instalado (`C:\Users\leand\AppData\Local\EvolucaoSegura\evolucao-segura.exe`). Tarefa de execução, a detalhar no `TASK.md` — não decisão deste documento. |
 | DI-08 | Hospedagem/distribuição do binário `evolucao-segura.exe` para download | A definir no SDD.md | Decisão técnica do Coordenador (ex.: GitHub Releases do próprio repositório vs. asset versionado no site) — deve respeitar G-01 (zero build/framework) e G-10 (sem serviço pago) do `GUARDRAILS.md`. |
-| DI-09 | Nova página `evolucao-segura.html` | Novo artefato de execução | Deve seguir o mesmo design system/`UX-SPEC.md` das 6 páginas já publicadas (G-02, G-12 do `GUARDRAILS.md` aplicáveis) — decisão de layout cabe ao Coordenador/Executor, não a este documento. |
+| DI-09 | Nova página `evolucao-segura.html` | Novo artefato de execução | Deve seguir o mesmo design system/`UX-SPEC.md` das páginas já publicadas (8 com `minha-jornada.html`) (G-02, G-12 do `GUARDRAILS.md` aplicáveis) — decisão de layout cabe ao Coordenador/Executor, não a este documento. |
 
 ### 9.6 Premissas e riscos resolvidos (adendo à Seção 6)
 
@@ -294,7 +294,7 @@ flowchart TD
 |---|---|---|
 | PR-07 | Screenshots reais e suficientes podem ser obtidos do GitHub e/ou execução local, sem arte criada do zero | **Registrada, não resolvida nesta rodada** — depende de o Executor efetivamente inspecionar as duas fontes e confirmar quantidade/qualidade suficiente de imagens; se insuficiente, escalar ao Gestor (chapéu PM/marketing) antes de publicar a página com conteúdo abaixo do mínimo do RF-09. |
 | PR-08 | Distribuição do executável sem custo recorrente, compatível com G-10 | **Plausível, não resolvida nesta rodada** — GitHub Releases do próprio repositório público é a opção mais óbvia (gratuita), mas a decisão final e a verificação de compatibilidade com G-10 cabem ao Coordenador no SDD.md. |
-| PR-09 | O critério de roteamento (Seção 9.2) cobre todos os apps restantes do portfólio | **Assumida como válida nesta rodada** — não há indício hoje de um terceiro tipo de distribuição (ex.: app mobile só em loja) entre os apps restantes (Minha Jornada, Meu Objetivo, Gestão da Pelada); a reavaliar quando cada um for publicado, conforme já registrado no `PRD.md`. |
+| PR-09 | O critério de roteamento (Seção 9.2) cobre todos os apps restantes do portfólio | **Assumida como válida nesta rodada** — não há indício hoje de um terceiro tipo de distribuição (ex.: app mobile só em loja) entre os apps restantes (Meu Objetivo, Gestão da Pelada; Minha Jornada já publicado com página interna, Lote 13); a reavaliar quando cada um for publicado, conforme já registrado no `PRD.md`. |
 
 ### 9.7 Interpretações registradas (adendo à Seção 7)
 
@@ -382,7 +382,7 @@ identidade visual (PR-06).
   de saída (RN-02). QUANDO for desktop, o CTA DEVE seguir RF-09.
 - RF-10.4: O link "Ver app" do card em `apps.html` e `index.html` DEVE
   apontar para a página interna do app, e nenhum card DEVE apontar para
-  arquivo de download (G-15). [Aprovado pelo usuário em 2026-09-18 para apps web; aplicável a Destino Ideal e Radar Esportivo.]
+  arquivo de download (G-15). [Aprovado pelo usuário em 2026-09-18 para apps web; aplicável a Destino Ideal, Radar Esportivo e Minha Jornada (Lote 13, L-14 resolvida em 2026-09-18).]
 - RF-10.5: A seção de changelog DEVE listar entradas em ordem decrescente
   de data, cada uma com data (AAAA-MM-DD), versão (se houver) e descrição
   curta em pt-BR.

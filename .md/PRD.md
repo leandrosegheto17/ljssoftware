@@ -160,7 +160,7 @@ Rodada 1 foram respondidas pelo stakeholder e incorporadas nas Seções 2, 3,
 T6.4/T6.5). O app **Evolução Segura** é uma aplicação **desktop** (executável
 para download local), diferente dos demais apps do portfólio, que são apps
 web publicados com URL própria (Destino Ideal, Radar Esportivo já com link
-real; Minha Jornada, Meu Objetivo, Gestão da Pelada ainda "Em breve").
+real; Minha Jornada publicado, com página interna `/minha-jornada` desde 2026-09-18, Lote 13; Meu Objetivo, Gestão da Pelada ainda "Em breve").
 **Gate 1 desta rodada: Aprovado** (ver `CTO-REVIEW.md`).
 
 ### 8.1 Novo requisito de alto nível
@@ -223,7 +223,7 @@ Segura.
   site), respeitando G-01 (zero build/framework) e G-10 (sem serviço pago)
   do `GUARDRAILS.md`.
 - **Aplicar o mesmo padrão retroativamente a outros apps "Em breve"**
-  (Minha Jornada, Meu Objetivo, Gestão da Pelada): fora de escopo agora —
+  (Meu Objetivo, Gestão da Pelada; Minha Jornada já publicado, Lote 13): fora de escopo agora —
   cada um só entra quando for publicado, aplicando o critério da Seção 8.2
   conforme seu tipo real (web ou desktop) nesse momento.
 
@@ -244,7 +244,7 @@ Coordenador).
 |---|---|---|---|---|
 | PR-07 | Screenshots reais e suficientes do produto podem ser obtidos a partir do repositório GitHub e/ou da execução local do executável, sem exigir arte/mockup criado do zero | Premissa | Executor | Antes de finalizar o conteúdo da nova página `evolucao-segura.html` |
 | PR-08 | O executável (`evolucao-segura.exe`) pode ser distribuído para download sem custo recorrente (ex.: via GitHub Releases do repositório já existente), compatível com G-10 do `GUARDRAILS.md` | Premissa | Coordenador | Antes de definir a hospedagem do binário no SDD.md |
-| PR-09 | O critério de roteamento (Seção 8.2: web = link direto, desktop = página própria) é suficiente para todos os apps restantes do portfólio (Minha Jornada, Meu Objetivo, Gestão da Pelada), sem exigir um terceiro padrão | Premissa | Gestor (chapéu PM) | Reavaliar quando cada um desses apps for publicado |
+| PR-09 | O critério de roteamento (Seção 8.2: web = link direto, desktop = página própria) é suficiente para todos os apps restantes do portfólio (Meu Objetivo, Gestão da Pelada; Minha Jornada já publicado), sem exigir um terceiro padrão | Premissa | Gestor (chapéu PM) | Reavaliar quando cada um desses apps for publicado |
 
 ### 8.6 Perguntas em aberto (adendo)
 
@@ -319,16 +319,18 @@ dias de dados reais).
 **Dentro:**
 - Template (esqueleto HTML documentado, copiado manualmente) derivado de
   `evolucao-segura.html`, com seções obrigatórias e opcionais definidas.
-- Páginas para os apps **publicados**: Destino Ideal e Radar Esportivo (se o
-  usuário aprovar a Pergunta 1); Evolução Segura é migrada/validada contra o
+- Páginas para os apps **publicados**: Destino Ideal, Radar Esportivo e
+  Minha Jornada (Lote 13, L-14 resolvida em 2026-09-18); Evolução Segura é migrada/validada contra o
   template sem perda de conteúdo.
 - Seção de changelog em texto simples, com entradas datadas mantidas à mão.
 - Atualização dos cards em `apps.html`/`index.html` para os destinos novos.
 
 **Fora (justificativa):**
-- **Páginas de Minha Jornada, Meu Objetivo e Gestão da Pelada:** sem produto
+- **Páginas de Meu Objetivo e Gestão da Pelada:** sem produto
   publicado, sem prints/changelog reais; página vazia indexável prejudica
   SEO e promete o que não existe. Entram quando cada app for publicado.
+  **[Atualizado 2026-09-18, Lote 13 / L-14]** Minha Jornada é app publicado
+  e entra no padrão de página interna (`/minha-jornada`, `minha-jornada.html`).
 - **Geração automática de páginas / SSG / CMS:** viola G-01 e RNF-05.
 - **Demo interativa hospedada por nós ou embed de terceiro:** exigiria
   backend (G-16) ou novo terceiro (G-09/G-03). "Demo" = GIF/vídeo curto
