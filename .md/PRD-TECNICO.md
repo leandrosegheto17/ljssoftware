@@ -216,7 +216,7 @@ apontar direto para o download do executável. Primeiro caso concreto:
 **Critério de aceite (EARS):**
 - O sistema DEVE disponibilizar, para cada app desktop/instalável do
   portfólio cujo badge "Em breve" seja substituído por link real, uma página
-  própria dentro do site (`[nome-do-app].html`) antes de o link ser
+  própria dentro do site (URL `/[nome-do-app]`, arquivo `[nome-do-app].html`) antes de o link ser
   publicado — nunca deve existir um link "Ver app" para um app desktop
   apontando direto para o arquivo executável a partir do card da vitrine.
 - A página de divulgação DEVE conter, no mínimo: (a) descrição do app

@@ -591,3 +591,23 @@ Libera-se o rascunho do adendo PM/BA (Seção 9 do `PRD.md`, Seção 10 do
 `PRD-TECNICO.md`).
 
 ---
+
+## Decisão do usuário — RL12.2 (prints do Radar Esportivo)
+
+**Data:** 2026-09-18 — registro de decisão do usuário, sem alteração de
+`GUARDRAILS.md`.
+
+**Decisão:** ACEITAR os prints atuais (`radar-esportivo/shot-01..04`), sem
+recaptura. Exibem dado público real do Brasileirão 2026 e o nome "SportsLM"
+dentro do app.
+
+**Racional:** G-17 protege dado sensível de paciente/cliente/terceiro, não
+dado público de futebol; "SportsLM" é o nome real do produto capturado (a
+página usa "Radar Esportivo"). RL12.2 marcada Concluída em `TASK.md`.
+
+**Proposta de esclarecimento (não aplicada):** G-17, ao final: "O termo
+'dado 100% fictício' aplica-se a dado sensível de paciente/cliente/terceiro;
+dado público real (ex.: resultados esportivos) e o nome do produto capturado
+são permitidos."
+
+---

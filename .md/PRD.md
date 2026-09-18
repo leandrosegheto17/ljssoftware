@@ -176,7 +176,7 @@ produto, aplicável a todo app que hoje ou no futuro tiver seu badge "Em
 breve" substituído por link real:
 
 - **[Revisado 2026-09-18, RA-10/RN-05 — G-15 revisada]** Todo app publicado,
-  web ou desktop, roteia o card para página interna `[slug].html`; a URL
+  web ou desktop, roteia o card para página interna (URL pública `/[slug]`, sem extensão; arquivo `[slug].html`); a URL
   externa (web) ou o download (desktop) vive só no CTA dentro da página.
   Nunca link direto para binário. Os dois itens abaixo ficam como histórico
   do critério anterior, **substituído**:
@@ -184,7 +184,7 @@ breve" substituído por link real:
 - **App desktop/instalável** (distribuído como executável para download
   local, sem URL de produto própria — ex.: Evolução Segura): o link "Ver
   app" do card aponta para uma **página de divulgação própria dentro do
-  site** (`[nome-do-app].html`), e é essa página — não o card — que oferece
+  site** (URL `/[nome-do-app]`, arquivo `[nome-do-app].html`), e é essa página — não o card — que oferece
   o CTA de download do executável.
 
 Este critério é o que decide, para qualquer app futuro do portfólio, qual
