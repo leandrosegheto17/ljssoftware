@@ -2660,3 +2660,24 @@ exige redesenho de dependência/decomposição — nenhuma escala ao
 `coordenador` nesta validação.
 
 ---
+
+
+---
+
+## Lote 12 — Página de detalhe padronizada por app (RA-10) — Validação QA (2026-09-18)
+
+**Veredito: APROVADO COM RESSALVAS.** 13 tarefas (T12.1-T12.13) Concluída; nenhuma reprovação crítica.
+
+Verificação real (Playwright/Chromium, servidor estático local, desktop 1280x800 e mobile 390x844, 5 páginas):
+- Sem erro de página nem de console (único "ERR_FAILED" = beacon Cloudflare bloqueado por mim no teste, artefato do ambiente); 0 imagens quebradas; sem rolagem horizontal.
+- Cards "Ver app" de Destino Ideal e Radar Esportivo em index.html e apps.html apontam para destino-ideal.html/radar-esportivo.html, sem target; Minha Jornada mantém link externo em nova aba (intacto).
+- CTA "Abrir app" (hero e final) nas 2 páginas: target=_blank, rel="noopener noreferrer", data-analytics-event correto; URLs iguais às de apps.html.
+- Ordem/omissão: Destino Ideal (valor, por dentro, avisos, FAQ, CTA) sem changelog; Radar (valor, prints, FAQ, changelog com 1 entrada, CTA); evolucao-segura sem changelog (sem entradas) e sem regressão.
+- Tab: skip link, header, Apps, Sobre, Contato, Voltar, CTA, FAQ, todos com outline visível.
+- node dev/html/site-consistency.check.js: OK, 7 páginas. node dev/css/a11y-contrast-check.js: TODAS PASS.
+
+Ressalvas (severidade simples/baixa, viram tarefas em Refatoração Lote-12):
+1. RL12.1 (já existia, confirmada, não duplicada): destino-ideal.html linha 66, alt do hero truncado por aspas duplas literais. Curiosamente o check de consistência não detecta.
+2. RL12.2 (nova): T12.7 exige "dado 100% fictício"; os prints do Radar mostram dados reais públicos do Brasileirão e o nome "SportsLM" (anterior a T6.5) enquanto a página usa "Radar Esportivo". Não compromete o critério central de página/seções; inconsistência de marca e desvio literal do critério.
+
+Não verificado: conteúdo textual do PDF de origem versus copy; veracidade da entrada "v1.0 setembro de 2026" do changelog do Radar (não há fonte no repo); prints de Destino Ideal não inspecionados um a um (só amostra do Radar shot-01); Firefox/Safari real; leitor de tela.

@@ -9,6 +9,15 @@ inalterados nesta revisão. **Ajuste pontual adicional (mesma reabertura,
 `evolucao-segura.html` (T9.1, T9.6) não devem ter nenhuma ação nesta
 entrega — ver `UX-SPEC.md` Seção 4 (novo estado "Indisponível para download
 nesta fase") e L-11 desta Seção 6.
+**Reaberto pontualmente novamente (Rodada 4, 2026-09-18)** para "Página de
+detalhe padronizada por app" (RA-10): adiciona o **Lote 12** (12 tarefas,
+Seção 3), com dependências/paralelismo na Seção 4, RP-06 na Seção 5 e
+L-14 a L-17 na Seção 6. Lotes 1-11 e Refatorações permanecem inalterados.
+Estrutura planejada nova em `public/`: `destino-ideal.html`,
+`radar-esportivo.html`, `assets/img/destino-ideal/`,
+`assets/img/radar-esportivo/`; em `dev/`: `templates/app-page.template.html`,
+`html/site-consistency.check.js`. Lista de páginas de G-02 (Seção 1.1) passa
+a 7 (+`destino-ideal.html`, +`radar-esportivo.html`; `aria-current="page"` em "Apps" nas páginas de app) quando o lote concluir — revisão de G-15/G-02 **aprovada** pelo Gestor em 2026-09-18 (L-17 desbloqueado).
 **Base:** `PRD-TECNICO.md` (+ adendo Rodada 3) + `SDD.md` (+ `ADR-006`) +
 `UX-SPEC.md` (+ Fluxo 5/Rodada 3) + `GUARDRAILS.md` (revisado)
 **Data original:** 2026-09-07 · **Revisão anterior:** 2026-09-07 (`ADR-005`)
@@ -149,6 +158,14 @@ Traduzidas das restrições/ADRs do `SDD.md` e dos padrões do `UX-SPEC.md`
   (lista de pacientes, histórico, evolução) deve usar dado 100% fictício
   criado especificamente para a captura — nunca um prontuário real, mesmo
   de teste do próprio stakeholder (T11.1).
+
+- **[Novo, Rodada 4] Página de app:** copiada de
+  `dev/templates/app-page.template.html` (nunca publicar o template); seção
+  sem conteúdo real é removida do DOM, nunca vazia; CTA web = `target="_blank"
+  rel="noopener noreferrer"` + `sr-only "(abre em nova aba)"`; card "Ver app"
+  interno sem `target`/`rel`; rodar `dev/html/site-consistency.check.js` ao
+  final de toda tarefa que toque HTML de `public/`; prints só com dado fictício
+  (G-17); nada de iframe/embed/script de terceiro (G-09).
 
 ## 2. Spikes Técnicos
 
@@ -401,6 +418,21 @@ já existente do Lote 9). **Prazo sugerido:** baixo esforço, sem urgência —
 não bloqueia o avanço/deploy do Lote 9 (o teste em questão já passa,
 nenhuma dependência real está órfã).
 
+### Refatoração Lote-12
+
+> **Origem:** achado Simples da auditoria T12.12 (Executor, chapéu Frontend),
+> sem exigir redesenho.
+
+| ID | Tarefa | Dono | Critério de aceite | Origem | Estimativa | Status |
+|---|---|---|---|---|---|---|
+| RL12.1 | Corrigir o `alt` do print hero (`shot-01`) em `public/destino-ideal.html` (linha ~66): aspas duplas literais dentro do atributo truncam o `alt` ("...com o título ") e invalidam o HTML; trocar por `&quot;` ou aspas simples | Frontend | `alt` do hero exibe o texto completo e o HTML valida; `dev/html/site-consistency.check.js` segue passando | T12.12, auditoria | 0,1 dia | Pendente |
+
+| RL12.2 | Prints do Radar Esportivo (`assets/img/radar-esportivo/shot-01..04`) exibem o nome "SportsLM" e dados reais públicos de futebol (Brasileirão 2026): recapturar com nome/branding alinhado a "Radar Esportivo" (T6.5) e, se o critério G-17 do T12.7 (dado 100% fictício) for mantido, com dados fictícios; ou registrar decisão do Gestor aceitando dado público real | Frontend | Prints sem "SportsLM" e coerentes com o nome da página; WebP+PNG regenerados; `site-consistency.check.js` passa | T12.7, validação Lote 12 | 0,25 dia | Pendente |
+
+**Dependências do lote Refatoração Lote-12:** nenhuma. **Prazo sugerido:** RL12.1 antes do deploy do Lote 12 (baixo esforço); RL12.2 em até 14 dias após o deploy (débito baixo, sem bloquear).
+
+**Lote 12 — Validado com ressalvas (Validador, 2026-09-18):** QA Aprovado com ressalvas (RL12.1, RL12.2) e DevSecOps Aprovado com débito; ver QA-REPORT.md e SECURITY-REVIEW.md. Fechamento estrutural OK: 13/13 tarefas Concluída, sem dependência órfã, sem Bloqueada.
+
 ### Lote 7 — Botão "Saiba mais" + Modal nos Cards de App
 
 > **Origem:** pedido direto do usuário, fora do ciclo de reabertura formal —
@@ -541,6 +573,55 @@ nenhum outro lote desta reabertura — podem começar a qualquer momento,
 inclusive em paralelo ao Lote 8. **Paralelizáveis entre si:** T11.1, T11.2,
 T11.4 (fontes/artefatos distintos, sem conflito de arquivo).
 
+### Lote 12 — Página de detalhe padronizada por app (RA-10) [NOVO, Rodada 4, 2026-09-18]
+
+> **Origem:** `PRD.md` Seção 9, `PRD-TECNICO.md` Seção 10 (RF-10.1 a RF-10.11,
+> RNF-07 a RNF-11, RN-04/RN-05), `UX-SPEC.md` Fluxo 6, `SDD.md` (RT-02/RT-09).
+> Lotes 1-11 e Refatorações **não reabertos**: este lote só adiciona arquivos
+> novos e edita cirurgicamente artefatos já entregues (cards de T6.2/T10.2,
+> `evolucao-segura.html`, `sitemap.xml`) sob nova tarefa; nenhum status de
+> tarefa antiga muda. Sem efeito cascata.
+> **Lote com 12 tarefas (acima de ~5-6) — justificativa:** é uma única
+> funcionalidade (RA-10) com 3 blocos (A fundação/referência, B páginas por
+> app, C fechamento). A contagem alta vem de divisões deliberadas (ver
+> autocheck ao final), não de tarefas grandes: 9 das 12 têm <= 0,5-1 dia e o
+> lote rende até 4 instâncias paralelas.
+> **Dependência externa (DI-10):** T12.5-T12.8 dependem do PDF do manual de
+> Destino Ideal e de Radar Esportivo, a fornecer pelo usuário. Sem o PDF a
+> tarefa fica `Bloqueada` (não simular conteúdo, RN-04/G-17).
+
+**Bloco A — Fundação e referência**
+
+| ID | Tarefa | Dono | Critério de aceite | Estimativa | Status |
+|---|---|---|---|---|---|
+| T12.1 | Criar componente CSS `.changelog` (novo, G-12) em `components.css`, seção delimitada por comentário | Frontend | `<ol reversed>` com `<time>`, versão opcional e descrição; usa só tokens existentes; contraste AA (rodar `dev/css/a11y-contrast-check.js`); mobile empilha data/texto; smoke em `dev/css/`; nenhum outro componente alterado | 0,5 dia | Concluída |
+| T12.2 | Criar template `dev/templates/app-page.template.html` a partir de `evolucao-segura.html` (UX-SPEC Fluxo 6): head completo (title/description/canonical/OG com marcadores `[[...]]`), Header/Footer literais, 6 seções na ordem RF-10.2, 2 variantes de CTA (web/desktop) e checklist RNF-11 em comentário (copiar, preencher, atualizar card + sitemap, rodar check) | Frontend | Arquivo fora de `public/` (não publicado); ordem/seções idênticas ao Fluxo 6; seções omitíveis marcadas como blocos removíveis; Header/Footer byte-idênticos aos de `evolucao-segura.html` (exceto `aria-current` em "Apps"); CTA web com `target="_blank" rel="noopener noreferrer"` + sr-only; sem script/iframe de terceiro; checklist presente | 1 dia | Concluída |
+| T12.3 | Criar script Node sem dependências `dev/html/site-consistency.check.js`: compara Header/Footer byte a byte entre todos os `public/*.html`, exige `aria-current` só permitido, 1 `<h1>`, title/description/canonical únicos, cada HTML (exceto 404) no `sitemap.xml`, nenhum `href` a `.exe`/Release em cards, cards "Ver app" de app publicado apontando para `.html` interno | Frontend | Roda com `node`; sai com código 0/1 e lista de falhas; testado contra o estado atual (falha esperada e correta em: canonical ausente em `evolucao-segura.html`, sitemap sem `evolucao-segura.html`); sem `package.json` (G-01); mitiga RT-02 | 1 dia | Concluída |
+| T12.4 | Validar `evolucao-segura.html` contra o template: adicionar `<link rel="canonical">`, checar ordem das seções-base e `aria-current` em "Apps", sem perda de conteúdo (changelog omitido: sem entradas) | Frontend | Canonical absoluto correto; diff limitado a canonical (e ajustes de ordem se houver, documentados); 4 checks de T12.3 relativos a esta página passam; Lote 9/10 inalterados nas demais linhas | 0,25 dia | Concluída |
+
+**Bloco B — Páginas por app** (T12.5-T12.8: dependência externa DI-10)
+
+| ID | Tarefa | Dono | Critério de aceite | Estimativa | Status |
+|---|---|---|---|---|---|
+| T12.5 | Destino Ideal — extrair prints do PDF do manual (e GIF/vídeo, só se o usuário fornecer arquivo próprio) para `assets/img/destino-ideal/` | Executor | >= 1 print (RN-04), WebP + fallback (G-07), `width`/`height` definidos, tamanho otimizado; **dado 100% fictício verificado print a print (G-17)**, print com dado real é descartado e reportado; nomeação `shot-01...`; sem referência em HTML ainda | 0,5 dia | Concluída |
+| T12.6 | Criar `public/destino-ideal.html` a partir do template com textos do PDF: proposta de valor, FAQ (>= 3, só se houver conteúdo real), changelog (só se houver entrada real), CTA "Abrir app" -> `https://destino-ideal-ljs.vercel.app/` | Frontend | Todos os critérios de RF-10.2/10.3/10.5-10.10; title/description/canonical/OG únicos; seções sem conteúdo omitidas do DOM; imagens fora da dobra `lazy`; `data-analytics-event="app-destino-ideal-abrir"`; sem placeholder `[[...]]` remanescente; check T12.3 passa nesta página | 1 dia | Concluída |
+| T12.7 | Radar Esportivo — extrair prints do PDF (idem T12.5) para `assets/img/radar-esportivo/` | Executor | Igual a T12.5, para Radar Esportivo | 0,5 dia | Concluída |
+| T12.8 | Criar `public/radar-esportivo.html` a partir do template, CTA "Abrir app" -> URL externa atual do Radar Esportivo (a mesma hoje em `apps.html`, copiar literal) | Frontend | Igual a T12.6, para Radar Esportivo; `data-analytics-event="app-radar-esportivo-abrir"` | 1 dia | Concluída |
+| T12.9 | Card Destino Ideal (`apps.html` + `index.html`): `href` de "Ver app" -> `destino-ideal.html`; remover `target`, `rel` e `<span class="sr-only"> (abre em nova aba)</span>` | Frontend | Só o `<a class="badge badge--link">` desse card muda nos 2 arquivos; botão "Saiba mais"/modal (Lote 7) e demais cards intactos; `data-analytics-event="app-destino-ideal"` mantido; link navega para a página (T12.6 existente) | 0,25 dia | Concluída |
+| T12.10 | Card Radar Esportivo (idem T12.9) -> `radar-esportivo.html` | Frontend | Igual a T12.9, para Radar Esportivo | 0,25 dia | Concluída |
+
+**Bloco C — SEO e fechamento**
+
+| ID | Tarefa | Dono | Critério de aceite | Estimativa | Status |
+|---|---|---|---|---|---|
+| T12.11 | `sitemap.xml`: incluir `evolucao-segura.html` (ausente hoje), `destino-ideal.html`, `radar-esportivo.html` com `<loc>` absoluto; `robots.txt` inalterado (verificar que não bloqueia) | Frontend | Todas as páginas de app do `public/` presentes; nenhuma página inexistente listada; template não presente (fora de `public/`); XML válido; check T12.3 do sitemap passa | 0,25 dia | Concluída |
+| T12.13 | **[Adicionada na execução, decisão do usuário]** Adicionar `<link rel="canonical" href="https://ljssoftware.com.br/<arquivo>">` em `index.html` (`/`), `apps.html` e `sobre.html` (lacuna encontrada pela T12.3: o script exige canonical em todas as páginas) | Frontend | `site-consistency.check.js` sem falha de canonical; nenhuma outra alteração nas páginas | 0,25 dia | Concluída |
+| T12.12 | Auditoria de fechamento das 3 páginas de app: WCAG AA (contraste, foco, `h1` único, headings sem salto, `alt`), `lazy` fora da dobra, sem script/iframe de terceiro (CSP), G-02 em todas as 7 páginas via T12.3, links dos cards funcionando | Frontend | `site-consistency.check.js` sem falhas em todos os `public/*.html`; `a11y-contrast-check.js` sem pendência crítica; checklist RNF-07/08/09 preenchido no status da tarefa; achado simples vira tarefa em `Refatoração Lote-12` (não corrigido silenciosamente) | 0,5 dia | Concluída |
+
+**Autocheck de granularidade do Lote 12 (antes -> depois):** (1) "criar template + componentes + página ES" -> T12.1 (CSS), T12.2 (HTML do template), T12.4 (validação ES), por misturarem CSS/HTML/página distintos; (2) "página de app" por app -> extração de prints (T12.5/7) separada da montagem (T12.6/8), pois ler PDF de manual com imagens + escrever HTML estouraria o canário de ~300k tokens e a extração tem dependência externa própria; (3) "redirecionar cards" -> 1 tarefa por app (T12.9/T12.10) para não travar um app no outro (cada um depende só da própria página); (4) verificação de consistência (T12.3) isolada como tooling para mitigar RT-02, independente de qualquer página; (5) SEO (T12.11) separado da auditoria (T12.12) por serem regras distintas. Nenhuma tarefa mistura tela + endpoint + SQL (não há endpoints/SQL); nenhuma prevê > ~300k tokens.
+
+**Dependências do Lote 12:** ver Seção 4. **Paralelizáveis:** ver tabela.
+
 ---
 
 **Nota sobre o autocheck de granularidade (canário de ~300k tokens),
@@ -620,6 +701,20 @@ flowchart TD
     subgraph L10[Lote 10 - Integracao vitrine]
         T101[T10.1 Corrigir texto card]
         T102[T10.2 Badge -> link Ver app]
+    end
+    subgraph L12[Lote 12 - Pagina de detalhe por app]
+        T121[T12.1 .changelog CSS]
+        T122[T12.2 Template]
+        T123[T12.3 Script consistencia]
+        T124[T12.4 Validar ES]
+        T125[T12.5 Prints Destino Ideal]
+        T126[T12.6 Pagina Destino Ideal]
+        T127[T12.7 Prints Radar]
+        T128[T12.8 Pagina Radar]
+        T129[T12.9 Card Destino Ideal]
+        T1210[T12.10 Card Radar]
+        T1211[T12.11 Sitemap]
+        T1212[T12.12 Auditoria]
     end
     subgraph L11[Lote 11 - Screenshots]
         T111[T11.1 S2-S7 dado ficticio]
@@ -711,7 +806,26 @@ flowchart TD
     T96 --> T102
     T34 --> T102
     T32 --> T102
+    %% Lote 12 (Rodada 4). Externo: PDF (DI-10) -> T12.5, T12.7 (e, por consequencia, T12.6, T12.8)
+    T121 --> T122
+    T122 --> T124
+    T122 --> T126
+    T125 --> T126
+    T122 --> T128
+    T127 --> T128
+    T126 --> T129
+    T128 --> T1210
+    T124 --> T1211
+    T126 --> T1211
+    T128 --> T1211
+    T124 --> T1212
+    T129 --> T1212
+    T1210 --> T1212
+    T1211 --> T1212
+    T123 -.usado em.-> T1212
 ```
+
+Lote 12 (novo): T12.1, T12.3, T12.5 e T12.7 sem dependência interna (T12.5/T12.7 aguardam o PDF externo, DI-10).
 
 ### Tabela de paralelismo por lote
 
@@ -734,6 +848,7 @@ flowchart TD
 | 9 **[Novo]** | T9.2, T9.4, T9.5 (após T9.1 + dependências de Lote 8/11); T9.3 e T9.6 também paralelizáveis com esses | T9.1 primeiro (mesmo arquivo, cria header/hero); T9.2-T9.6 dependem de T9.1 |
 | 10 **[Novo]** | T10.1 (sem dependência) | T10.2 depende só do Lote 9 completo — não depende mais de RT-08 (link "Ver app" é interno; os CTAs de download dentro da página nascem "indisponível para download nesta fase", `UX-SPEC.md` Seção 4) |
 | 11 **[Novo]** | T11.1, T11.2, T11.4 (T11.3 removida, ajuste pontual — ver Lote 11) | Nenhuma dependência interna ao lote; sem dependência de outro lote |
+| 12 **[Novo, Rodada 4]** | **Rodada 1:** T12.1, T12.3, T12.5, T12.7 (4 instâncias; T12.5/T12.7 só iniciam com o PDF, DI-10). **Rodada 2 (após T12.1):** T12.2. **Rodada 3 (após T12.2 + prints):** T12.4, T12.6, T12.8 (3 instâncias; T12.6/T12.8 exigem seus prints). **Rodada 4:** T12.9 (após T12.6), T12.10 (após T12.8), T12.11 (após T12.4/6/8) — 3 instâncias (T12.9/T12.10 editam os mesmos 2 arquivos em cards distintos: edição cirúrgica por card, como Lotes 2/3) | T12.2 <- T12.1; T12.4 <- T12.2; T12.6 <- T12.2 + T12.5; T12.8 <- T12.2 + T12.7; T12.9 <- T12.6; T12.10 <- T12.8; T12.11 <- T12.4, T12.6, T12.8; T12.12 (gate final) <- T12.4, T12.9, T12.10, T12.11 (usa T12.3). Sem dependência de nenhum lote 1-11 além de artefatos já entregues |
 
 O ponto de maior paralelismo real passa a ser o início do Lote 3 (4
 instâncias simultâneas: T3.1, T3.4, T3.5, T3.6), com a Home continuando de
@@ -749,6 +864,7 @@ paralelo.
 | RP-04 | **[ATUALIZADO, ajuste pontual]** RT-08 (`SDD.md`) segue em aberto — o repositório `EvolucaoSegura` retornou `404` a requisição não autenticada, indicando que está privado — mas deixou de ser risco de prazo de T10.2 (link "Ver app" é interno e não depende mais de RT-08). O risco real agora é sobre uma futura liberação do download dentro de `evolucao-segura.html` (fora do escopo desta reabertura, decisão de negócio à parte) | Não atrasa mais a publicação do Lote 9/10 desta reabertura; só afeta uma liberação futura do download, ainda sem prazo definido | RT-08 permanece registrado no `SDD.md` como pré-requisito técnico para quando a distribuição for autorizada; nenhuma tarefa desta reabertura depende dele para ser publicada |
 | RP-05 | **[ATUALIZADO, ajuste pontual]** T11.1 depende de dado fictício suficiente/realista existir dentro do app instalado localmente (não é conteúdo que já existe pronto, precisa ser criado antes de capturar); T11.3 (que também dependia disso) foi removida nesta rodada — não há mais tela de licenciamento real para capturar | Pode atrasar T9.3 (que consome essas capturas) e, em cascata, T9.6/T10.2 | T11.1 não depende de nenhuma outra tarefa desta reabertura — pode começar imediatamente, em paralelo ao Lote 8, reduzindo o risco de virar gargalo tardio |
 | RP-03 | **[ATUALIZADO — risco já concretizado e resolvido]** Produção interna da identidade visual (`ADR-004`) sem designer trazia risco de retrabalho se o resultado não agradasse ao stakeholder — esse risco **se concretizou**: o usuário pediu 5 conceitos visuais alternativos e ajustou o cabeçalho numa segunda rodada, gerando o `ADR-005` (supersede `ADR-004`) e esta revisão do `TASK.md`. Risco residual: nova iteração de identidade visual ainda poderia ocorrer durante a implementação do Lote 1/2 | Retrabalho adicional em T1.1/T1.4/T2.1 se houver novo ajuste visual | Validar rapidamente o resultado do Lote 1 (tokens/favicon) e do header (T2.1) com o stakeholder antes de iniciar o restante do Lote 3, reduzindo retrabalho em cascata sobre páginas já construídas |
+| RP-06 | **[Novo, Rodada 4]** T12.5-T12.8 dependem do PDF do manual de Destino Ideal e Radar Esportivo (DI-10), fornecido pelo usuário; sem ele metade do lote (4 tarefas) e, em cascata, T12.9-T12.12 ficam bloqueadas | Atrasa a publicação das páginas e o redirecionamento dos cards (os cards continuam apontando para o app externo enquanto isso — nenhum link quebrado) | Bloco A (T12.1-T12.4) e T12.3 avançam sem o PDF; cards só mudam depois da página existir (T12.9/T12.10 dependem de T12.6/T12.8); pedir os 2 PDFs ao usuário antes de iniciar o Bloco B |
 
 ## 6. Lacunas Sinalizadas
 
@@ -768,6 +884,10 @@ paralelo.
 | L-11 | **[NOVA, ajuste pontual sobre a mesma reabertura]** O usuário confirmou, diretamente e de forma explícita, que os 2 CTAs "Baixar para Windows" de `evolucao-segura.html` (hero e CTA final) não devem ter nenhuma ação nesta entrega — nem link para o `.exe`, nem para o GitHub Releases, nem `href="#"`/JS disfarçado — por ainda não haver decisão de distribuir o produto. Isso é mais forte que a premissa anterior de T9.6/T10.2 (link real assim que RT-08 fosse resolvido) | Decisão de produto do usuário, não uma lacuna a resolver — registrada para rastreabilidade da mudança de critério de aceite | `UX-SPEC.md` Seção 4 (novo quinto estado "Indisponível para download nesta fase") e Seção 7 (trade-off documentado); `TASK.md` T9.1/T9.6 com critério de aceite explícito (elemento não-`<a>`, `aria-disabled`, cursor `not-allowed`, nota textual); RT-08/`ADR-006` continuam válidos, mas desacoplados da liberação real do download, que passa a depender de nova decisão de negócio futura |
 | L-12 | **[NOVA, ajuste pontual sobre a mesma reabertura]** Ao investigar o Guia do Usuário (12 capítulos) e o Catálogo de Telas reais do produto, o usuário confirmou que não existe nenhuma tela de licenciamento (chave/contra-chave) implementada na v0.1.0, e nenhuma menção a trial/licença/chave em todo o Guia do Usuário — reforça (não substitui) L-08/RT-07: o fluxo chave→contra-chave é só intenção do PRD do app, não tela real | Decisão de conteúdo do usuário, mais forte que a decisão anterior de UX (que só desacoplava o CTA da liberação real) — não é uma lacuna a resolver, registrada para rastreabilidade | A seção "Licença de uso" deixou de descrever o passo a passo de chave/contra-chave em qualquer formato (nem prosa, nem `.steps`) — passa a afirmar só o verificável hoje (7 dias de teste, bloqueio só de escrita após expirar) e fecha com frase honesta sobre o passo a passo pós-teste ainda estar sendo definido; slot de screenshot S9 removido (não há tela para capturar); `UX-SPEC.md` Fluxo 3/Seção 2, wireframe e Seção 7 atualizados; `TASK.md` T9.5 (critério de aceite) e Lote 11/T11.3 (tarefa removida) atualizados. L-08/RT-07/`ADR-006` permanecem válidos como estão — isso é só sobre o conteúdo da página, não sobre a arquitetura de ativação futura |
 | L-13 | **[NOVA]** T11.2 (screenshot S8, aviso nativo do SmartScreen "O Windows protegeu o seu computador") não pôde ser capturada com dado real. Investigação: (1) o repositório `EvolucaoSegura` é privado (confirmado via `gh repo view`, `isPrivate: true` — reforça L-09/RT-08), não há Release pública de onde baixar um instalador já "desconhecido" pelo Windows; (2) foi localizado um clone local do projeto (`C:\Users\leand\OneDrive\Projetos\EvolucaoSegura`, Tauri/Rust) com um instalador real gerado em `target\release\bundle\nsis\EvolucaoSegura_0.1.0_x64-setup.exe`, não assinado (`Get-AuthenticodeSignature` → `NotSigned`); (3) o Executor tentou reproduzir o cenário de forma honesta e sem atalhos: copiou o instalador para uma pasta isolada, aplicou manualmente o Mark-of-the-Web (fluxo `Zone.Identifier` ADS com `ZoneId=3` e `ReferrerUrl`/`HostUrl` apontando para o GitHub Releases do produto — exatamente o mesmo mecanismo que um navegador aplicaria a um download real), e executou o instalador de duas formas (`Start-Process` direto e via `explorer.exe`, replicando um duplo-clique real). Em ambas as tentativas o processo `smartscreen.exe` foi de fato acionado pelo Windows, mas resolveu instantaneamente sem exibir a tela de bloqueio "Windows protegeu o seu computador" — o assistente de instalação abriu normalmente. Não há política de SmartScreen configurada via registro neste PC (`HKLM/HKCU ...\Explorer!SmartScreenEnabled` ausente, sem GPO em `HKLM:\SOFTWARE\Policies\Microsoft\Windows\System`), então o comportamento observado é o padrão real do Windows/conta deste equipamento para esse arquivo — não um artefato de configuração alterada pelo Executor | Lacuna de captura — dado real não reproduzível com segurança neste ambiente, não decidida em silêncio | Nenhuma imagem foi publicada (nem simulada/forjada) para não violar o critério de aceite de T11.1/T11.2 ("se a fonte não permitir capturar com qualidade/honestidade suficiente, reportar como lacuna"). O ambiente de teste (arquivos temporários e cópia do instalador) foi removido ao final da investigação. T11.2 permanece `Pendente` — não há bloqueio de terceiro nem decisão de escopo a devolver ao Coordenador (não é UX-SPEC ambíguo, é limitação do próprio ambiente de captura); alternativas para retomar: (a) reproduzir em outra máquina Windows com "Verificação de app e arquivos" do SmartScreen ativa/configurada como "Avisar", (b) capturar no momento em que o repositório for tornado público e o instalador for baixado de fato via navegador a partir do GitHub Releases (RT-08), ou (c) aceitar como dívida documentada e publicar `evolucao-segura.html` (T9.4) inicialmente sem a imagem S8, só com o texto do `.notice`, revisitando quando uma captura real existir |
+| L-14 | **[NOVA, Rodada 4]** Minha Jornada: `PRD.md` 9.3 trata como "Em breve/sem produto publicado" (sem página), mas o card em `index.html` (e provavelmente `apps.html`) já tem link externo real (`minha-jornada-ljs.pages.dev`, commit 314d614). Sob a revisão proposta de G-15 ("todo app publicado = página interna"), esse card ficaria fora de conformidade | Divergência de escopo, decisão de negócio — não decidida em silêncio | Fora do Lote 12 (RF-10.11/RN-04 e o recorte do usuário citam só Destino Ideal e Radar Esportivo). Sinalizado ao Gestor/usuário: incluir Minha Jornada (nova página com PDF do manual, mesmo padrão T12.5-T12.10) ou aceitar como exceção documentada na revisão de G-15 |
+| L-15 | **[NOVA, Rodada 4]** RF-10.10 (CTA principal mensurável) x L-11 (CTA de download do Evolução Segura desabilitado, sem clique) | Conflito de requisitos, decisão de detalhe | Interpretação adotada: RF-10.10 vale para CTAs ativos (apps web); o CTA desabilitado do ES não é instrumentado (`UX-SPEC.md` Seção 7). Confirmar com o usuário |
+| L-16 | **[NOVA, Rodada 4]** "Demo = GIF" (INT-06): um PDF de manual não contém GIF; a demo exige arquivo próprio gravado pelo usuário | Dependência externa, decisão de detalhe | GIF/vídeo é opcional por página (RN-04 exige só >= 1 print); T12.5/T12.7 só o tratam se o usuário entregar o arquivo; nenhum GIF é simulado |
+| L-17 | **[NOVA, Rodada 4]** Revisão de G-15/G-02 (roteamento interno de todo app publicado, PRD 8.2/RN-05, lista de páginas de G-02 em 1.1) segue **pendente do Gestor** e não foi aplicada em `GUARDRAILS.md` | Dependência de governança | Rascunho de proposta entregue ao usuário na resposta desta rodada; `GUARDRAILS.md` não alterado. T12.9/T12.10 contradizem o texto vigente de G-15 (que manda link direto para app web) até a aprovação — o Executor só deve iniciá-las após a revisão de G-15 aprovada |
 
 Nenhuma lacuna estrutural nova do `SDD.md`/`UX-SPEC.md` foi encontrada
 durante a revisão anterior (Rodada 2) — o próprio `ADR-005` já era o

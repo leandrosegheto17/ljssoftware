@@ -175,9 +175,12 @@ RA-02 (listagem/vitrine dos apps) é ampliado com uma regra explícita de
 produto, aplicável a todo app que hoje ou no futuro tiver seu badge "Em
 breve" substituído por link real:
 
-- **App web publicado** (tem URL própria acessível — ex.: Destino Ideal,
-  Radar Esportivo): o link "Ver app" do card aponta **direto** para essa URL
-  (padrão já em produção, sem mudança).
+- **[Revisado 2026-09-18, RA-10/RN-05 — G-15 revisada]** Todo app publicado,
+  web ou desktop, roteia o card para página interna `[slug].html`; a URL
+  externa (web) ou o download (desktop) vive só no CTA dentro da página.
+  Nunca link direto para binário. Os dois itens abaixo ficam como histórico
+  do critério anterior, **substituído**:
+- ~~**App web publicado** ... link direto para a URL~~ (substituído).
 - **App desktop/instalável** (distribuído como executável para download
   local, sem URL de produto própria — ex.: Evolução Segura): o link "Ver
   app" do card aponta para uma **página de divulgação própria dentro do
@@ -280,3 +283,86 @@ para o adendo do `PRD-TECNICO.md` (Seção 9, chapéu BA).
       projeto; respostas da Rodada 2 confirmam alinhamento com o Gate 1 —
       nenhum conflito identificado
 - [x] Nenhuma Pergunta em Aberto pendente (Seção 7 fechada nesta rodada)
+
+---
+
+## 9. Adendo (Rodada 4 — "Página de detalhe padronizada por app", RASCUNHO, 2026-09-18)
+
+**Gate 1:** Aprovado com ressalvas (`CTO-REVIEW.md`, "Gate 1 — Reabertura
+pontual (Página de detalhe padronizada por app)"). Seções 1-8 não foram
+reescritas.
+
+### 9.1 Problema e objetivo
+
+Hoje só Evolução Segura tem página própria. Destino Ideal e Radar Esportivo
+apontam direto para fora (perdem a chance de indexar no domínio da marca e
+de dar contexto antes da saída) e três apps estão "Em breve". Objetivo:
+um template reutilizável de página de app (proposta de valor, prints/demo,
+FAQ, changelog), derivado de `evolucao-segura.html`, que torne cada app
+publicado uma porta de entrada indexável.
+
+**Métrica de sucesso (mensurável):** (a) 100% dos apps publicados do
+portfólio com página própria válida no template, sem link "Ver app" quebrado;
+(b) cada página indexada (aparecer em `site:ljssoftware.com.br`) em até 30
+dias após publicação; (c) cliques no CTA principal de cada página medidos no
+Cloudflare Web Analytics (baseline = 0 hoje; meta numérica a definir após 30
+dias de dados reais).
+
+### 9.2 Novo requisito de alto nível
+
+| # | Requisito | Prioridade | Justificativa |
+|---|---|---|---|
+| RA-10 | Template padronizado de página de app, com seções fixas (proposta de valor, prints/demo, FAQ, changelog, CTA) e aplicado a cada app publicado | Alta | Entrega o ganho de SEO/confiança sem reescrever a cada app; reduz custo marginal de cada página nova |
+
+### 9.3 Escopo
+
+**Dentro:**
+- Template (esqueleto HTML documentado, copiado manualmente) derivado de
+  `evolucao-segura.html`, com seções obrigatórias e opcionais definidas.
+- Páginas para os apps **publicados**: Destino Ideal e Radar Esportivo (se o
+  usuário aprovar a Pergunta 1); Evolução Segura é migrada/validada contra o
+  template sem perda de conteúdo.
+- Seção de changelog em texto simples, com entradas datadas mantidas à mão.
+- Atualização dos cards em `apps.html`/`index.html` para os destinos novos.
+
+**Fora (justificativa):**
+- **Páginas de Minha Jornada, Meu Objetivo e Gestão da Pelada:** sem produto
+  publicado, sem prints/changelog reais; página vazia indexável prejudica
+  SEO e promete o que não existe. Entram quando cada app for publicado.
+- **Geração automática de páginas / SSG / CMS:** viola G-01 e RNF-05.
+- **Demo interativa hospedada por nós ou embed de terceiro:** exigiria
+  backend (G-16) ou novo terceiro (G-09/G-03). "Demo" = GIF/vídeo curto
+  estático próprio.
+- **Layout/design final do template:** decisão do Coordenador
+  (`UX-SPEC.md`).
+
+### 9.4 Premissas e riscos
+
+| # | Premissa/Risco | Tipo | Dono | Prazo |
+|---|---|---|---|---|
+| PR-10 | Os apps publicados têm prints reais e informação suficiente para preencher as seções obrigatórias | Premissa | Stakeholder/Executor | **Validada (2026-09-18):** conteúdo vem do PDF do manual de cada app, fornecido pelo usuário (como no Minha Jornada); prints e textos saem dele |
+| PR-11 | O padrão manual (copiar HTML, G-02 byte-idêntico) segue sustentável com 3-4 páginas de app; gatilho de RT-02 pode ser atingido | Risco | Coordenador | **Validada como risco aceito (2026-09-18):** usuário aprovou o padrão manual; Coordenador ainda avalia RT-02/ADR-001 no SDD.md |
+| PR-12 | Nas páginas de app web, o CTA "Abrir app" dentro da página (um clique a mais) pode reduzir cliques ao app | Risco | Gestor (PM) | **Validada como risco aceito (2026-09-18):** usuário aprovou a mudança; medir após 30 dias |
+| PR-13 | Seção de changelog é omitida até haver a primeira entrada | Premissa | Gestor (PM) | **Validada (2026-09-18):** changelog manual em HTML aceito |
+
+### 9.5 Decisões do usuário (2026-09-18) — perguntas em aberto FECHADAS
+
+**Recorte aprovado pelo usuário (RA-10).** Decisões:
+1. **Roteamento de apps web:** SIM. Destino Ideal e Radar Esportivo passam a
+   apontar para página interna, com botão "Abrir app" para a URL externa
+   dentro dela. **Substitui o critério "web = link direto" da Seção 8.2**
+   (revisão de G-15/G-02 **aplicada** em `GUARDRAILS.md`, 2026-09-18).
+2. **Apps "Em breve":** sem página; ela só é criada quando o app estiver
+   pronto (RN-04).
+3. **Fonte de conteúdo:** PDF do manual de cada app, fornecido pelo usuário
+   (como no Minha Jornada); prints e textos saem dele.
+4. **Changelog:** manual em HTML, aceito.
+5. **Demo:** GIF é suficiente.
+
+Nenhuma pergunta em aberto pendente. Próximo passo: acionar o Coordenador.
+
+**Checklist (PM):** problema verificável [x]; público (visitante buscando
+o app) [x]; métrica com baseline/meta parcial (meta numérica pendente de 30
+dias de dados) [x]; dentro/fora com justificativa [x]; prioridade justificada
+[x]; premissas com dono e prazo [x]; alinhamento com Gate 1 [x, ressalvas
+registradas]; perguntas em aberto pendentes [x] (5 fechadas em 9.5).

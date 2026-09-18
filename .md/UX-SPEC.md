@@ -13,6 +13,11 @@ nesta formalização. **Ajuste pontual adicional (mesma reabertura,
 Windows", hero e CTA final) não devem ter nenhuma ação nesta entrega —
 adicionado o quinto estado "Indisponível para download nesta fase" à
 Seção 4 e o respectivo trade-off à Seção 7.
+**Reaberto pontualmente (Rodada 4, 2026-09-18)** para "Página de detalhe
+padronizada por app" (RA-10): novo Fluxo 6 (template de página de app),
+roteamento dos cards atualizado no Fluxo 2, componente `.changelog` (Seção
+3.2), estados do template (Seção 4) e trade-offs (Seção 7). Fluxos 1, 3, 4, 5
+e o design system anterior permanecem inalterados.
 **Base:** `PRD.md` + `PRD-TECNICO.md` (Rodada 2 + adendo Rodada 3) +
 `SDD.md` (mesma sequência, incl. `ADR-006`)
 **Data original:** 2026-09-07 · **Revisão anterior:** 2026-09-07 (`ADR-005`)
@@ -89,7 +94,18 @@ link "Ver app" (conforme `status`/`tipo` do app — `SDD.md` Seção 5).
 Estrutura do card já preparada (SDD.md, Seção 5) para trocar o badge por um
 link sem redesenho, seguindo o critério de roteamento (Rodada 3,
 `PRD-TECNICO.md` Seção 9.2):
-- **App web publicado** (`tipo: web`): badge vira `<a class="badge--link"
+- **[ATUALIZADO, Rodada 4, RN-05/RF-10.4] Todo app publicado — web ou
+  desktop:** o "Ver app" do card aponta para a página interna do app
+  (`destino-ideal.html`, `radar-esportivo.html`, `evolucao-segura.html`),
+  markup igual ao caso desktop abaixo (sem `target`, sem `rel`, sem indicador
+  de nova aba). O bloco "web = link externo direto" abaixo fica como
+  histórico e **deixa de valer** para Destino Ideal e Radar Esportivo. A
+  saída real para o produto web acontece só dentro da página (CTA "Abrir
+  app", Fluxo 6). O botão "Saiba mais" (modal, Lote 7) permanece inalterado.
+  Card "Em breve" segue com badge sem link (RF-10.11). **Minha Jornada**
+  (card hoje com link externo direto) fica fora desta rodada — ver questão
+  em aberto no `TASK.md` L-14.
+- **(Histórico, superado) App web publicado** (`tipo: web`): badge vira `<a class="badge--link"
   href="URL_EXTERNA" target="_blank" rel="noopener">Ver app</a>` — padrão já
   em produção (Destino Ideal, Radar Esportivo).
 - **App desktop/instalável publicado** (`tipo: desktop`): badge vira
@@ -157,6 +173,46 @@ entre seções), estruturada em 10 blocos de conteúdo + header/rodapé
 Todas as 10 seções seguem o mesmo header/rodapé das demais páginas (G-02) e
 os mesmos tokens de design (Seção 3), com os componentes novos desta página
 documentados na Seção 3.2.
+
+### Fluxo 6 — Página de detalhe padronizada por app (RA-10, RF-10) [Novo, Rodada 4]
+
+Template único, derivado de `evolucao-segura.html` (Fluxo 3), aplicado a cada
+app **publicado**; mantido em `dev/templates/app-page.template.html` (fora de
+`public/`), copiado manualmente por app, com checklist RNF-11 no cabeçalho do
+arquivo. Visitante chega por busca orgânica ou pelo "Ver app" do card
+(Fluxo 2), lê a página e, se web, sai pelo CTA "Abrir app".
+
+Ordem fixa das seções (RF-10.2). Ordem e componentes reutilizam os do Lote 8
+(`.hero--product`, `.pillar`, `.shot`, `.faq`, `.glass-card`):
+1. **Hero** (`.hero--product`, obrigatória): `<h1>` único = nome + proposta em
+   uma frase, eyebrow opcional, CTA principal, 1 `.shot` (o melhor print).
+2. **Proposta de valor** (obrigatória): 3 `.pillar`.
+3. **Prints/demo** (omitida do DOM se sem conteúdo; RN-04 exige >= 1 print
+   para a página existir): `.feature`/`.shot`; demo = GIF/vídeo próprio
+   estático (`<img>` GIF ou `<video>` arquivo próprio, controles visíveis,
+   sem autoplay com som, respeitando `prefers-reduced-motion`; nunca
+   iframe/embed de terceiro, G-09).
+4. **FAQ** (omitida se < 3 perguntas reais): `.faq` (`<details>`).
+5. **Changelog** (omitido até haver a 1a entrada, PR-13): componente novo
+   `.changelog` (Seção 3.2), lista `<ol reversed>` de `<li>` com `<time
+   datetime="AAAA-MM-DD">`, versão opcional e descrição curta, mais recente
+   primeiro.
+6. **CTA final** (obrigatória): repete o CTA do hero.
+
+Seções extras específicas do produto (ex.: "O problema", "Instalação",
+"Requisitos" em Evolução Segura) são permitidas **entre** a proposta de valor
+e o FAQ, reutilizando os componentes do Lote 8, sem alterar a ordem das seis
+obrigatórias/omitíveis.
+
+**Variantes do CTA principal (hero e final, sempre o mesmo estado):**
+- **App web:** `<a class="hero__cta hero__cta--primary" href="URL_DO_PRODUTO"
+  target="_blank" rel="noopener noreferrer" data-analytics-event="app-[slug]-abrir">Abrir
+  app<span class="sr-only"> (abre em nova aba)</span></a>` + ícone visual
+  de saída (mesmo padrão RN-02 do LinkedIn).
+- **App desktop:** segue o Fluxo 3/Seção 4 (estado "Indisponível para
+  download nesta fase", L-11), nunca link para binário (RN-03).
+- Header idêntico às demais páginas com `aria-current="page"` no item
+  "Apps" (RF-10.8, G-02).
 
 ### Fluxo 4 — Sobre (RF-03)
 Visitante acessa `sobre.html`. Texto institucional único, sem interação além
@@ -485,6 +541,8 @@ especificação anterior.
 | `.specs` | **Novo [Rodada 3]** | Tabela de requisitos de sistema (`<table>` semântica com `<caption>`/`scope="row"`), usada na seção "Requisitos de sistema"; empilha em 1 coluna em mobile (Seção 6) |
 | `.faq` | **Novo [Rodada 3]** | FAQ recolhível via `<details>`/`<summary>` nativos (sem JS necessário para abrir/fechar, acessível por teclado nativamente), usada na seção "Dúvidas" |
 
+| `.changelog` | **Novo [Rodada 4]** | Histórico de versões da página de app: `<ol reversed>` dentro de `.glass-card`, cada `<li>` com `<time datetime="AAAA-MM-DD">`, versão opcional (`<strong>`) e descrição curta; sem token novo (reusa `--glass-*`, `--color-accent`); mobile empilha data acima do texto. Marcado novo por G-12 |
+
 Não há design system prévio da marca além da logo em si (ícone + nome,
 fornecidos pelo usuário) — todos os componentes de UI acima são novos,
 desenhados na direção "Geométrico/Glass" (ADR-005) a partir dessa logo; não
@@ -578,6 +636,20 @@ fluxo abaixo justifica explicitamente o que se aplica ou não.
   granularidade do `TASK.md` (Lote 11) trata a falta de qualquer imagem
   planejada como bloqueio da tarefa de página correspondente, não como
   lacuna a publicar com placeholder visível ao visitante final.
+
+### Página de detalhe de app (template) — [Novo, Rodada 4]
+- **Vazio:** por seção. Prints/FAQ/changelog sem conteúdo real são **omitidos
+  do DOM** (nunca vazios nem com texto de preenchimento, RF-10.2); se faltar
+  proposta de valor ou ao menos 1 print, a página **não é publicada** (RN-04).
+  Slot `.shot` "a capturar" nunca vai ao ar (mesma regra da Seção 4/ES).
+- **Carregando:** sem dado assíncrono; `font-display: swap`; imagens fora da
+  dobra `loading="lazy"` com `width`/`height` (evita CLS, RNF-07); GIF/vídeo
+  próprio com `preload="none"`/poster quando vídeo.
+- **Erro:** `404.html`; CTA "Abrir app" é link externo — falha do produto de
+  destino está fora do controle do site (aceito, mesmo tratamento do
+  LinkedIn).
+- **Sucesso:** página com seções aplicáveis e CTA funcional (web) ou estado
+  "indisponível" (desktop, L-11).
 
 ### Rodapé/Contato
 - **Padrão (default):** link com ícone + texto visível.
@@ -784,6 +856,22 @@ horizontal); `.faq` e `.steps` não têm comportamento responsivo especial
   confirmar ou reverter na revisão deste pacote — o relatório de UX que
   originou o mockup marcou este ponto como potencialmente grande o
   suficiente para preferir confirmação explícita em vez de silêncio.
+
+- **[Rodada 4] Um clique a mais até o app web (trade-off aceito pelo
+  usuário, PR-12):** o card deixa de abrir o produto direto; a página
+  interna ganha SEO/contexto ao custo de um clique extra. Decisão: manter,
+  medir cliques do CTA "Abrir app" por 30 dias (RF-10.10) antes de reavaliar.
+- **[Rodada 4] CTA desktop desabilitado x RF-10.10 (mensurável):** o CTA de
+  download do Evolução Segura está no estado "indisponível" (L-11), logo não
+  gera clique mensurável; a métrica RF-10.10 se aplica aos CTAs ativos (apps
+  web). Sinalizado ao usuário como questão em aberto (`TASK.md` L-15), sem
+  decidir instrumentar botão desabilitado.
+- **[Rodada 4] Template fora de `public/`:** o esqueleto fica em
+  `dev/templates/` para nunca ser publicado nem indexado (RN-04); custo:
+  precisa ser copiado à mão (aceito, G-01/PR-11).
+- **[Rodada 4] Seções extras do produto:** ordem das seis seções-base é fixa;
+  seções específicas (ES) entram entre valor e FAQ — evita reescrever
+  `evolucao-segura.html` e cumpre "sem perda de conteúdo" (PRD 9.3).
 
 ---
 

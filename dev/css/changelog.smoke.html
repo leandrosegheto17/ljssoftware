@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smoke test — .changelog (components.css, T12.1)</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="../../public/assets/css/tokens.css">
+<link rel="stylesheet" href="../../public/assets/css/base.css">
+<link rel="stylesheet" href="../../public/assets/css/components.css">
+</head>
+<body>
+<!-- Validar: <768px data empilha acima do texto; >=768px data ao lado. Ordem: mais recente primeiro. -->
+<main class="container">
+  <ol class="changelog glass-card" reversed>
+    <li class="changelog__item"><time class="changelog__date" datetime="2026-09-10">10/09/2026</time><span class="changelog__text"><strong class="changelog__version">v1.1</strong> Correções e melhorias.</span></li>
+    <li class="changelog__item"><time class="changelog__date" datetime="2026-08-01">01/08/2026</time><span class="changelog__text">Primeira versão pública.</span></li>
+  </ol>
+</main>
+</body>
+</html>

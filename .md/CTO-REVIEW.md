@@ -536,3 +536,58 @@ Lotes 8, 9 e 10 (Rodada 3) está formalmente encerrado no ciclo do Gestor.
 Nenhuma ação adicional exigida deste chapéu neste momento.
 
 ---
+
+## Gate 1 — Reabertura pontual (Página de detalhe padronizada por app)
+
+**Data:** 2026-09-18
+**Skill aplicada:** `tech-strategy-review`
+**Comando:** `/planejar_tarefa`, Loop A pontual, rodada 1.
+**Briefing:** template reutilizável de página por app (proposta de valor,
+prints/demo, FAQ, changelog), reaproveitando `evolucao-segura.html`, para que
+Destino Ideal, Radar Esportivo, Minha Jornada, Meu Objetivo e Gestão da
+Pelada tenham página própria. Motivação: SEO, confiança e conversão.
+
+### Achados
+
+1. **Objetivo de negócio explícito:** sim (porta de entrada por SEO e
+   confiança/conversão por app). A métrica precisa ser fixada no PRD (ver
+   ressalva 3).
+2. **Alinhamento com G-01/G-10:** compatível. São páginas HTML estáticas
+   adicionais no mesmo site, sem backend, build ou custo novo. O "template"
+   deve ser um esqueleto HTML documentado e copiado à mão, sem SSG (G-01).
+3. **Conflito com decisão anterior, a resolver pelo usuário:** o `PRD.md`
+   Seção 8.2 e a G-15 definem que app web publicado usa link direto externo.
+   Destino Ideal e Radar Esportivo já operam assim (commits `313825a`,
+   `75506b7`). Esta demanda muda esse critério. Deve ser decisão explícita do
+   usuário, não silenciosa (Pergunta 1 do adendo).
+4. **Risco de SEO por conteúdo raso:** páginas de apps "Em breve" (Minha
+   Jornada, Meu Objetivo, Gestão da Pelada) não têm prints, changelog nem
+   FAQ reais. Publicá-las indexáveis gera conteúdo fino, o oposto do ganho
+   de SEO pretendido, e cria expectativa sobre produto inexistente. O
+   recorte aplica o template só a apps publicados; os "Em breve" ficam para
+   quando forem lançados (coerente com INT-05).
+5. **Risco de escala manual (RT-02 / ADR-001):** cada página duplica
+   Header/Footer (G-02). Com 5 páginas de produto o total vai a 8-10
+   HTMLs. O gatilho de revisitar SSG do ADR-001 deve ser avaliado pelo
+   Coordenador, que decide se supersede o ADR-001 (G-13). Não é decidido
+   aqui.
+6. **Compliance:** G-17 (dados fictícios em prints), G-03 (analytics apenas
+   Cloudflare) e G-16 (nada server-side) continuam aplicáveis. "Demo" só
+   pode ser imagem/GIF/vídeo estático ou embed sem novo terceiro, pois
+   embed de terceiro afeta CSP (G-09) e privacidade.
+7. **Capacidade:** sem gap. É um lote incremental sobre os componentes do
+   Lote 8.
+
+### Veredito
+
+**Aprovado com ressalvas.**
+
+Ressalvas: (1) usuário decide a Pergunta 1 (roteamento de apps web) antes
+do `TASK.md`; (2) escopo inicial limitado a apps com produto publicado, sem
+páginas indexáveis vazias; (3) métrica de sucesso mensurável fixada no
+adendo; (4) Coordenador avalia RT-02/ADR-001 ao desenhar o template.
+
+Libera-se o rascunho do adendo PM/BA (Seção 9 do `PRD.md`, Seção 10 do
+`PRD-TECNICO.md`).
+
+---

@@ -354,3 +354,103 @@ decisão técnica (não de produto) para o Coordenador resolver no SDD.md:
 escolha de stack/hospedagem estática (RNF-05/RNF-06), ferramenta de
 analytics (DI-04) e avaliação de viabilidade de produção interna da
 identidade visual (PR-06).
+
+---
+
+## 10. Adendo (Rodada 4 — Página de detalhe padronizada por app, RASCUNHO, 2026-09-18)
+
+**Base:** `PRD.md` Seção 9; `CTO-REVIEW.md` Gate 1 (Aprovado com ressalvas,
+2026-09-18). Requisitos condicionados à resposta do usuário na Pergunta 1
+(RF-10.3/RF-10.4).
+
+### 10.1 RF-10 — Template de página de app [deriva de RA-10]
+
+**Descrição:** esqueleto HTML reutilizável, derivado de
+`evolucao-segura.html`, aplicado a cada app publicado.
+
+**Critérios de aceite (EARS):**
+- RF-10.1: O sistema DEVE fornecer o template como arquivo HTML estático
+  documentado (`public/`, ou modelo em documento do repositório), copiado
+  manualmente por app, sem build, framework ou geração automática (G-01).
+- RF-10.2: A página de cada app DEVE conter, nesta ordem: (a) hero com nome,
+  proposta de valor em uma frase e CTA principal; (b) proposta de valor
+  detalhada; (c) prints/demo; (d) FAQ; (e) changelog; (f) CTA final.
+  QUANDO um app não tiver conteúdo real para (c), (d) ou (e), a seção DEVE ser
+  omitida do DOM, nunca exibida vazia ou com texto de preenchimento.
+- RF-10.3: QUANDO o app for web publicado, o CTA principal DEVE abrir a URL
+  do produto em nova aba com `rel="noopener noreferrer"` e indicação visual
+  de saída (RN-02). QUANDO for desktop, o CTA DEVE seguir RF-09.
+- RF-10.4: O link "Ver app" do card em `apps.html` e `index.html` DEVE
+  apontar para a página interna do app, e nenhum card DEVE apontar para
+  arquivo de download (G-15). [Aprovado pelo usuário em 2026-09-18 para apps web; aplicável a Destino Ideal e Radar Esportivo.]
+- RF-10.5: A seção de changelog DEVE listar entradas em ordem decrescente
+  de data, cada uma com data (AAAA-MM-DD), versão (se houver) e descrição
+  curta em pt-BR.
+- RF-10.6: A seção de FAQ DEVE ter no mínimo 3 perguntas/respostas em
+  pt-BR e usar elemento nativo (`<details>`/`<summary>` ou padrão já
+  existente no Lote 8/9), sem JS novo obrigatório.
+- RF-10.7: Cada página DEVE ter `<title>`, meta description, `<link
+  rel="canonical">` e Open Graph, todos únicos por app (estende RF-07), e
+  DEVE constar no `sitemap.xml` se existir.
+- RF-10.8: O sistema DEVE aplicar Header/Nav e Footer byte-idênticos às
+  demais páginas (G-02), com `aria-current="page"` no item-mãe "Apps".
+- RF-10.9: Todo print DEVE usar dado 100% fictício (G-17), estar em WebP
+  com fallback (G-07) e ter `alt` descritivo (RNF-04).
+- RF-10.10: O CTA principal de cada página DEVE ser mensurável no
+  Cloudflare Web Analytics (G-03), sem novo script de terceiro.
+- RF-10.11: Páginas de apps ainda "Em breve" NÃO DEVEM ser criadas nesta
+  rodada; o card "Em breve" mantém badge sem link (RN-01).
+
+### 10.2 RNF adicionais
+
+| # | Requisito | Critério (EARS) |
+|---|---|---|
+| RNF-07 | Desempenho | Cada página de app DEVE ter LCP < 2.5s em 4G simulado (RNF-01), com imagens fora da dobra em `loading="lazy"`. |
+| RNF-08 | Acessibilidade | Cada página DEVE atender WCAG AA (G-05), um único `<h1>`, hierarquia de headings sem salto, e os 4 estados aplicáveis/justificados (G-06). |
+| RNF-09 | Segurança | Nenhuma página DEVE carregar script/iframe de terceiro fora da CSP vigente (G-09); demo em vídeo somente arquivo próprio. |
+| RNF-10 | Custo | A entrega NÃO DEVE introduzir serviço pago (G-10). |
+| RNF-11 | Manutenção | Adicionar um novo app DEVE exigir apenas: copiar o template, preencher conteúdo, atualizar o card e o sitemap, com checklist documentado no template. |
+
+### 10.3 Regra de negócio
+
+| # | Regra | Racional |
+|---|---|---|
+| RN-04 | Só existe página de app (indexável) quando há produto publicado e conteúdo real mínimo (proposta de valor + ao menos 1 print). | Evita conteúdo fino/promessa vazia, que prejudica SEO e confiança. |
+| RN-05 | **Aprovada pelo usuário (2026-09-18).** RN-03/G-15 são mantidas (nunca link direto para binário) e a regra "app web = link direto" da Seção 8.2 é substituída por "todo app publicado = página interna com botão 'Abrir app' externo", via nova entrada no Log de Alterações do `GUARDRAILS.md` (**aplicada** em 2026-09-18). | Mudança de critério registrada, sem edição silenciosa. |
+
+### 10.4 Fluxo (adendo)
+
+```mermaid
+flowchart TD
+    A[Busca orgânica ou vitrine] --> B[Página do app]
+    B --> C{Tipo do app}
+    C -- web --> D[CTA abre URL do produto em nova aba]
+    C -- desktop --> E[CTA de download RF-09]
+    B --> F[Lê FAQ / changelog / prints]
+    F --> C
+    B --> G[Volta via Header/Nav]
+```
+
+### 10.5 Dependências
+
+| # | Dependência | Observação |
+|---|---|---|
+| DI-10 | Conteúdo real por app (descrição, prints, FAQ, changelog) | Fornecido pelo usuário via PDF do manual de cada app (prints e textos extraídos dele, como no Minha Jornada); bloqueia cada página. Prints sujeitos a G-17. |
+| DI-11 | Componentes CSS do Lote 8 | Reuso; qualquer componente novo (ex.: changelog) exige G-12 (UX-SPEC 3.2). |
+| DI-12 | `sitemap.xml`/`robots` | Verificar existência (Coordenador). |
+| DI-13 | Decisão do usuário (Pergunta 1) | **Resolvida (2026-09-18): aprovada.** |
+
+### 10.6 Interpretações
+
+| # | Ambiguidade | Interpretação | Porquê |
+|---|---|---|---|
+| INT-06 | "Prints/demo" pode significar demo interativa | Confirmado pelo usuário: GIF é suficiente (imagem/GIF/vídeo estático próprio) | Interativa exigiria backend/terceiro (G-16, G-09) |
+| INT-07 | "Cada app do portfólio" inclui apps "Em breve" | Adotado: só apps publicados (RN-04) | Evita páginas vazias; INT-05 já previa aplicação por publicação |
+
+### 10.7 Checklist (BA)
+- [x] Todo RF novo com critério EARS testável
+- [x] Regras de negócio com racional (RN-04, RN-05)
+- [x] Fluxo com decisão e caminhos alternativos
+- [x] Dependências nomeadas (DI-10 a DI-13)
+- [x] Premissas PR-10 a PR-13 validadas (2026-09-18, decisões do usuário; PR-11 e PR-12 como riscos aceitos)
+- [x] Ambiguidades registradas (INT-06, INT-07)

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[[NOME_APP]] — [[PROPOSTA_CURTA]] | LJS Software</title>
+<meta name="description" content="[[DESCRICAO_META]]">
+<link rel="canonical" href="https://ljssoftware.com.br/[[SLUG]].html">
+<link rel="icon" href="assets/img/favicon/favicon.ico" sizes="any">
+<link rel="icon" href="assets/img/favicon/favicon-32x32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="assets/img/favicon/favicon-512x512.png" type="image/png" sizes="512x512">
+<link rel="apple-touch-icon" href="assets/img/favicon/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="[[NOME_APP]] — [[PROPOSTA_CURTA]] | LJS Software">
+<meta property="og:description" content="[[DESCRICAO_META]]">
+<meta property="og:image" content="https://ljssoftware.com.br/assets/img/logo/logo-ljssoftware-transparente.png">
+<meta property="og:url" content="https://ljssoftware.com.br/[[SLUG]].html">
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/components.css">
+</head>
+<body>
+<!--
+  TEMPLATE DE PAGINA DE APP (T12.2, RA-10, UX-SPEC.md Fluxo 6) -- NAO PUBLICAR.
+  Fica em dev/templates/ (fora de public/). Derivado de public/evolucao-segura.html.
+
+  CHECKLIST RNF-11 (copiar, preencher, atualizar card + sitemap, rodar check):
+  [ ] 1. Copiar este arquivo para public/[slug].html
+  [ ] 2. Substituir TODOS os marcadores [[...]] (nenhum pode restar; buscar por "[[")
+  [ ] 3. Conteudo somente de fonte real (PDF/manual); sem texto inventado (RN-04/G-17)
+  [ ] 4. Prints: WebP + fallback PNG, width/height, dado 100% ficticio (G-07/G-17); hero eager, demais lazy
+  [ ] 5. Remover blocos removiveis sem conteudo (FAQ < 3, changelog sem entrada, prints/demo sem conteudo) do DOM
+  [ ] 6. Escolher UMA variante de CTA (web OU desktop), igual no hero e no CTA final; apagar a outra
+  [ ] 7. Header/Footer intactos (G-02); aria-current="page" so em "Apps"
+  [ ] 8. Card em apps.html e index.html aponta para [slug].html (G-15), sem target/rel/sr-only
+  [ ] 9. Adicionar <loc> absoluto em public/sitemap.xml
+  [ ] 10. Sem script/iframe/embed de terceiro alem dos ja presentes no rodape do template (CSP, G-09); apagar os comentarios de instrucao
+  [ ] 11. Rodar: node dev/html/site-consistency.check.js (exit 0)
+  [ ] 12. Rodar: node dev/css/a11y-contrast-check.js se houver CSS novo
+
+  Ordem fixa das secoes (RF-10.2): 1 Hero, 2 Proposta de valor, 3 Prints/demo,
+  [extras do produto opcionais aqui], 4 FAQ, 5 Changelog, 6 CTA final.
+-->
+
+  <!--
+    Header/Nav + skip link — bloco de referência copiado literalmente de
+    public/apps.html (T2.1/T2.2, TASK.md Seção 1.2 / SDD.md RT-02:
+    byte-idêntico entre as páginas, exceto o item de nav com
+    aria-current="page"). Nesta página, "Apps" recebe aria-current (não
+    "Home") porque o visitante chega aqui a partir do card "Ver app" da
+    vitrine de apps (UX-SPEC.md Seção 7 / Fluxo 2), não da Home.
+  -->
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="site-header__brand" href="index.html">
+        <img src="assets/img/logo/logo-ljssoftware-icone.png" alt="LJS Software" class="site-header__icon" width="56" height="56">
+        <span class="site-header__brand-text">LJS Software</span>
+      </a>
+      <button type="button" class="site-header__toggle" aria-expanded="false" aria-controls="site-header-nav" aria-label="Abrir menu">
+        <span class="site-header__toggle-icon" aria-hidden="true"></span>
+      </button>
+      <nav class="site-header__nav" id="site-header-nav" aria-label="Navegação principal">
+        <ul class="site-header__nav-list">
+          <li><a class="site-header__nav-link" href="apps.html" aria-current="page">Apps</a></li>
+          <li><a class="site-header__nav-link" href="sobre.html">Sobre</a></li>
+        </ul>
+        <a class="site-header__cta" href="index.html#contato">Contato</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- ===== SECAO 1 - HERO (obrigatoria, RF-10.2) ===== -->
+    <section class="hero hero--product">
+      <div class="decorative-shape hero__shape hero__shape--1" aria-hidden="true"></div>
+      <div class="decorative-shape hero__shape hero__shape--2" aria-hidden="true"></div>
+      <div class="container hero__inner">
+        <div class="hero__col">
+          <a class="backlink" href="apps.html">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+            Voltar para os apps
+          </a>
+          <p class="hero__eyebrow">[[EYEBROW]]</p>
+          <h1 class="hero__title">[[NOME_APP]]: [[PROPOSTA_UMA_FRASE]]</h1>
+          <p class="hero__subtitle">[[SUBTITULO]]</p>
+          <div class="hero__ctas">
+            <!-- VARIANTE A: app WEB (manter esta OU a B) -->
+            <a class="hero__cta hero__cta--primary" href="[[URL_PRODUTO]]" target="_blank" rel="noopener noreferrer" data-analytics-event="app-[[SLUG]]-abrir">Abrir app<span class="sr-only"> (abre em nova aba)</span><svg class="footer-link__icon footer-link__icon--external" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6"/><path d="M20 4L10 14"/><path d="M18 14v6H4V6h6"/></svg></a>
+            <!-- VARIANTE B: app DESKTOP (estado "Indisponivel para download nesta fase", nunca link para binario, RN-03) -->
+            <button type="button" class="hero__cta hero__cta--primary" disabled aria-disabled="true">Baixar para [[PLATAFORMA]]</button>
+          </div>
+          <!-- Somente variante B: <p class="hero__cta-note">Download ainda nao disponivel nesta fase.</p> -->
+        </div>
+        <div class="hero__col">
+          <figure class="shot">
+            <picture>
+              <source srcset="assets/img/[[SLUG]]/shot-01.webp" type="image/webp">
+              <img class="shot__img" src="assets/img/[[SLUG]]/shot-01.png" alt="[[ALT_PRINT_01]]" width="[[LARGURA]]" height="[[ALTURA]]" loading="eager">
+            </picture>
+            <figcaption class="shot__caption">[[LEGENDA_PRINT_01]] (dado ficticio)</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECAO 2 - PROPOSTA DE VALOR (obrigatoria): 3 .pillar ===== -->
+    <section class="section section--alt" aria-labelledby="valor-titulo">
+      <div class="container">
+        <div class="section__head section__head--center">
+          <p class="section__kicker">[[KICKER_VALOR]]</p>
+          <h2 class="section__title" id="valor-titulo">[[TITULO_VALOR]]</h2>
+        </div>
+        <div class="grid grid--3col">
+          <article class="glass-card pillar">
+            <span class="pillar__num" aria-hidden="true">1</span>
+            <h3 class="pillar__title">[[PILAR_1_TITULO]]</h3>
+            <p class="pillar__text">[[PILAR_1_TEXTO]]</p>
+          </article>
+          <article class="glass-card pillar">
+            <span class="pillar__num" aria-hidden="true">2</span>
+            <h3 class="pillar__title">[[PILAR_2_TITULO]]</h3>
+            <p class="pillar__text">[[PILAR_2_TEXTO]]</p>
+          </article>
+          <article class="glass-card pillar">
+            <span class="pillar__num" aria-hidden="true">3</span>
+            <h3 class="pillar__title">[[PILAR_3_TITULO]]</h3>
+            <p class="pillar__text">[[PILAR_3_TEXTO]]</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- BLOCO REMOVIVEL 3 - PRINTS/DEMO (omitir do DOM se sem conteudo; RN-04 exige >= 1 print na pagina; demo = GIF/<video> proprio, controles visiveis, sem autoplay com som, prefers-reduced-motion; nunca iframe/embed de terceiro) -->
+    <section class="section" id="por-dentro" aria-labelledby="pordentro-titulo">
+      <div class="container">
+        <div class="section__head">
+          <p class="section__kicker">Por dentro</p>
+          <h2 class="section__title" id="pordentro-titulo">[[TITULO_PRINTS]]</h2>
+        </div>
+        <div class="feature">
+          <div class="feature__body">
+            <h3 class="feature__title">[[FEATURE_1_TITULO]]</h3>
+            <p class="feature__text">[[FEATURE_1_TEXTO]]</p>
+          </div>
+          <div class="feature__media">
+            <figure class="shot">
+              <picture>
+                <source srcset="assets/img/[[SLUG]]/shot-02.webp" type="image/webp">
+                <img class="shot__img" src="assets/img/[[SLUG]]/shot-02.png" alt="[[ALT_PRINT_02]]" width="[[LARGURA]]" height="[[ALTURA]]" loading="lazy">
+              </picture>
+              <figcaption class="shot__caption">[[LEGENDA_PRINT_02]] (dado ficticio)</figcaption>
+            </figure>
+          </div>
+        </div>
+        <!-- Repetir .feature (alternar .feature--reverse) por print adicional; loading="lazy" -->
+      </div>
+    </section>
+    <!-- FIM BLOCO REMOVIVEL 3 -->
+
+    <!-- SECOES EXTRAS DO PRODUTO (opcional): entre a Secao 2 e a Secao 4, reutilizando componentes do Lote 8; nao altera a ordem das demais -->
+
+    <!-- BLOCO REMOVIVEL 4 - FAQ (omitir se < 3 perguntas reais) -->
+    <section class="section section--alt" aria-labelledby="faq-titulo">
+      <div class="container">
+        <div class="section__head">
+          <p class="section__kicker">Duvidas</p>
+          <h2 class="section__title" id="faq-titulo">[[TITULO_FAQ]]</h2>
+        </div>
+        <div class="faq">
+          <details class="glass-card faq__item">
+            <summary class="faq__q">[[FAQ_1_PERGUNTA]]</summary>
+            <p class="faq__a">[[FAQ_1_RESPOSTA]]</p>
+          </details>
+          <details class="glass-card faq__item">
+            <summary class="faq__q">[[FAQ_2_PERGUNTA]]</summary>
+            <p class="faq__a">[[FAQ_2_RESPOSTA]]</p>
+          </details>
+          <details class="glass-card faq__item">
+            <summary class="faq__q">[[FAQ_3_PERGUNTA]]</summary>
+            <p class="faq__a">[[FAQ_3_RESPOSTA]]</p>
+          </details>
+        </div>
+      </div>
+    </section>
+    <!-- FIM BLOCO REMOVIVEL 4 -->
+
+    <!-- BLOCO REMOVIVEL 5 - CHANGELOG (omitir ate existir a 1a entrada real, PR-13; mais recente primeiro) -->
+    <section class="section" aria-labelledby="changelog-titulo">
+      <div class="container">
+        <div class="section__head">
+          <p class="section__kicker">Novidades</p>
+          <h2 class="section__title" id="changelog-titulo">Historico de mudancas</h2>
+        </div>
+        <ol class="changelog glass-card" reversed>
+          <li class="changelog__item">
+            <time class="changelog__date" datetime="[[AAAA-MM-DD]]">[[DATA_LEGIVEL]]</time>
+            <span class="changelog__text"><strong class="changelog__version">[[VERSAO_OPCIONAL]]</strong> [[DESCRICAO_CURTA]]</span>
+          </li>
+        </ol>
+      </div>
+    </section>
+    <!-- FIM BLOCO REMOVIVEL 5 -->
+
+    <!-- ===== SECAO 6 - CTA FINAL (obrigatoria): repete o CTA do hero, MESMA variante ===== -->
+    <section class="section section--alt" id="baixar" aria-labelledby="baixar-titulo">
+      <div class="container">
+        <div class="glass-card final-cta">
+          <h2 class="final-cta__title" id="baixar-titulo">[[TITULO_CTA_FINAL]]</h2>
+          <p class="final-cta__text">[[TEXTO_CTA_FINAL]]</p>
+          <!-- VARIANTE A: app WEB (manter esta OU a B) -->
+          <a class="hero__cta hero__cta--primary" href="[[URL_PRODUTO]]" target="_blank" rel="noopener noreferrer" data-analytics-event="app-[[SLUG]]-abrir">Abrir app<span class="sr-only"> (abre em nova aba)</span><svg class="footer-link__icon footer-link__icon--external" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6"/><path d="M20 4L10 14"/><path d="M18 14v6H4V6h6"/></svg></a>
+          <!-- VARIANTE B: app DESKTOP (estado "Indisponivel para download nesta fase", nunca link para binario, RN-03) -->
+          <button type="button" class="hero__cta hero__cta--primary" disabled aria-disabled="true">Baixar para [[PLATAFORMA]]</button>
+          <!-- Somente variante B: <p class="final-cta__meta">Download ainda nao disponivel nesta fase.</p> -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!--
+    Footer/Contato — bloco de referência copiado literalmente de
+    public/apps.html (TASK.md Seção 1.2 / SDD.md RT-02, byte-idêntico entre
+    as páginas, G-02).
+  -->
+  <footer class="site-footer">
+    <div class="container stack stack--row-tablet-up">
+      <div class="site-footer__brand">
+        <img
+          src="assets/img/logo/logo-ljssoftware-icone.png"
+          alt=""
+          class="site-footer__icon"
+          width="32"
+          height="32"
+        >
+        <span class="site-footer__brand-text">LJS Software</span>
+      </div>
+
+      <nav class="footer-contact" aria-label="Contato">
+        <a class="footer-link" href="mailto:contato@ljssoftware.com.br" data-analytics-event="contato-email">
+          <svg class="footer-link__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 5h18v14H3z" />
+            <path d="M3 6l9 7 9-7" />
+          </svg>
+          <span class="footer-link__label">contato@ljssoftware.com.br</span>
+        </a>
+
+        <a
+          class="footer-link"
+          href="https://www.linkedin.com/in/leandro-segheto-moraes-90879b138"
+          target="_blank"
+          rel="noopener"
+          data-analytics-event="contato-linkedin"
+        >
+          <svg class="footer-link__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <line x1="7" y1="10" x2="7" y2="17" />
+            <circle cx="7" cy="7" r="0.6" />
+            <path d="M11 17v-4.5c0-1.5 1-2.5 2.3-2.5S16 11 16 12.5V17" />
+            <line x1="11" y1="10" x2="11" y2="17" />
+          </svg>
+          <span class="footer-link__label">LinkedIn</span>
+          <svg
+            class="footer-link__icon footer-link__icon--external"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path d="M14 4h6v6" />
+            <path d="M20 4L10 14" />
+            <path d="M18 14v6H4V6h6" />
+          </svg>
+          <span class="footer-link__external-text">(abre em nova aba)</span>
+        </a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="assets/js/nav.js" defer></script>
+  <!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "bc3ce694258f45c393941b292ba37ac9"}'></script><!-- End Cloudflare Web Analytics -->
+  <script src="assets/js/analytics.js" defer></script>
+</body>
+</html>

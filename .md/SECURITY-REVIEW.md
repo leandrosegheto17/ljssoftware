@@ -2572,3 +2572,16 @@ operacional para o chapéu DevOps seguem os mesmos já definidos no
 fechamento do Lote 8/9 (nenhum secret novo, nenhuma superfície de rede
 nova — site estático). Build da reabertura pontual (Lotes 8-10)
 formalmente liberado para deploy do ponto de vista de segurança.
+
+
+---
+
+## Lote 12 — Auditoria DevSecOps (2026-09-18)
+
+**Veredito: APROVADO COM DÉBITO.** Nenhum achado alto/crítico; nenhum compliance obrigatório em aberto.
+
+- G-09/CSP (public/_headers): inalterado; as novas páginas só usam self + beacon Cloudflare já permitido (script-src/connect-src). img-src self cobre os prints WebP/PNG. Sem estilo/script inline novo, sem fonte/CDN/terceiro novo.
+- Links externos: todos target=_blank com rel="noopener" ou "noopener noreferrer" (CTAs, LinkedIn). Destinos: destino-ideal-ljs.vercel.app, sports-lm.vercel.app (iguais a apps.html).
+- G-17: sem dado de paciente/cliente. Radar Esportivo: prints exibem dados públicos reais de futebol (classificação, jogos) e nome "SportsLM"; sem dado pessoal, credencial, e-mail ou token visíveis no print inspecionado (shot-01). Classificação: BAIXA (não é dado sensível de terceiro; risco é de marca/coerência e desvio literal do critério "dado fictício" do T12.7). Vira RL12.2, prazo 14 dias, não bloqueia deploy. Se o Gestor considerar a regra de negócio, decisão dele (não escalada como estratégica).
+- Ressalva de verificação: inspecionei visualmente só radar shot-01; demais prints (Radar 02-04, Destino Ideal 01-07) não vistos por mim para dado sensível; metadados EXIF/texto embutido não checados.
+- Requisitos operacionais para DevOps: nenhum novo; manter _headers no deploy.

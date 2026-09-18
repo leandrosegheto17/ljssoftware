@@ -5,6 +5,11 @@
 (Evolução Segura)" — adiciona a decisão de hospedagem do instalador (`ADR-006`)
 e registra os riscos/lacunas associados (RT-07, RT-08). Não altera nenhuma
 decisão anterior (ADR-001 a ADR-005 permanecem válidas e inalteradas).
+**Reaberto pontualmente novamente (Rodada 4, 2026-09-18)** para a demanda
+"Página de detalhe padronizada por app" (RA-10, `PRD-TECNICO.md` Seção 10):
+template de página de app, roteamento interno dos cards de todo app publicado
+e avaliação de RT-02/ADR-001 (Seções 2, 4, 5 e 6 abaixo). Nenhuma decisão
+anterior alterada; nenhum ADR novo (ver nota na Seção 4).
 **Base:** `PRD.md` + `PRD-TECNICO.md` (Rodada 2, aprovados) — adendo Rodada 3
 (`PRD.md` Seção 8, `PRD-TECNICO.md` Seção 9)
 **Data original:** 2026-09-07 · **Data desta revisão:** 2026-09-17
@@ -64,6 +69,7 @@ Componentes de página (todos estáticos, sem estado de servidor):
 | Vitrine de apps (grid de cards) | `apps.html` | Lista de apps com nome, descrição curta, badge "Em breve" ou link "Ver app" — direto (app web) ou para página própria (app desktop, RF-09/RN-03) |
 | Seção Sobre | `sobre.html` | Texto institucional (RF-03) |
 | Página de divulgação de app desktop | `evolucao-segura.html` (padrão reutilizável para futuros apps desktop) | Descrição, screenshots reais, requisitos de sistema e CTA de download do executável (RF-09) — nunca é o card da vitrine que aponta direto para o binário (RN-03) |
+| Página de detalhe de app (template) **[Rodada 4]** | `evolucao-segura.html` (referência), `destino-ideal.html`, `radar-esportivo.html` (RF-10) | Generaliza a linha acima: todo app **publicado** (web ou desktop) tem página interna própria, copiada manualmente de um template mantido em `dev/templates/app-page.template.html` (fora de `public/`, nunca publicado nem indexável). Seções na ordem: hero+CTA, proposta de valor, prints/demo, FAQ, changelog, CTA final; prints/FAQ/changelog omitidos do DOM quando sem conteúdo real (RF-10.2). CTA principal: app web = "Abrir app" externo (nova aba, `rel="noopener noreferrer"`, indicação de saída); app desktop = CTA de download conforme RF-09/L-11. Apps "Em breve" não têm página (RN-04) |
 | Rodapé/Contato | Todas as páginas | Link `mailto:` e/ou LinkedIn (RF-04), replicado de forma idêntica |
 | Página 404 | `404.html` | Fallback para rota inexistente, com link de volta à home |
 
@@ -97,6 +103,18 @@ evento custom de analytics no clique do link de contato.
 | [ADR-005](adr/005-identidade-visual-geometrico-glass-com-icone.md) | Identidade visual final: direção "Geométrico/Glass" com ícone de marca | Aceito |
 | [ADR-006](adr/006-hospedagem-instalador-github-releases.md) | Hospedagem/distribuição do instalador via GitHub Releases | Aceito |
 
+**Nota Rodada 4 — nenhum ADR novo.** A demanda RA-10 não introduz decisão
+estrutural nova: mantém HTML/CSS/JS puro, sem build (ADR-001/G-01), sem novo
+serviço (ADR-002/003, G-10), sem novo script/iframe de terceiro (G-09) e
+mantém a regra RN-03/G-15 (nunca link direto para binário). O que muda é
+apenas o critério de roteamento do card para apps web (link externo direto ->
+página interna com "Abrir app"), decisão de produto já aprovada pelo
+usuário (`PRD-TECNICO.md` RN-05), a ser refletida em G-15 por revisão
+formal do `GUARDRAILS.md` (proposta pendente do Gestor, não aplicada aqui).
+O "gatilho de revisão futura" do ADR-001 (página própria por app publicado)
+foi **avaliado** e está registrado em RT-02: decisão de manter o padrão manual
+mantida, sem superseder o ADR-001 (ADR é imutável, G-13).
+
 ## 5. Modelo de Dados de Alto Nível
 
 Não há banco de dados. O "modelo de dados" aqui é o **modelo de conteúdo**
@@ -111,14 +129,30 @@ App (representado como <article class="app-card"> em apps.html)
 ├── status: enum ["em-breve", "publicado"]
 ├── tipo: enum ["web", "desktop"]  (novo, Rodada 3 — RF-09/RN-03; decide o
 │   destino do link "Ver app" quando status = "publicado")
-└── link_destino: string | null
-    (null enquanto status = "em-breve"; quando "publicado":
-       - tipo = "web"  -> URL externa direta do produto (já em produção:
-         Destino Ideal, Radar Esportivo)
-       - tipo = "desktop" -> URL interna da página de divulgação própria
-         do app dentro do site (ex.: evolucao-segura.html), nunca uma URL
-         de arquivo/binário direto — RF-02 exige que essa troca não exija
-         redesenho da seção, só edição do atributo/bloco)
+├── link_destino: string | null
+│   (null enquanto status = "em-breve"; quando "publicado":
+       - [Rodada 4, RN-05] QUALQUER tipo -> URL interna da página de
+         detalhe do app (`[slug].html`), nunca URL de arquivo/binário
+         direto (RN-03) e, a partir da Rodada 4, também não mais a URL
+         externa direta do app web: essa URL passa a viver só como
+         `cta_url_externa` dentro da própria página do app.
+       - Histórico (Rodada 2/3, superado para apps web pela Rodada 4):
+         tipo = "web" -> URL externa direta; tipo = "desktop" -> página
+         interna. Apps "em-breve" seguem sem página (RN-04).)
+├── slug: string | null  (novo, Rodada 4 — nome do arquivo `[slug].html`;
+│   null enquanto "em-breve")
+└── cta_url_externa: string | null  (novo, Rodada 4 — só para tipo "web":
+    URL do produto aberta em nova aba pelo botão "Abrir app" da página;
+    null para "desktop", cujo CTA segue RF-09/L-11)
+
+PaginaApp (novo, Rodada 4 — um .html por app publicado)
+├── secoes obrigatórias: hero (nome + proposta em 1 frase + CTA), proposta
+│   de valor, CTA final
+├── secoes omitíveis (removidas do DOM sem conteúdo real, RF-10.2): prints/
+│   demo (RN-04 exige >= 1 print para a página existir), FAQ (>= 3 perguntas
+│   quando presente), changelog (entradas AAAA-MM-DD decrescentes)
+└── head: title, meta description, canonical, Open Graph — únicos (RF-10.7);
+    presente em sitemap.xml
 
 PaginaEstatica (cada .html)
 ├── title: string (único por página — RF-07)
@@ -137,7 +171,8 @@ a estrutura esperada por RF-02/RF-07/RF-08.
 | # | Risco | Severidade | Mitigação / dívida aceita |
 |---|---|---|---|
 | RT-01 | Concentração de dependência num único provedor (Cloudflare: DNS + hosting + analytics) | Média | Exportar e guardar a zona DNS antes da migração de NS; arquivos estáticos ficam no Git, portátil para outro provedor (GitHub Pages/Netlify) se necessário — sem lock-in de código |
-| RT-02 | Duplicação manual de header/nav/rodapé entre 3-4 páginas HTML (ADR-001) pode divergir com o tempo | Baixa | Diretriz de implementação no `TASK.md` exigindo blocos idênticos entre páginas; revisitar migração para SSG leve se o número de páginas crescer (gatilho registrado no ADR-001) |
+| RT-02 | Duplicação manual de header/nav/rodapé entre 3-4 páginas HTML (ADR-001) pode divergir com o tempo. **[ATUALIZADO, Rodada 4]** O gatilho do ADR-001 ("página própria por app publicado") foi atingido: o site vai de 5 para 7 páginas HTML (+`destino-ideal.html`, +`radar-esportivo.html`), cada nova app publicada soma +1 | Baixa -> **Média-baixa** | **Avaliação:** manter o padrão manual (sem SSG, G-01/ADR-001 intactos) — 7 páginas ainda é gerenciável, o usuário já aprovou o padrão manual (PR-11) e SSG reintroduziria build/dependência contra RNF-05. Mitigação nova, sem build: script Node sem dependências em `dev/html/` (nunca publicado, mesmo padrão dos checks já existentes) que compara byte a byte Header/Footer de todas as páginas de `public/` (única variação: `aria-current`) e valida title/description/canonical únicos, h1 único e presença no `sitemap.xml` — rodado ao final de cada tarefa/lote que toque HTML. **Novo gatilho de reavaliação (nova decisão a registrar em ADR superseding ou complementar, se ocorrer):** ao chegar a 10 páginas HTML ou se o script apontar divergência recorrente (>= 2 lotes seguidos) — sinalizar ao Gestor |
+| RT-09 | **[Novo, Rodada 4]** Conteúdo real das páginas (textos e prints) depende de PDF do manual de cada app fornecido pelo usuário (DI-10); prints podem conter dado real de terceiros (G-17) e demo é limitada a GIF/vídeo próprio estático (INT-06, G-09/G-16) | Média (atraso de conteúdo; risco de privacidade se G-17 falhar) | Tarefas de extração de prints separadas das de montagem da página; checagem de dado fictício por print; página só é publicada com conteúdo real mínimo (RN-04); LCP/`loading="lazy"` e WebP+fallback (G-07, RNF-07) exigidos por critério de aceite |
 | RT-03 | Migração de nameservers no registro.br é uma ação manual do stakeholder, fora do controle do Executor | Baixa/Média (risco de atraso, não técnico) | Sinalizado como pré-requisito explícito de deploy no `TASK.md`/`DEPLOY.md`; não bloqueia o desenvolvimento do site em si, só a publicação final |
 | RT-04 | Ausência de build pipeline significa que otimização de imagem (compressão, WebP) é manual | Baixa | Diretriz de implementação: todo asset de imagem deve ser exportado já otimizado (WebP com fallback) antes de ser versionado — checklist no `TASK.md` |
 | RT-05 | Identidade visual produzida internamente (ADR-004) pode não atingir o nível de polimento de um designer profissional | Baixa (aceita conscientemente) | Escopo já delimitado pelo PRD-TECNICO.md (INT-03): wordmark tipográfico simples é o piso de aceite, não exige mais que isso |

@@ -2321,3 +2321,55 @@ body.app-modal-open {
   color: var(--color-accent);
   text-decoration: underline;
 }
+
+/* ====================================================================== */
+/* Página de app — .changelog (T12.1, RA-10, G-12: componente novo)        */
+/* ====================================================================== */
+
+/* Uso: <ol class="changelog glass-card" reversed> de <li class="changelog__item">
+   com <time class="changelog__date" datetime="AAAA-MM-DD">, versão opcional
+   <strong class="changelog__version"> e <span class="changelog__text">.
+   Somente tokens existentes; sem transição/animação. */
+
+.changelog {
+  list-style: none;
+  margin: 0;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.changelog__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-family: var(--font-body);
+  color: var(--color-text-inverse-secondary);
+}
+
+.changelog__date {
+  color: var(--color-accent);
+  font-size: 0.875rem;
+}
+
+.changelog__version {
+  color: var(--color-text-inverse);
+  font-weight: 600;
+}
+
+.changelog__text {
+  max-width: 66ch;
+}
+
+@media (min-width: 768px) {
+  .changelog__item {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 1rem;
+  }
+
+  .changelog__date {
+    flex: 0 0 8rem;
+  }
+}
