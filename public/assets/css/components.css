@@ -558,7 +558,7 @@
  *   --color-text-inverse sobre blob --color-bg-gradient-1 a 55%                     -> 8.41:1 (AA: OK)
  *   --color-text-inverse-secondary sobre blob --color-bg-gradient-2 a 28% (sólido)  -> ~6.0:1 aprox. (AA: OK, ver script)
  *   --color-text-inverse sobre .glass-card sobre o pior blob (composto)             -> 4.99:1 (AA: OK)
- *   --color-text-inverse-secondary sobre .glass-card sobre o pior blob (PIOR CASO GERAL, composto) -> 4.65:1 (AA: OK, com folga)
+ *   --color-text-inverse-secondary sobre .glass-card sobre o pior blob (PIOR CASO GERAL, composto) -> 4.82:1 (AA: OK, com folga)
  *
  * Todos os piores casos (incluindo o composto "glass sobre mesh gradient")
  * agora passam acima do mínimo AA (4.5:1) — ver saída completa em
@@ -861,9 +861,9 @@
  * VERIFICAÇÃO DE CONTRASTE WCAG AA — combinações introduzidas por este
  * componente:
  *
- *   --color-accent (texto/borda do botão) sobre --glass-bg (translúcido
- *     sobre --color-bg) -> par idêntico ao já verificado em tokens.css
- *     (--color-accent sobre --color-bg, 10.13:1).
+ *   --color-accent (texto/borda do botão) sobre o composto .glass-card
+ *     (--glass-bg sobre --color-bg, #1F3654) -> 8.06:1 (AA: OK). NÃO é o par
+ *     sólido --color-accent/--color-bg (10.13:1): o glass clareia o fundo.
  *   Hover/foco do botão inverte para --color-bg sobre --color-accent -> par
  *     idêntico ao badge (10.13:1, já verificado acima nesta seção).
  *   --color-text-inverse (título do modal) / --color-text-inverse-secondary
@@ -1240,8 +1240,8 @@ body.app-modal-open {
  *     de texto do hero, mesma área já coberta pela pior-caso do mesh.
  *   `.hero__facts` / `.hero__cta-note` (--color-text-inverse-secondary sobre
  *     o mesh gradient) -> mesmo par revalidado em T4.2 para
- *     `--color-text-inverse-secondary` (4.65:1 no pior caso composto, ver
- *     nota de T3.1 acima) — já é o pior caso de contraste do site, aqui
+ *     `--color-text-inverse-secondary` (4.82:1 no pior caso composto,
+ *     conforme dev/css/a11y-contrast-check.js, seção 4) — já é o pior caso de contraste do site, aqui
  *     reaplicado sem introduzir composição nova.
  *   `.hero__cta-note a` (--color-accent) -> já verificado em tokens.css.
  *   `.shot__tag` (texto --color-bg sobre fundo --color-accent) -> par

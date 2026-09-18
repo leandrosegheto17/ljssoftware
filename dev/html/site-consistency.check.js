@@ -17,13 +17,15 @@ const path = require('path');
 
 const PUBLIC = path.join(__dirname, '..', '..', 'public');
 const ORIGIN = 'https://ljssoftware.com.br/';
+// URL publica sem extensao (Cloudflare Pages redireciona 308 de /x.html para /x): index = "/"
+const clean = (f) => (f === 'index.html' ? '/' : '/' + f.replace(/.html$/, ''));
 const APP_PAGES = ['evolucao-segura.html', 'destino-ideal.html', 'radar-esportivo.html'];
 // aria-current permitido por pagina: href do item de nav (null = nenhum)
 const ALLOWED_CURRENT = {
-  'index.html': [], 'apps.html': ['apps.html'], 'sobre.html': ['sobre.html'], '404.html': [],
+  'index.html': [], 'apps.html': ['/apps'], 'sobre.html': ['/sobre'], '404.html': [],
 };
-APP_PAGES.forEach((p) => { ALLOWED_CURRENT[p] = ['apps.html']; });
-const APP_SLUGS = { 'app-destino-ideal': 'destino-ideal.html', 'app-radar-esportivo': 'radar-esportivo.html', 'app-evolucao-segura': 'evolucao-segura.html' };
+APP_PAGES.forEach((p) => { ALLOWED_CURRENT[p] = ['/apps']; });
+const APP_SLUGS = { 'app-destino-ideal': '/destino-ideal', 'app-radar-esportivo': '/radar-esportivo', 'app-evolucao-segura': '/evolucao-segura' };
 
 const failures = [];
 const fail = (f, msg) => failures.push(`${f}: ${msg}`);
@@ -80,7 +82,7 @@ for (const f of files) {
     if (seen[k][vals[k]]) fail(f, `${k} duplicado com ${seen[k][vals[k]]}`); else seen[k][vals[k]] = f;
   }
   if (vals.canonical && !vals.canonical.startsWith(ORIGIN)) fail(f, `canonical nao absoluto: ${vals.canonical}`);
-  if (vals.canonical && f !== 'index.html' && vals.canonical !== ORIGIN + f) fail(f, `canonical esperado ${ORIGIN + f}`);
+  if (vals.canonical && f !== 'index.html' && vals.canonical !== ORIGIN + clean(f).slice(1)) fail(f, `canonical esperado ${ORIGIN + clean(f).slice(1)}`);
 }
 
 // sitemap
@@ -89,11 +91,11 @@ try { sitemap = fs.readFileSync(path.join(PUBLIC, 'sitemap.xml'), 'utf8'); } cat
 const locs = [...sitemap.matchAll(/<loc>([^<]*)<\/loc>/g)].map((m) => m[1]);
 for (const f of files) {
   if (f === '404.html') continue;
-  const loc = f === 'index.html' ? ORIGIN : ORIGIN + f;
+  const loc = ORIGIN + clean(f).slice(1);
   if (!locs.includes(loc)) fail('sitemap.xml', `falta ${loc} (${f})`);
 }
 for (const l of locs) {
-  const f = l === ORIGIN ? 'index.html' : l.slice(ORIGIN.length);
+  const f = l === ORIGIN ? 'index.html' : l.slice(ORIGIN.length) + '.html';
   if (!files.includes(f)) fail('sitemap.xml', `lista pagina inexistente ${l}`);
 }
 
@@ -106,9 +108,28 @@ for (const f of ['index.html', 'apps.html']) {
     const ev = (tag.match(/data-analytics-event="([^"]*)"/) || [])[1] || '';
     if (/\.exe(\?|#|$)/i.test(href) || /releases?\b/i.test(href)) fail(f, `card ${ev || href} aponta para binario/Release: ${href}`);
     const page = APP_SLUGS[ev];
-    if (page && files.includes(page) && href !== page) fail(f, `card ${ev}: href "${href}" deveria ser "${page}"`);
+    if (page && files.includes(page.slice(1) + '.html') && href !== page) fail(f, `card ${ev}: href "${href}" deveria ser "${page}"`);
   }
 }
+
+// URLs sem extensao: nenhum href interno, og:url ou <loc> com .html;
+// todo href interno aponta para pagina existente (ancora #... ignorada)
+for (const f of files) {
+  for (const m of pages[f].matchAll(/<a[^>]*shref="([^"]*)"/g)) {
+    const h = m[1];
+    if (/^(https?:|mailto:|tel:|#)/.test(h)) continue;
+    if (/.html?([?#]|$)/i.test(h)) { fail(f, `href interno com .html: ${h}`); continue; }
+    if (h.startsWith('/') && !h.startsWith('/assets/')) {
+      const q = h.split(/[?#]/)[0];
+      const t = q === '/' ? 'index.html' : q.slice(1) + '.html';
+      if (!files.includes(t)) fail(f, `href interno para pagina inexistente: ${h}`);
+    }
+  }
+  for (const m of pages[f].matchAll(/<metas+property="og:url"s+content="([^"]*)"/g)) {
+    if (/.html?$/i.test(m[1])) fail(f, `og:url com .html: ${m[1]}`);
+  }
+}
+if (/.html?</.test(sitemap)) fail('sitemap.xml', '<loc> com .html');
 
 if (failures.length) {
   console.error(`FALHAS (${failures.length}):`);

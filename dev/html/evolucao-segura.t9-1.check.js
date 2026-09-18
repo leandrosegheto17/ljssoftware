@@ -72,12 +72,12 @@ check('aria-current="page" aparece exatamente 1 vez', ariaCurrentMatches.length 
 
 check(
   'aria-current="page" está no link "Apps" (não em Home/Sobre)',
-  /href="apps\.html" aria-current="page">Apps<\/a>/.test(html)
+  /href="\/apps" aria-current="page">Apps<\/a>/.test(html)
 );
 
 check(
   'link "Sobre" do header sem aria-current',
-  /href="sobre\.html">Sobre<\/a>/.test(html) && !/href="sobre\.html" aria-current/.test(html)
+  /href="\/sobre">Sobre<\/a>/.test(html) && !/href="\/sobre" aria-current/.test(html)
 );
 
 // --- 3. Hero de produto / screenshot S1 ---------------------------------
