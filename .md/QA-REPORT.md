@@ -2701,3 +2701,14 @@ Ressalvas (todas Simples; tarefa continua Concluída, viram Refatoração Lote-1
 4. Processo: T13.4 previa "achado simples vira tarefa em Refatoração Lote-13", mas o lote não existia no TASK.md; as RL13.x acima devem ser registradas na Seção 3 (não criadas por mim nesta rodada, pedido restrito a QA-REPORT).
 
 Não verificado: renderização em Chromium desktop/mobile (rolagem horizontal, foco visível na tela), fidelidade do copy ao PDF, peso final das páginas (maior WebP 116 KB, aceitável).
+
+### Lote 13 — Revalidação QA (2026-09-18, commit 7c1af39)
+
+**Veredito atualizado: VALIDADO COM RESSALVA ACEITA (1 Simples adiada).** Nenhuma reprovação Crítica.
+
+- RL13.1 (Simples): RESOLVIDO. Kicker "Dúvidas" e 5 figcaptions "dado fictício" corretos em public/minha-jornada.html.
+- RL13.3 (Simples): RESOLVIDO. FAQ sem section--alt (linha ~168); alternância com "baixar" (section--alt) restaurada.
+- RL13.2 (Simples): ENCERRADA SEM ALTERAÇÃO por decisão explícita do usuário (app em refatoração). Ressalva aceita/adiada; não reprova.
+- Sem regressão: site-consistency.check.js OK (8 páginas; header/footer G-02, sitemap com /minha-jornada, alts); a11y-contrast-check e checks t9-2..t9-6 PASS; G-17 sem dado sensível (só e-mail institucional e token público do beacon Cloudflare).
+- Observação (fora do Lote 13): dev/html/evolucao-segura.t9-1.check.js dá 1 FAIL ("comentários de continuação para T9.2-T9.6"), check de andaimes do Lote 9 já superado; não afeta este lote. Sugere-se aposentar/ajustar esse check.
+- Não verificado: renderização em navegador.

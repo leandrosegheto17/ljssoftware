@@ -2600,3 +2600,9 @@ formalmente liberado para deploy do ponto de vista de segurança.
 - Observação sem severidade: prints mostram a UI do app com aviso "pendente de revisão teológica humana" (conteúdo, não segurança; ver QA-REPORT.md).
 - Achados: 0 crítico, 0 alto, 0 médio, 0 baixo. RL13.1-RL13.3 são achados do QA (copy/layout), sem correspondente de segurança.
 - Requisitos operacionais para DevOps: nenhum novo; manter `_headers` no deploy.
+
+### Lote 13 — Revalidação DevSecOps (commit 7c1af39, 2026-09-18)
+
+**Veredito mantido: APROVADO (sem débito de segurança).** Diff `ef7f271..7c1af39` em `public/minha-jornada.html`: apenas acentuação de 6 textos (5 legendas "fictício" + kicker "Dúvidas") e remoção de `section--alt` do FAQ. Nenhuma mudança de script, link, `target`/`rel`, `_headers`/CSP ou asset (shot-11 mantido).
+- Re-inspeção: sem handler/`<style>`/`style=` inline novo; scripts continuam `nav.js`, `analytics.js` e beacon Cloudflare; CTAs "Abrir app" com `rel="noopener noreferrer"`, LinkedIn com `rel="noopener"`; nenhum link a `.exe`; sem dado sensível novo (G-17); LGPD inalterada (N/A).
+- Achados: 0 crítico, 0 alto, 0 médio, 0 baixo. Nenhum débito novo.
