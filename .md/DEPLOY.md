@@ -828,3 +828,101 @@ integração real (card → página → componentes) funcionando de ponta a
 ponta. Débitos abertos (RL8.1, RL9.1, RL5.1, RL5.2) são todos baixa
 severidade/baixo esforço, com prazo registrado, e não impedem este Gate.
 Pronto para o registro de fechamento do Gestor (Gate 4).
+
+
+## Deploy em staging (2026-09-18) — Lotes 12 e 13
+
+Chapéu DevOps (deployment-execution, observability-setup, non-functional-requirement-validation). Modelo de deploy contínuo (ver "Modelo de deploy real"): push em `main` já publicou; nenhuma ação de disparo, nenhum push/commit de código nesta chamada. Objetivo: confirmar pipeline saudável e staging (https://ljssoftware.pages.dev) refletindo HEAD.
+
+**Commit verificado:** `9fb4e36` (HEAD = origin/main). Nota: não há como ler o commit servido pelo Pages sem o painel; a equivalência é inferida pelo conteúdo servido (páginas/rotas/assets do Lote 12 e 13 presentes).
+
+### Verificações em staging (curl real)
+
+| Verificação | Resultado |
+|---|---|
+| `/`, `/apps`, `/minha-jornada`, `/evolucao-segura`, `/destino-ideal`, `/radar-esportivo`, `/sitemap.xml` | 200 em todas |
+| URL inexistente (`/naoexiste-xyz`) | 404 real (6208 B, página 404 própria) |
+| Headers CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy (em `/minha-jornada`) | Presentes e idênticos ao `public/_headers` (comparação textual) |
+| Beacon Cloudflare Web Analytics (`static.cloudflareinsights.com`) | Presente em minha-jornada, evolucao-segura, destino-ideal, radar-esportivo |
+| Assets de minha-jornada (css base/components/tokens, js analytics/nav, favicons, logo, shot-01/04/08/11/15) | Todos 200 |
+| Card Minha Jornada em `/apps` | `href="/minha-jornada"` presente |
+| HSTS | Ausente (débito RL5.2 conhecido) |
+
+### Comparação staging × produção (ljssoftware.com.br)
+
+- Status idênticos (200 x7, 404 real) e os 5 headers de segurança idênticos.
+- Beacon presente nas páginas comparadas em staging; diff completo de HTML feito só em `/minha-jornada`.
+- Única diferença encontrada: produção serve ~257 B a mais por página porque o Cloudflare Email Protection ofusca o e-mail do rodapé (`/cdn-cgi/l/email-protection`, `data-cfemail`), enquanto o staging (`pages.dev`) mantém `mailto:` em texto. É comportamento da zona do domínio, não diferença de build. Ressalva: com JS bloqueado o e-mail em produção aparece como "[email protected]".
+
+### RNFs (site estático)
+
+- HTTPS: 200 sobre TLS, `ssl_verify_result=0` (certificado válido) em staging. Produção respondeu 200 em HTTPS.
+- Headers de segurança: ver acima (OK). CSP restringe origens a `self` + beacon.
+- Terceiros em `/minha-jornada`: apenas beacon Cloudflare; links externos são `<a>` (LinkedIn, minha-jornada-ljs.pages.dev), sem carga de recurso. `img-src 'self'`.
+- Peso: minha-jornada 16 KB HTML; shots 22–61 KB cada; components.css 85 KB (maior recurso, sem minificação verificada); 4 ocorrências de `loading="lazy"` na página.
+- Disponibilidade: todas as requisições responderam 200/404 esperados no momento da checagem (amostra única, não é SLA).
+
+### Observabilidade e rollback
+
+- Observabilidade: beacon Web Analytics ativo (snippet presente e permitido pela CSP). Não foi verificado o recebimento de dados no painel.
+- HSTS ausente (RL5.2, débito conhecido).
+- Rollback: capacidade nativa do Cloudflare Pages (reverter para deployment anterior). NÃO exercitado nesta chamada (sem acesso ao painel); permanece "disponível, não testado".
+
+### Débitos abertos
+
+RL12.2 (decisão registrada, ver GUARDRAILS), RL13.1–RL13.3, RL5.2 (HSTS), teste desatualizado `evolucao-segura.t9-1` (não-regressão, registrado no QA-REPORT), demais itens de `Refatoração Lote-X` pendentes no TASK.md.
+
+### Escopo da publicação
+
+Lotes 12 e 13 verificados em staging. O Lote 11 está parcial (T11.2 pendente) e NÃO deve ser considerado fechado por esta publicação.
+
+### Não verificado (ressalvas)
+
+- Commit efetivamente servido/estado do deployment no painel do Pages.
+- Rollback e recebimento de eventos do beacon.
+- Beacon e diff completo em todas as páginas de detalhe em produção; diff HTML só em minha-jornada.
+- Todas as imagens/assets das demais páginas; lazy loading em todas as imagens.
+- Janela pós-deploy de 24h.
+- Sem "confirmação de produção" registrada: depende de confirmação explícita do usuário.
+
+**Veredito staging:** saudável, reflete HEAD `9fb4e36` por evidência de conteúdo; sem achado bloqueante.
+
+## Confirmação de produção (2026-09-18) — Lotes 12 e 13
+
+- **Data:** 2026-09-18. Confirmação explícita do usuário nesta sessão.
+- **Commits:** 9d8f8fc (Lote 12), 6cb3201 (refatorações RL5.1, RL7.1, RL7.2, RL8.1, RL9.1, RL12.1), f303a6e (decisão RL12.2 + GUARDRAILS), 9fb4e36 (Lote 13). HEAD `9fb4e36`, sincronizado com origin/main.
+- **Lotes incluídos:** Lote 12 e Lote 13. O Lote 11 NÃO é fechado por esta publicação (T11.2 pendente).
+- **URL:** https://ljssoftware.com.br
+- **Modelo de deploy:** contínuo (push em main publica no Cloudflare Pages; mesmo build do staging). Nenhum push/deploy disparado nesta chamada.
+- **Dupla aprovação:** QA + DevSecOps, ambos "Validado com ressalvas".
+
+### Verificação HTTP em produção (checagem única, não é SLA)
+
+- Status 200: `/`, `/apps`, `/minha-jornada`, `/evolucao-segura`, `/destino-ideal`, `/radar-esportivo`, `/sobre`, `/sitemap.xml`, `/robots.txt`. Rota inexistente retorna 404 real.
+- Headers presentes em `/`: CSP, Permissions-Policy, Referrer-Policy, X-Content-Type-Options, X-Frame-Options. HSTS ausente (RL5.2).
+- Beacon Cloudflare presente no HTML de `/evolucao-segura`, `/destino-ideal` e `/radar-esportivo`.
+- Imagens: 60 arquivos de imagem de `public/assets` (limitados a 60 pela amostragem) responderam 200 em produção.
+
+### Observabilidade e rollback
+
+- Observabilidade: beacon Web Analytics ativo no HTML (permitido pela CSP). Recebimento de eventos no painel NÃO verificado.
+- Rollback: nativo do Cloudflare Pages (reverter para deployment anterior). NÃO exercitado; "disponível, não testado".
+
+### Débitos abertos (sem bloqueio)
+
+RL12.2, RL13.1, RL13.2, RL13.3, RL5.2 (HSTS), teste desatualizado `evolucao-segura.t9-1` e demais itens de `Refatoração Lote-X` pendentes no TASK.md.
+
+### Nota Cloudflare Email Protection
+
+Segue ligado por decisão anterior do usuário. Em produção o e-mail do rodapé é ofuscado (`data-cfemail`); com JS bloqueado aparece como "[email protected]".
+
+### Não verificado
+
+- Commit efetivamente servido/estado do deployment no painel do Pages.
+- Rollback e recebimento de eventos do beacon.
+- Diff completo de HTML das páginas de detalhe; imagens além da amostra de 60 (existência apenas, não conteúdo/lazy loading).
+- Janela pós-deploy de 24h.
+
+**Incidentes:** nenhum observado.
+
+**Veredito produção:** publicado e saudável na checagem realizada; sem achado bloqueante. Ressalvas acima permanecem abertas.

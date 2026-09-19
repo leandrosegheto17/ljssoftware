@@ -443,6 +443,20 @@ nenhuma dependência real está órfã).
 
 **Lote 12 — Validado com ressalvas (Validador, 2026-09-18):** QA Aprovado com ressalvas (RL12.1, RL12.2) e DevSecOps Aprovado com débito; ver QA-REPORT.md e SECURITY-REVIEW.md. Fechamento estrutural OK: 13/13 tarefas Concluída, sem dependência órfã, sem Bloqueada.
 
+### Refatoração Lote-13
+
+> **Origem:** achados Simples do QA-REPORT.md (Lote 13, 2026-09-18), registrados pelo Validador no fechamento estrutural. Nenhum débito de segurança baixo/médio (ver SECURITY-REVIEW.md, "Lote 13").
+
+| ID | Tarefa | Dono | Critério de aceite | Origem | Estimativa | Status |
+|---|---|---|---|---|---|---|
+| RL13.1 | Corrigir acentuação em `public/minha-jornada.html`: kicker "Duvidas" para "Dúvidas" e os 5 figcaptions "(dado ficticio)" para "(dado fictício)" | Frontend | Copy acentuado; `site-consistency.check.js` segue passando | QA-REPORT.md, Lote 13, achado 1 (RL13.1) | 0,1 dia | Pendente |
+| RL13.2 | Recapturar ou recortar `shot-11` (editor de esboço, WebP+PNG) sem defeitos de layout do app (botão [x] vazando, textarea cortada, botões quebrando linha) | Frontend | Print sem defeito visível; WebP+PNG regenerados; sem dado sensível (G-17) | QA-REPORT.md, Lote 13, achado 2 (RL13.2) | 0,25 dia | Pendente |
+| RL13.3 | Confirmar em navegador e, se necessário, alternar o fundo das seções "FAQ" e "baixar" (ambas `section--alt` adjacentes) | Frontend | Alternância visual entre seções adjacentes | QA-REPORT.md, Lote 13, achado 3 (RL13.3) | 0,1 dia | Pendente |
+
+**Dependências do lote Refatoração Lote-13:** nenhuma. **Prazo sugerido:** até 14 dias após o deploy do Lote 13; baixo esforço, não bloqueia deploy.
+
+**Lote 13 — Validado com ressalvas (Validador, 2026-09-18):** QA Aprovado com ressalvas (RL13.1-RL13.3) e DevSecOps Aprovado sem débito de segurança; ver QA-REPORT.md e SECURITY-REVIEW.md. Fechamento estrutural OK: T13.1-T13.4 Concluída, cadeia T13.2<-T13.1, T13.3<-T13.2, T13.4<-T13.3 íntegra, sem dependência órfã, sem Bloqueada.
+
 ### Lote 7 — Botão "Saiba mais" + Modal nos Cards de App
 
 > **Origem:** pedido direto do usuário, fora do ciclo de reabertura formal —
@@ -893,6 +907,7 @@ Lote 13 (novo, 2026-09-18): cadeia linear T13.1 --> T13.2 --> T13.3 --> T13.4 (s
 | 11 **[Novo]** | T11.1, T11.2, T11.4 (T11.3 removida, ajuste pontual — ver Lote 11) | Nenhuma dependência interna ao lote; sem dependência de outro lote |
 | 12 **[Novo, Rodada 4]** | **Rodada 1:** T12.1, T12.3, T12.5, T12.7 (4 instâncias; T12.5/T12.7 só iniciam com o PDF, DI-10). **Rodada 2 (após T12.1):** T12.2. **Rodada 3 (após T12.2 + prints):** T12.4, T12.6, T12.8 (3 instâncias; T12.6/T12.8 exigem seus prints). **Rodada 4:** T12.9 (após T12.6), T12.10 (após T12.8), T12.11 (após T12.4/6/8) — 3 instâncias (T12.9/T12.10 editam os mesmos 2 arquivos em cards distintos: edição cirúrgica por card, como Lotes 2/3) | T12.2 <- T12.1; T12.4 <- T12.2; T12.6 <- T12.2 + T12.5; T12.8 <- T12.2 + T12.7; T12.9 <- T12.6; T12.10 <- T12.8; T12.11 <- T12.4, T12.6, T12.8; T12.12 (gate final) <- T12.4, T12.9, T12.10, T12.11 (usa T12.3). Sem dependência de nenhum lote 1-11 além de artefatos já entregues |
 | 13 **[Novo, 2026-09-18]** | Nenhuma dentro do lote (cadeia estritamente sequencial: um único arquivo-fonte por etapa). Pode rodar em paralelo com qualquer outro lote aberto (sem conflito de arquivo, exceto `sitemap.xml`/cards se houver refatoração simultânea) | T13.2 <- T13.1; T13.3 <- T13.2; T13.4 <- T13.3 |
+| Refatoração Lote-13 | RL13.1, RL13.2, RL13.3 | Nenhuma dependência interna ao lote; sem dependência de outro lote (RL13.1 e RL13.3 editam o mesmo arquivo, `minha-jornada.html`: executar em sequência) — prazo sugerido 14 dias após o deploy do Lote 13 |
 
 O ponto de maior paralelismo real passa a ser o início do Lote 3 (4
 instâncias simultâneas: T3.1, T3.4, T3.5, T3.6), com a Home continuando de

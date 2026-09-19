@@ -2681,3 +2681,23 @@ Ressalvas (severidade simples/baixa, viram tarefas em Refatoração Lote-12):
 2. RL12.2 (nova): T12.7 exige "dado 100% fictício"; os prints do Radar mostram dados reais públicos do Brasileirão e o nome "SportsLM" (anterior a T6.5) enquanto a página usa "Radar Esportivo". Não compromete o critério central de página/seções; inconsistência de marca e desvio literal do critério.
 
 Não verificado: conteúdo textual do PDF de origem versus copy; veracidade da entrada "v1.0 setembro de 2026" do changelog do Radar (não há fonte no repo); prints de Destino Ideal não inspecionados um a um (só amostra do Radar shot-01); Firefox/Safari real; leitor de tela.
+
+---
+
+## Lote 13 — Minha Jornada: página de detalhe (RA-10) — Validação QA (2026-09-18)
+
+**Veredito: APROVADO COM RESSALVAS.** 4 tarefas (T13.1-T13.4) Concluída; nenhuma reprovação crítica.
+
+Verificação real (arquivos + scripts; sem navegador nesta rodada):
+- node dev/html/site-consistency.check.js: OK, 8 páginas consistentes. node dev/css/a11y-contrast-check.js (fica em dev/css/, não dev/html/): TODAS PASS.
+- T13.1: 17 prints shot-01..17 em WebP + PNG; 5 usados na página, todos com width/height. Inspecionados shot-11 e shot-15: dado fictício, sem dado sensível de terceiro (G-17 ok). Sem GIF.
+- T13.2: minha-jornada.html com title/description/canonical/OG únicos (canonical https://ljssoftware.com.br/minha-jornada), 0 `[[`, h1 único, h2/h3 sem salto, alts completos (sem aspas quebradas), hero eager e demais 4 imagens lazy, 6 FAQs, changelog omitido (sem fonte), sem demo, sem iframe/script de terceiro além do beacon Cloudflare padrão do site. CTAs externos com target=_blank + rel noopener noreferrer + sr-only.
+- T13.3: cards em apps.html e index.html apontam para /minha-jornada, sem target, data-analytics-event mantido, botão "Saiba mais" intacto; sitemap com loc absoluto.
+
+Ressalvas (todas Simples; tarefa continua Concluída, viram Refatoração Lote-13):
+1. RL13.1 (Simples): erros de acentuação no copy de minha-jornada.html: kicker "Duvidas" (deve ser "Dúvidas") e figcaptions "(dado ficticio)" (deve ser "fictício") nos 5 prints.
+2. RL13.2 (Simples): shot-11 (editor de esboço) mostra defeitos de layout do app (botão [x] do bloco de versículo vazando para fora do card, textarea do ponto cortada, botões quebrando linha); como print de marketing prejudica a percepção. Recapturar em viewport mais largo ou recortar.
+3. RL13.3 (Simples/baixa): seções "FAQ" e "baixar" ambas section--alt adjacentes (sem alternância visual); confirmar em navegador.
+4. Processo: T13.4 previa "achado simples vira tarefa em Refatoração Lote-13", mas o lote não existia no TASK.md; as RL13.x acima devem ser registradas na Seção 3 (não criadas por mim nesta rodada, pedido restrito a QA-REPORT).
+
+Não verificado: renderização em Chromium desktop/mobile (rolagem horizontal, foco visível na tela), fidelidade do copy ao PDF, peso final das páginas (maior WebP 116 KB, aceitável).

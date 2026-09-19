@@ -611,3 +611,62 @@ dado público real (ex.: resultados esportivos) e o nome do produto capturado
 são permitidos."
 
 ---
+
+## Gate 4 — Registro de fechamento (deploy em produção, Lotes 12 e 13)
+
+**Data:** 2026-09-18
+**Chamada:** `/deploy`, registro de fechamento, **sem poder de veto**. O
+usuário confirmou explicitamente a publicação em produção; o Validador já
+registrou a dupla aprovação (QA + DevSecOps) e a verificação HTTP em
+produção; este registro apenas formaliza o fechamento no log do Gestor.
+**Artefato de entrada:** `.md/DEPLOY.md`, seções "Deploy em staging
+(2026-09-18) — Lotes 12 e 13" e "Confirmação de produção (2026-09-18) —
+Lotes 12 e 13", com base em `QA-REPORT.md` e `SECURITY-REVIEW.md`.
+
+### Resultado
+
+**Sucesso.** Deploy em produção confirmado, sem rollback e sem incidente.
+
+- **Versão/commit:** HEAD `9fb4e36`, sincronizado com origin/main. Inclui
+  `9d8f8fc` (Lote 12), `6cb3201` (refatorações RL5.1, RL7.1, RL7.2, RL8.1,
+  RL9.1, RL12.1), `f303a6e` (decisão RL12.2 + GUARDRAILS) e `9fb4e36`
+  (Lote 13).
+- **URL de produção:** `https://ljssoftware.com.br`. Modelo de deploy
+  contínuo (push em `main` publica no Cloudflare Pages); nenhum push/deploy
+  disparado na chamada de confirmação.
+- **Lotes incluídos:** Lote 12 e Lote 13. **O Lote 11 NÃO é fechado por esta
+  publicação** (T11.2 pendente, fora do escopo).
+- **Dupla aprovação:** QA + DevSecOps, ambos "Validado com ressalvas".
+- **Verificação em produção (checagem única, não é SLA):** 200 em `/`,
+  `/apps`, `/minha-jornada`, `/evolucao-segura`, `/destino-ideal`,
+  `/radar-esportivo`, `/sobre`, `/sitemap.xml`, `/robots.txt`; rota
+  inexistente com 404 real; 5 headers de segurança presentes (HSTS ausente,
+  RL5.2); beacon Cloudflare presente em `/evolucao-segura`, `/destino-ideal`
+  e `/radar-esportivo`; 60 imagens de `public/assets` (limite da amostra)
+  responderam 200.
+- **Incidentes/rollback:** nenhum incidente observado, nenhum rollback.
+
+### Débitos abertos (sem bloqueio)
+
+RL12.2 (decisão do usuário registrada acima), RL13.1, RL13.2, RL13.3, RL5.2
+(HSTS), teste desatualizado `evolucao-segura.t9-1` e demais itens de
+`Refatoração Lote-X` pendentes no `TASK.md`. Nota: Cloudflare Email
+Protection segue ligado por decisão anterior do usuário (e-mail do rodapé
+ofuscado em produção; com JS bloqueado aparece "[email protected]").
+
+### Ressalvas de verificação (registradas no `DEPLOY.md`)
+
+Não verificados: commit efetivamente servido/estado do deployment no painel
+do Pages; recebimento de eventos do beacon; rollback (nativo do Cloudflare
+Pages, "disponível, não testado"); janela pós-deploy de 24h; diff completo
+de HTML das páginas de detalhe e imagens além da amostra de 60 (existência
+apenas, não conteúdo/lazy loading).
+
+### Veredito
+
+**Aprovado — registro de fechamento, sem veto.** O deploy em produção dos
+Lotes 12 e 13 está formalmente encerrado no ciclo do Gestor, com as
+ressalvas de verificação acima mantidas em aberto. Nenhuma ação adicional
+exigida deste chapéu neste momento.
+
+---

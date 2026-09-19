@@ -2585,3 +2585,18 @@ formalmente liberado para deploy do ponto de vista de segurança.
 - G-17: sem dado de paciente/cliente. Radar Esportivo: prints exibem dados públicos reais de futebol (classificação, jogos) e nome "SportsLM"; sem dado pessoal, credencial, e-mail ou token visíveis no print inspecionado (shot-01). Classificação: BAIXA (não é dado sensível de terceiro; risco é de marca/coerência e desvio literal do critério "dado fictício" do T12.7). Vira RL12.2, prazo 14 dias, não bloqueia deploy. Se o Gestor considerar a regra de negócio, decisão dele (não escalada como estratégica).
 - Ressalva de verificação: inspecionei visualmente só radar shot-01; demais prints (Radar 02-04, Destino Ideal 01-07) não vistos por mim para dado sensível; metadados EXIF/texto embutido não checados.
 - Requisitos operacionais para DevOps: nenhum novo; manter _headers no deploy.
+
+---
+
+## Lote 13 — Auditoria DevSecOps (2026-09-18)
+
+**Veredito: APROVADO (sem débito de segurança).** Nenhum achado alto/crítico; nenhum compliance obrigatório em aberto. Escopo: `public/minha-jornada.html`, `public/assets/img/minha-jornada/` (17 prints PNG+WebP), cards em `apps.html`/`index.html`, `sitemap.xml`, `_headers`.
+
+- static-security-analysis: HTML sem `<style>`/`style=`/handler inline, sem `innerHTML`/`eval`, sem `<iframe>`, sem fonte/CDN/terceiro novo. Scripts: `nav.js` e `analytics.js` (self) e beacon `static.cloudflareinsights.com` (já permitido em script-src).
+- CSP (G-09, `_headers`): inalterada e suficiente (img-src self cobre os prints; `frame-ancestors none`, `object-src none`).
+- Links externos: CTA "Abrir app" (2 ocorrências, hero e bloco baixar) para `https://minha-jornada-ljs.pages.dev/` com `target="_blank" rel="noopener noreferrer"`; LinkedIn do footer com `rel="noopener"`. Cards em `apps.html` e `index.html` apontam para `/minha-jornada` (interno, sem target/rel), `sitemap.xml` inclui `/minha-jornada`. OK.
+- sensitive-data-exposure-check / G-17: inspecionei visualmente os 17 PNG (shot-01 a 17; os WebP são derivados dos mesmos). Só conteúdo bíblico público, UI do app e dados de demonstração (Dia 1, esboço "A graça de Deus"); nenhum e-mail, nome, token, credencial, dado de paciente/cliente ou terceiro. Sem chunk tEXt/iTXt/EXIF encontrado nos PNG. Ressalva: metadados dos WebP não checados (baixo risco, gerados dos PNG).
+- compliance-validation (LGPD): N/A, página estática sem coleta de dado pessoal além do beacon Cloudflare (sem cookie, já avaliado nos Lotes 2-5).
+- Observação sem severidade: prints mostram a UI do app com aviso "pendente de revisão teológica humana" (conteúdo, não segurança; ver QA-REPORT.md).
+- Achados: 0 crítico, 0 alto, 0 médio, 0 baixo. RL13.1-RL13.3 são achados do QA (copy/layout), sem correspondente de segurança.
+- Requisitos operacionais para DevOps: nenhum novo; manter `_headers` no deploy.
